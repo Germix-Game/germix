@@ -13,6 +13,8 @@ GameMode        → BACTERIA | FUNGI | PARASITE | VIRUS
 GramType        → POSITIVE | NEGATIVE | ACID_FAST | NONE
 CardCategory    → GRAM_STAIN | VIRULENCE_FACTOR | LAB_CHARACTERISTIC | SPECIAL_TRAIT | CLINICAL_MANIFESTATION
 MicrobeTag      → ANAEROBE | AEROBE | FACULTATIVE_ANAEROBE | SPORE_FORMER | ENCAPSULATED | INTRACELLULAR
+PostTestPeriod  → MIDTERM | FINAL
+AnswerOption    → A | B | C | D
 ```
 
 ---
@@ -58,7 +60,7 @@ createdAt
 id (PK)
 playerId (FK → Player)
 gameMode                          (BACTERIA, FUNGI, PARASITE, VIRUS)
-currentRound                      ← server-side anti-cheat cursor (1-5)
+currentRound                      ← (1-5)
 totalScore                        ← per-session score
 totalTime                         ← seconds
 heartsLeft                        ← starts at 3
@@ -102,7 +104,7 @@ microbeId (FK → Microbe)            ← CORRECT answer
 answeredMicrobeId (FK → Microbe)    ← player's guess
 roundNumber
 correct (boolean)
-cardSlotsOpened (json)
+cardSlotsOpened 
 heartsLeft
 roundScore                          ← server-computed
 timeTaken                           ← seconds
@@ -176,7 +178,42 @@ firstUnlockedAt
 
 ---
 
-## 9. Config — Admin Settings
+## 9. PostTest — In-Game Post-Test Submission
+
+```
+id (PK)
+playerId (FK → Player)
+period                    (MIDTERM, FINAL)
+answers (AnswerOption[])   ← player's selected answers (A, B, C, D)
+score                     ← number of correct answers
+submittedAt
+```
+
+**Purpose:** Records a player's post-test submission. The 30-question post-test is triggered in-game by date proximity to midterm/final exams.
+
+**Key details:**
+- Each player can submit once per period (unique constraint on `playerId` + `period`)
+- `answers` stores the player's selected options as an array of `AnswerOption` (e.g., `[A, C, B, D, ...]`)
+- This is separate from the external pre/post assessment collected via Google Forms by the doctors
+
+---
+
+## 10. PostTestQuestion — The Post-Test Question Bank
+
+```
+id (PK)
+period                    (MIDTERM, FINAL)
+body                      ← question text
+options (String[])        ← answer choice texts
+correctOption             (A, B, C, D)
+sortOrder
+```
+
+**Purpose:** Stores the post-test questions and their correct answers, organized by exam period.
+
+---
+
+## 11. Config — Admin Settings
 
 ```
 key (PK)
@@ -197,6 +234,7 @@ ApprovedUsername                             (standalone whitelist)
 Player ──→ GameSession                      (1:many)
 Player ──→ Score                            (1:many, denormalized)
 Player ──→ PlayerMicrobeUnlocked            (1:many)
+Player ──→ PostTest                         (1:2, one per period)
 GameSession ──→ SessionMicrobe              (1:5)
 GameSession ──→ Score                       (1:many)
 Microbe ──→ ClueCard                        (many:many, via MicrobeClue)
@@ -218,10 +256,7 @@ Microbe ──→ PlayerMicrobeUnlocked           (1:many)
 | `Gameplay_score` | `GameSession.totalScore` |
 | `Total_score` | `Player.totalScore` |
 
-**Note:** Assessment variables (`Midterm_Pre_Bact_score`, satisfaction ratings, etc.) are collected externally via Google Forms managed by the doctors — not part of this database.
-
----
 
 ## In One Sentence
 
-> The schema captures **identity** (username), **gameplay** (sessions with scoring), **content** (microbes + shared clue cards), **progress** (Pathogen Book), and **configuration** (admin settings) — research assessments are handled externally via Google Forms.
+> The schema captures **identity** (username), **gameplay** (sessions with scoring), **content** (microbes + shared clue cards), **progress** (Pathogen Book), **in-game assessment** (post-tests by exam period), and **configuration** (admin settings) — external pre/post knowledge assessments and satisfaction ratings are handled via Google Forms by the doctors.
