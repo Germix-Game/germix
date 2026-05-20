@@ -1,8 +1,8 @@
-# Germix Database Schema — Updated for Doctors' Data Dictionary
+# Germix Database Schema
 
 **Updated:** Based on `Details for Dev.docx` (research ethics submission)
 
-A table-by-table walkthrough of the database designed to capture all variables the doctors want to collect for the research study.
+A table-by-table walkthrough of the database designed for the Germix microbiology card game.
 
 ---
 
@@ -10,38 +10,32 @@ A table-by-table walkthrough of the database designed to capture all variables t
 
 ```
 GameMode        → BACTERIA | FUNGI | PARASITE | VIRUS
-ExamPeriod      → MIDTERM | FINAL
-TestPhase       → PRE | POST
-MicrobeSection  → BACTERIA | FUNGI | PARASITE | VIRUS
 GramType        → POSITIVE | NEGATIVE | ACID_FAST | NONE
 CardCategory    → GRAM_STAIN | VIRULENCE_FACTOR | LAB_CHARACTERISTIC | SPECIAL_TRAIT | CLINICAL_MANIFESTATION
 MicrobeTag      → ANAEROBE | AEROBE | FACULTATIVE_ANAEROBE | SPORE_FORMER | ENCAPSULATED | INTRACELLULAR
-AnswerOption    → A | B | C | D
-Satisfaction    → VERY_DISSATISFIED | DISSATISFIED | NEUTRAL | SATISFIED | VERY_SATISFIED
 ```
 
 ---
 
-## 1. ApprovedStudentId — The Whitelist
+## 1. ApprovedUsername — The Whitelist
 
 ```
-studentId (PK)        ← Numeric, unique per Faculty system
+username (PK)          ← 1-10 chars, assigned by research team
 importedAt
 registeredAt (nullable)
 ```
 
-**Purpose:** The list of students approved by Faculty of Medicine Ramathibodi to participate.
+**Purpose:** The list of usernames approved by Faculty of Medicine Ramathibodi to participate.
 
-**Why it exists:** Prevents random signups. Only approved students from the pre-test list can create an account.
+**Why it exists:** Prevents random signups. Only approved usernames from the pre-test list can create an account. Uses usernames instead of Student IDs to keep student identity confidential.
 
 ---
 
 ## 2. Player — The User Account
 
 ```
-studentId (PK, FK → ApprovedStudentId)   ← identity from Faculty
+id (PK)
 username (UK)                            ← 1-10 chars, leaderboard display
-passwordHash                             ← 1-10 chars, bcrypt'd
 totalScore                               ← sum of completed gameplay scores
 gamesPlayed                              ← Gameplay_count
 createdAt
@@ -50,11 +44,11 @@ createdAt
 **Purpose:** The actual user account.
 
 **How it works:**
-- `studentId` is the unique identity (Numeric per Faculty)
-- `username` is a separate display name (1-10 chars) — what shows on leaderboard
-- *"One username is allowed per one student ID"*
-- `passwordHash` stores bcrypt-hashed password (1-10 chars input)
-- `totalScore` shown on leaderboard
+- `username` is a display name (1-10 chars, unique) — what shows on leaderboard
+- `totalScore` accumulates across completed sessions only
+- `gamesPlayed` only counts completed sessions — abandoned/failed don't count
+
+**Note:** Authentication is handled externally — no password stored in this table.
 
 ---
 
@@ -62,12 +56,12 @@ createdAt
 
 ```
 id (PK)
-studentId (FK → Player)
+playerId (FK → Player)
 gameMode                          (BACTERIA, FUNGI, PARASITE, VIRUS)
-currentRound
-gameplayScore                     ← per-session score, calculated by accuracy AND time
-gameplayTime                      ← seconds, DISPLAYED on leaderboard
-heartsLeft
+currentRound                      ← server-side anti-cheat cursor (1-5)
+totalScore                        ← per-session score
+totalTime                         ← seconds
+heartsLeft                        ← starts at 3
 completed                         ← counts toward Gameplay_count
 abandoned
 startedAt
@@ -76,10 +70,11 @@ completedAt
 
 **Purpose:** Records one game session from start to finish.
 
-**Important changes from old spec:**
-- `gameplayTime` is now **shown on the leaderboard** (was hidden before)
-- `gameplayScore` is calculated using **accuracy AND time** (old spec said time didn't affect score)
-- Only `completed` sessions count toward `Player.gamesPlayed`
+**Key details:**
+- `totalTime` is tracked for research/admin purposes
+- `totalScore` is the sum of all round scores within this session
+- Only `completed` sessions count toward `Player.gamesPlayed` and `Player.totalScore`
+- `completed` and `abandoned` can never both be `true` (DB check constraint)
 
 ---
 
@@ -102,18 +97,27 @@ microbeId (FK → Microbe)
 ```
 id (PK)
 sessionId (FK → GameSession)
-studentId (FK → Player)             ← denormalized for fast CSV export
+playerId (FK → Player)             ← denormalized for fast CSV export
 microbeId (FK → Microbe)            ← CORRECT answer
 answeredMicrobeId (FK → Microbe)    ← player's guess
 roundNumber
 correct (boolean)
 cardSlotsOpened (json)
-roundScore                          ← contributes to gameplayScore
-timeTaken                           ← seconds, contributes to gameplayScore
+heartsLeft
+roundScore                          ← server-computed
+timeTaken                           ← seconds
 createdAt
 ```
 
 **Purpose:** Records what happened in each round.
+
+**Score formula:**
+```
+If wrong: 0 points
+If correct: 100 - (cardsOpened - 1) × 20
+
+Cards opened: 1 → 100 | 2 → 80 | 3 → 60 | 4 → 40 | 5 → 20
+```
 
 **Why two Microbe FKs:** Lets researchers analyze which microbes students confuse with each other.
 
@@ -136,127 +140,52 @@ starRating               (1-3 difficulty)
 
 ---
 
-## 7. ClueCard — The Hint Cards
+## 7. ClueCard + MicrobeClue — The Hint Cards
 
 ```
-id (PK)
-microbeId (FK → Microbe)
-category                 (GRAM_STAIN, VIRULENCE_FACTOR, etc.)
-label
-imageUrl
+ClueCard
+  id (PK)
+  category                 (GRAM_STAIN, VIRULENCE_FACTOR, etc.)
+  label
+  imageUrl
+
+MicrobeClue (junction)
+  microbeId (PK, FK → Microbe)
+  clueCardId (PK, FK → ClueCard)
+  sortOrder
 ```
 
-**Purpose:** The 5 clue cards per microbe.
+**Purpose:** The clue cards students reveal during gameplay. A single card can be shared across multiple microbes (e.g., a gram stain image that applies to several bacteria).
+
+**Why a junction table:** Avoids duplicating card data when the same clue applies to multiple microbes. Editing one card updates it everywhere.
 
 ---
 
 ## 8. PlayerMicrobeUnlocked — Pathogen Book Progress
 
 ```
-studentId (PK, FK → Player)
+playerId (PK, FK → Player)
 microbeId (PK, FK → Microbe)
+cardSlotsOpened (json)       ← which clue cards were revealed on the winning round
 firstUnlockedAt
 ```
 
-**Purpose:** Tracks which microbes each player has correctly identified.
+**Purpose:** Tracks which microbes each player has correctly identified and which clues they used.
 
-**How:** Only created on correct answer. Drives the Pathogen Book unlock state.
-
----
-
-## 9. Assessment — Pre/Post Test Submissions (NEW STRUCTURE)
-
-This **replaces the old PostTest table**. Doctors now want 4 separate tests per student.
-
-```
-id (PK)
-studentId (FK → Player)
-examPeriod                          (MIDTERM | FINAL)
-phase                               (PRE | POST)
-section                             (BACTERIA | FUNGI | PARASITE | VIRUS)
-score                               (0-8)
-satisfaction                        (Satisfaction enum, 1-5 Likert)
-submittedAt
-
-@@unique([studentId, examPeriod, phase, section])
-```
-
-**Purpose:** Stores the 8-question test score AND the satisfaction rating for each test event.
-
-### Structure Per Student
-
-```
-Midterm Period
-├── PRE  (at enrollment)
-│   ├── Bacteria   → score (0-8) + satisfaction (1-5)
-│   └── Fungi      → score (0-8) + satisfaction (1-5)
-└── POST (1 week before midterm exam)
-    ├── Bacteria   → score (0-8) + satisfaction (1-5)
-    └── Fungi      → score (0-8) + satisfaction (1-5)
-
-Final Period
-├── PRE  (after midterm exam)
-│   ├── Parasite   → score (0-8) + satisfaction (1-5)
-│   └── Virus      → score (0-8) + satisfaction (1-5)
-└── POST (1 week before final exam)
-    ├── Parasite   → score (0-8) + satisfaction (1-5)
-    └── Virus      → score (0-8) + satisfaction (1-5)
-```
-
-**Total per student:** Up to 8 Assessment rows = 8 scores + 8 satisfaction ratings.
-
-The `@@unique([studentId, examPeriod, phase, section])` ensures one submission per (student, period, phase, section) combo.
+**How:** Only created on correct answer. `cardSlotsOpened` is copied from the winning `Score` row so the Pathogen Book can show which clue cards the student revealed to identify this microbe.
 
 ---
 
-## 10. AssessmentQuestion — The Question Bank
-
-```
-id (PK)
-examPeriod              (MIDTERM | FINAL)
-phase                   (PRE | POST)
-section                 (BACTERIA | FUNGI | PARASITE | VIRUS)
-body                    ← question text
-options                 (json: { A, B, C, D })
-correctOption           (AnswerOption: A | B | C | D)
-sortOrder
-```
-
-**Purpose:** Pool of 8 questions per (examPeriod, phase, section) combination.
-
-**Total questions:** 4 events × 2 sections × 8 questions = **64 questions** in the bank.
-
----
-
-## 11. AssessmentAnswer — Individual Question Responses (Optional but Recommended)
-
-```
-id (PK)
-assessmentId (FK → Assessment)
-questionId (FK → AssessmentQuestion)
-answer (AnswerOption)
-```
-
-**Purpose:** Stores each individual answer with referential integrity (instead of a JSON blob).
-
-**Why:** For research data, you want every answer queryable. JSON blobs can have malformed data silently.
-
----
-
-## 12. Config — Admin Settings
+## 9. Config — Admin Settings
 
 ```
 key (PK)
 value
 ```
 
-**Purpose:** Key-value store for assessment window dates and game mode unlock dates.
+**Purpose:** Key-value store for game mode unlock dates and admin settings.
 
 **Keys:**
-- `midterm_pre_start`, `midterm_pre_end`
-- `midterm_post_start`, `midterm_post_end`
-- `final_pre_start`, `final_pre_end`
-- `final_post_start`, `final_post_end`
 - `parasite_unlock`, `fungi_unlock`, `virus_unlock`
 
 ---
@@ -264,19 +193,16 @@ value
 ## Relationship Map
 
 ```
-ApprovedStudentId ──→ Player                    (1:1)
-Player ──→ GameSession                          (1:many)
-Player ──→ Score                                (1:many, denormalized)
-Player ──→ Assessment                           (1:up to 8)
-Player ──→ PlayerMicrobeUnlocked                (1:many)
-GameSession ──→ SessionMicrobe                  (1:5)
-GameSession ──→ Score                           (1:many)
-Microbe ──→ ClueCard                            (1:5)
-Microbe ──→ SessionMicrobe                      (1:many)
-Microbe ──→ Score                               (1:many, TWICE — correct & answered)
-Microbe ──→ PlayerMicrobeUnlocked               (1:many)
-Assessment ──→ AssessmentAnswer                 (1:8)
-AssessmentQuestion ──→ AssessmentAnswer         (1:many)
+ApprovedUsername                             (standalone whitelist)
+Player ──→ GameSession                      (1:many)
+Player ──→ Score                            (1:many, denormalized)
+Player ──→ PlayerMicrobeUnlocked            (1:many)
+GameSession ──→ SessionMicrobe              (1:5)
+GameSession ──→ Score                       (1:many)
+Microbe ──→ ClueCard                        (many:many, via MicrobeClue)
+Microbe ──→ SessionMicrobe                  (1:many)
+Microbe ──→ Score                           (1:many, TWICE — correct & answered)
+Microbe ──→ PlayerMicrobeUnlocked           (1:many)
 ```
 
 ---
@@ -285,39 +211,17 @@ AssessmentQuestion ──→ AssessmentAnswer         (1:many)
 
 | Doctor's Variable | Maps to |
 |---|---|
-| `Student_ID` | `Player.studentId` |
-| `Username` | `Player.username` |
-| `Password` | `Player.passwordHash` |
+| `Student_ID` | Mapped externally (not stored in game DB for confidentiality) |
+| `Username` | `Player.username` / `ApprovedUsername.username` |
 | `Gameplay_count` | `Player.gamesPlayed` |
-| `Gameplay_time` | `GameSession.gameplayTime` |
-| `Gameplay_score` | `GameSession.gameplayScore` |
+| `Gameplay_time` | `GameSession.totalTime` |
+| `Gameplay_score` | `GameSession.totalScore` |
 | `Total_score` | `Player.totalScore` |
-| `Midterm_Pre_Bact_score` | `Assessment` where (MIDTERM, PRE, BACTERIA) → `score` |
-| `Midterm_Pre_Bact_satisfaction` | Same row → `satisfaction` |
-| `Midterm_Pre_Fungi_score` | `Assessment` where (MIDTERM, PRE, FUNGI) → `score` |
-| `Midterm_Post_Bact_score` | `Assessment` where (MIDTERM, POST, BACTERIA) → `score` |
-| `Midterm_Post_Fungi_score` | `Assessment` where (MIDTERM, POST, FUNGI) → `score` |
-| `Final_Pre_Parasite_score` | `Assessment` where (FINAL, PRE, PARASITE) → `score` |
-| `Final_Pre_Virus_score` | `Assessment` where (FINAL, PRE, VIRUS) → `score` |
-| `Final_Post_Parasite_score` | `Assessment` where (FINAL, POST, PARASITE) → `score` |
-| `Final_Post_Virus_score` | `Assessment` where (FINAL, POST, VIRUS) → `score` |
-| All `*_satisfaction` variables | Same Assessment rows → `satisfaction` |
 
----
-
-## Conflicts With Old Spec — Resolved in This Version
-
-| Topic | Old Spec | This Schema (Doctors) |
-|---|---|---|
-| **Identity** | `username` only | `studentId` + `username` + `password` |
-| **Score formula** | Card-based only | Accuracy + Time |
-| **Leaderboard time** | Hidden | Shown |
-| **Test structure** | One 20-Q posttest | 4 events × 2 sections × 8 Qs |
-| **Pretest** | Google Form only | In-game pretest |
-| **Satisfaction** | Not tracked | Required per section per test |
+**Note:** Assessment variables (`Midterm_Pre_Bact_score`, satisfaction ratings, etc.) are collected externally via Google Forms managed by the doctors — not part of this database.
 
 ---
 
 ## In One Sentence
 
-> The schema captures **identity** (studentId/username/password), **gameplay** (sessions with time + accuracy scoring), **content** (microbes + clue cards), **progress** (Pathogen Book), and **research outcomes** (4 pre/post assessments with satisfaction ratings) — fully aligned with the doctors' data dictionary.
+> The schema captures **identity** (username), **gameplay** (sessions with scoring), **content** (microbes + shared clue cards), **progress** (Pathogen Book), and **configuration** (admin settings) — research assessments are handled externally via Google Forms.
