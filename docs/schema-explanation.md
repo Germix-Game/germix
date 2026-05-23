@@ -22,7 +22,8 @@ AnswerOption    → A | B | C | D
 ## 1. ApprovedUsername — The Whitelist
 
 ```
-username (PK)          ← 1-10 chars, assigned by research team
+id (PK)                ← surrogate cuid
+username (UK)          ← 1-10 chars, assigned by research team
 importedAt
 registeredAt (nullable)
 ```
@@ -36,7 +37,7 @@ registeredAt (nullable)
 ## 2. Player — The User Account
 
 ```
-id (PK)
+id (PK)                                  ← Supabase Auth UID (not a generated cuid)
 username (UK)                            ← 1-10 chars, leaderboard display
 totalScore                               ← sum of completed gameplay scores
 gamesPlayed                              ← Gameplay_count
@@ -46,11 +47,12 @@ createdAt
 **Purpose:** The actual user account.
 
 **How it works:**
+- `id` is the UID issued by Supabase Auth — this table does not generate its own id
 - `username` is a display name (1-10 chars, unique) — what shows on leaderboard
 - `totalScore` accumulates across completed sessions only
 - `gamesPlayed` only counts completed sessions — abandoned/failed don't count
 
-**Note:** Authentication is handled externally — no password stored in this table.
+**Note:** Authentication is handled by **Supabase Auth**. No password is stored in this table — credentials live in Supabase's managed auth schema, and `Player.id` references the Supabase Auth UID.
 
 ---
 
@@ -92,6 +94,8 @@ microbeId (FK → Microbe)
 
 **Why it exists:** Anti-cheat — clients can't change which microbes they identify.
 
+**Unique constraint `(sessionId, microbeId)`:** Prevents the same microbe from appearing in more than one round within the same session — e.g. the same microbe cannot show up in both round 1 and round 2.
+
 ---
 
 ## 5. Score — One Row Per Round Answered
@@ -104,7 +108,7 @@ microbeId (FK → Microbe)            ← CORRECT answer
 answeredMicrobeId (FK → Microbe)    ← player's guess
 roundNumber
 correct (boolean)
-cardSlotsOpened 
+cardSlotsOpened (arrayInt)
 heartsLeft
 roundScore                          ← server-computed
 timeTaken                           ← seconds
@@ -123,6 +127,8 @@ Cards opened: 1 → 100 | 2 → 80 | 3 → 60 | 4 → 40 | 5 → 20
 
 **Why two Microbe FKs:** Lets researchers analyze which microbes students confuse with each other.
 
+**Unique constraint `(sessionId, roundNumber)`:** Prevents a duplicate score row being inserted for the same round in the same session — e.g. if the client double-submits an answer.
+
 ---
 
 ## 6. Microbe — The Pathogens
@@ -135,7 +141,7 @@ answerImageUrl
 gameMode                 (BACTERIA, FUNGI, PARASITE, VIRUS)
 gramType                 (POSITIVE, NEGATIVE, ACID_FAST, NONE)
 tags                     (array of MicrobeTag)
-starRating               (1-3 difficulty)
+starRating               (1- 5 difficulty)
 ```
 
 **Purpose:** The content — what students learn to identify.
@@ -168,7 +174,7 @@ MicrobeClue (junction)
 ```
 playerId (PK, FK → Player)
 microbeId (PK, FK → Microbe)
-cardSlotsOpened (json)       ← which clue cards were revealed on the winning round
+cardSlotsOpened (arrayInt)   ← which clue cards were revealed on the winning round
 firstUnlockedAt
 ```
 
@@ -184,7 +190,7 @@ firstUnlockedAt
 id (PK)
 playerId (FK → Player)
 period                    (MIDTERM, FINAL)
-answers (AnswerOption[])   ← player's selected answers (A, B, C, D)
+answers (AnswerOption[])   ← canonical-order answers (A, B, C, D), see below
 score                     ← number of correct answers
 submittedAt
 ```
@@ -193,7 +199,8 @@ submittedAt
 
 **Key details:**
 - Each player can submit once per period (unique constraint on `playerId` + `period`)
-- `answers` stores the player's selected options as an array of `AnswerOption` (e.g., `[A, C, B, D, ...]`)
+- `answers` is stored in **canonical question order** — `answers[i]` is the player's answer to the `i`-th question by `PostTestQuestion.sortOrder`, **not** the shuffled order the student saw on screen
+- The questions are shuffled for display, so the server **must re-map each response back to canonical order before saving**. This keeps a plain `AnswerOption[]` valid and lets researchers line up `answers[i]` against question `i` for per-question analysis
 - This is separate from the external pre/post assessment collected via Google Forms by the doctors
 
 ---
@@ -204,12 +211,14 @@ submittedAt
 id (PK)
 period                    (MIDTERM, FINAL)
 body                      ← question text
-options (String[])        ← answer choice texts
+options (String[])        ← exactly 4 entries; [0]=A, [1]=B, [2]=C, [3]=D
 correctOption             (A, B, C, D)
 sortOrder
 ```
 
 **Purpose:** Stores the post-test questions and their correct answers, organized by exam period.
+
+**Option ordering:** `options` must always hold **exactly 4 entries**, positionally mapped to the answer letters — `options[0]`=A, `options[1]`=B, `options[2]`=C, `options[3]`=D. This order is fixed and must never be shuffled, because `correctOption` (and the player's submitted `AnswerOption`) reference it by position.
 
 ---
 
@@ -230,7 +239,7 @@ value
 ## Relationship Map
 
 ```
-ApprovedUsername                             (standalone whitelist)
+ApprovedUsername ──→ Player                 (1:1, optional — null until the student signs up)
 Player ──→ GameSession                      (1:many)
 Player ──→ Score                            (1:many, denormalized)
 Player ──→ PlayerMicrobeUnlocked            (1:many)

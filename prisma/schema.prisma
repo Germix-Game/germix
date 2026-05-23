@@ -1,16 +1,234 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")   // pooled connection for queries
+  directUrl = env("DIRECT_URL")     // direct connection for migrations
+}
+
+// ─── Enums ──────────────────────────────────────────────
+
+enum GameMode {
+  BACTERIA
+  FUNGI
+  PARASITE
+  VIRUS
+}
+
+enum GramType {
+  POSITIVE
+  NEGATIVE
+  ACID_FAST
+  NONE
+}
+
+enum CardCategory {
+  GRAM_STAIN
+  VIRULENCE_FACTOR
+  LAB_CHARACTERISTIC
+  SPECIAL_TRAIT
+  CLINICAL_MANIFESTATION
+}
+
+enum MicrobeTag {
+  ANAEROBE
+  AEROBE
+  FACULTATIVE_ANAEROBE
+  SPORE_FORMER
+  ENCAPSULATED
+  INTRACELLULAR
+}
+
+enum PostTestPeriod {
+  MIDTERM
+  FINAL
+}
+
+enum AnswerOption {
+  A
+  B
+  C
+  D
+}
+
+// ─── 1. ApprovedUsername — the whitelist ────────────────
+
+model ApprovedUsername {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  importedAt   DateTime  @default(now())
+  registeredAt DateTime?
+
+  player Player? // 1:1 optional — null until the student signs up
+}
+
+// ─── 2. Player — the user account ───────────────────────
+
+model Player {
+  id          String   @id // Supabase Auth UID — NOT a generated cuid
+  username    String   @unique
+  totalScore  Int      @default(0)
+  gamesPlayed Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  approvedUsername ApprovedUsername? @relation(fields: [username], references: [username])
+
+  sessions          GameSession[]
+  scores            Score[]
+  unlockedMicrobes  PlayerMicrobeUnlocked[]
+  postTests         PostTest[]
+}
+
+// ─── 3. GameSession — one playthrough ───────────────────
+
+model GameSession {
+  id           String    @id @default(cuid())
+  playerId     String
+  gameMode     GameMode
+  currentRound Int       @default(1) // 1-5
+  totalScore   Int       @default(0)
+  totalTime    Int       @default(0) // seconds
+  heartsLeft   Int       @default(3)
+  completed    Boolean   @default(false)
+  abandoned    Boolean   @default(false)
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+
+  player   Player           @relation(fields: [playerId], references: [id])
+  microbes SessionMicrobe[]
+  scores   Score[]
+
+  // NOTE: "completed XOR abandoned" can't be expressed in Prisma —
+  // add via raw SQL in the migration (see notes below).
+}
+
+// ─── 4. SessionMicrobe — which microbes appear ──────────
+
+model SessionMicrobe {
+  sessionId   String
+  roundNumber Int
+  microbeId   String
+
+  session GameSession @relation(fields: [sessionId], references: [id])
+  microbe Microbe     @relation(fields: [microbeId], references: [id])
+
+  @@id([sessionId, roundNumber])
+  @@unique([sessionId, microbeId]) // a microbe can't repeat across rounds
+}
+
+// ─── 5. Score — one row per round answered ──────────────
+
+model Score {
+  id                String   @id @default(cuid())
+  sessionId         String
+  playerId          String   // denormalized for fast CSV export
+  microbeId         String   // correct answer
+  answeredMicrobeId String   // player's guess
+  roundNumber       Int
+  correct           Boolean
+  cardSlotsOpened   Int[]
+  heartsLeft        Int
+  roundScore        Int      // server-computed
+  timeTaken         Int      // seconds
+  createdAt         DateTime @default(now())
+
+  session         GameSession @relation(fields: [sessionId], references: [id])
+  player          Player      @relation(fields: [playerId], references: [id])
+  microbe         Microbe     @relation("CorrectMicrobe", fields: [microbeId], references: [id])
+  answeredMicrobe Microbe     @relation("AnsweredMicrobe", fields: [answeredMicrobeId], references: [id])
+
+  @@unique([sessionId, roundNumber]) // guards against double-submit
+}
+
+// ─── 6. Microbe — the pathogens ─────────────────────────
+
+model Microbe {
+  id             String       @id @default(cuid())
+  name           String       @unique
+  shortName      String
+  answerImageUrl String
+  gameMode       GameMode
+  gramType       GramType
+  tags           MicrobeTag[]
+  starRating     Int          // 1-5 difficulty
+
+  clues            MicrobeClue[]
+  sessionMicrobes  SessionMicrobe[]
+  scoresAsCorrect  Score[]                 @relation("CorrectMicrobe")
+  scoresAsAnswered Score[]                 @relation("AnsweredMicrobe")
+  unlockedBy       PlayerMicrobeUnlocked[]
+
+  // NOTE: GIN index on `tags` — see notes below (enum-array GIN
+  // needs a raw-SQL index, not Prisma's @@index).
+}
+
+// ─── 7. ClueCard + MicrobeClue — hint cards ─────────────
+
+model ClueCard {
+  id       String       @id @default(cuid())
+  category CardCategory
+  label    String
+  imageUrl String
+
+  microbes MicrobeClue[]
+}
+
+model MicrobeClue {
+  microbeId  String
+  clueCardId String
+  sortOrder  Int
+
+  microbe  Microbe  @relation(fields: [microbeId], references: [id])
+  clueCard ClueCard @relation(fields: [clueCardId], references: [id])
+
+  @@id([microbeId, clueCardId])
+}
+
+// ─── 8. PlayerMicrobeUnlocked — Pathogen Book progress ──
+
+model PlayerMicrobeUnlocked {
+  playerId        String
+  microbeId       String
+  cardSlotsOpened Int[]    // copied from the winning Score row
+  firstUnlockedAt DateTime @default(now())
+
+  player  Player  @relation(fields: [playerId], references: [id])
+  microbe Microbe @relation(fields: [microbeId], references: [id])
+
+  @@id([playerId, microbeId])
+}
+
+// ─── 9. PostTest — in-game post-test submission ─────────
+
+model PostTest {
+  id          String         @id @default(cuid())
+  playerId    String
+  period      PostTestPeriod
+  answers     AnswerOption[] // canonical question order, NOT shuffled
+  score       Int
+  submittedAt DateTime       @default(now())
+
+  player Player @relation(fields: [playerId], references: [id])
+
+  @@unique([playerId, period]) // one submission per period
+}
+
+// ─── 10. PostTestQuestion — the question bank ───────────
+
+model PostTestQuestion {
+  id            String         @id @default(cuid())
+  period        PostTestPeriod
+  body          String
+  options       String[]       // exactly 4: [0]=A, [1]=B, [2]=C, [3]=D
+  correctOption AnswerOption
+  sortOrder     Int
+}
+
+// ─── 11. Config — admin settings ────────────────────────
+
+model Config {
+  key   String @id
+  value String
 }
