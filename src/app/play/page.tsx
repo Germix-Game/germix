@@ -443,11 +443,9 @@ export default function PlayPage() {
       {/* Arbitrary background image (Tailwind bg-[url-syntax]), bg-cover scales to fill, bg-center centers it */}
       <div className="flex flex-col px-6 pt-4 pb-6 bg-[url('/asset/ui/wood-bg.png')] bg-cover bg-center flex-shrink-0">
 
-        {/* Top bar: Score on left, Hearts on right (round counter moved below as a centered image) */}
-        {/* justify-between → pushes children to opposite ends */}
-        <div className="flex items-center justify-between">
+        {/* Top bar: Score on left */}
+        <div className="flex items-center">
           <ScoreBar score={score} />
-          <HeartsBar heartsLeft={heartsLeft} />
         </div>
 
         {/*
@@ -475,16 +473,18 @@ export default function PlayPage() {
           />
         </div>
 
-        {/* The 5 clue cards + the "Answer" button (all packaged inside CardGrid) */}
-        {/* Props flow DOWN: parent passes data + callbacks; child calls callbacks to notify parent */}
-        <CardGrid
-          slots={slots}                          // current state of all 5 slots
-          onReveal={handleReveal}                // called when a card is clicked
-          locked={phase !== "playing"}           // cards become unclickable outside "playing"
-          canAnswer={canAnswer}                  // is the answer button enabled?
-          isSubmitting={isSubmitting}            // show loading state on answer button
-          onAnswer={handleSubmitAnswer}          // called when answer button is clicked
-        />
+        {/* The 5 clue cards + hearts (vertical) + the "Answer" button */}
+        <div className="flex items-center gap-3">
+          <HeartsBar heartsLeft={heartsLeft} vertical />
+          <CardGrid
+            slots={slots}                          // current state of all 5 slots
+            onReveal={handleReveal}                // called when a card is clicked
+            locked={phase !== "playing"}           // cards become unclickable outside "playing"
+            canAnswer={canAnswer}                  // is the answer button enabled?
+            isSubmitting={isSubmitting}            // show loading state on answer button
+            onAnswer={handleSubmitAnswer}          // called when answer button is clicked
+          />
+        </div>
 
         {/* Wrong-answer feedback bar — only shows during "wrong" phase */}
         {/* `{condition && <JSX>}` → conditional rendering (shorthand for "render JSX if condition is truthy") */}
@@ -521,7 +521,6 @@ export default function PlayPage() {
             [
               ["POSITIVE", "GRAM +"],
               ["NEGATIVE", "GRAM −"],
-              ["ACID_FAST", "ACID-FAST"],
             ] as const
           ).map(([value, label]) => (
             // Destructuring the tuple: [value, label] = ["POSITIVE", "GRAM +"]
@@ -569,12 +568,10 @@ export default function PlayPage() {
             )}
           </div>
 
-          {/* TAG FILTERS (anaerobe, aerobe, spore-former) — same .map pattern as gram filters */}
+          {/* TAG FILTERS (anaerobe) — same .map pattern as gram filters */}
           {(
             [
               ["ANAEROBE", "ANAEROBE"],
-              ["AEROBE", "AEROBE"],
-              ["SPORE_FORMER", "SPORE-FORMER"],
             ] as const
           ).map(([value, label]) => (
             <label key={value} className="flex cursor-pointer items-center gap-1.5 select-none">

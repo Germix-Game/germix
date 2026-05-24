@@ -2,6 +2,7 @@ const MAX_HEARTS = 3;
 
 interface HeartsBarProps {
   heartsLeft: number;
+  vertical?: boolean;
 }
 
 /*
@@ -35,10 +36,10 @@ interface HeartsBarProps {
  *
  *   The HeartsBar component itself (the parent) does not need to change.
  */
-export function HeartsBar({ heartsLeft }: HeartsBarProps) {
+export function HeartsBar({ heartsLeft, vertical }: HeartsBarProps) {
   return (
     <div
-      className="flex items-center gap-2"
+      className={vertical ? "flex flex-col items-center gap-2" : "flex items-center gap-2"}
       role="img"
       aria-label={`${heartsLeft} of ${MAX_HEARTS} lives remaining`}
     >
