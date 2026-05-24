@@ -4,8 +4,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")   // pooled connection for queries
-  directUrl = env("DIRECT_URL")     // direct connection for migrations
+  url       = env("DATABASE_URL") // pooled connection for queries
+  directUrl = env("DIRECT_URL") // direct connection for migrations
 }
 
 // ─── Enums ──────────────────────────────────────────────
@@ -73,12 +73,14 @@ model Player {
   gamesPlayed Int      @default(0)
   createdAt   DateTime @default(now())
 
-  approvedUsername ApprovedUsername? @relation(fields: [username], references: [username])
+  approvedUsername ApprovedUsername @relation(fields: [username], references: [username])
 
-  sessions          GameSession[]
-  scores            Score[]
-  unlockedMicrobes  PlayerMicrobeUnlocked[]
-  postTests         PostTest[]
+  sessions         GameSession[]
+  scores           Score[]
+  unlockedMicrobes PlayerMicrobeUnlocked[]
+  postTests        PostTest[]
+
+  @@index([totalScore(sort: Desc)]) // Leaderboard query
 }
 
 // ─── 3. GameSession — one playthrough ───────────────────
@@ -100,8 +102,8 @@ model GameSession {
   microbes SessionMicrobe[]
   scores   Score[]
 
-  // NOTE: "completed XOR abandoned" can't be expressed in Prisma —
-  // add via raw SQL in the migration (see notes below).
+  @@index([playerId, startedAt(sort: Desc)])
+  @@index([completed, completedAt])
 }
 
 // ─── 4. SessionMicrobe — which microbes appear ──────────
@@ -123,23 +125,25 @@ model SessionMicrobe {
 model Score {
   id                String   @id @default(cuid())
   sessionId         String
-  playerId          String   // denormalized for fast CSV export
-  microbeId         String   // correct answer
-  answeredMicrobeId String   // player's guess
+  playerId          String // denormalized for fast CSV export
+  microbeId         String // correct answer
+  answeredMicrobeId String? // player's guess — nullable if abandoned
   roundNumber       Int
   correct           Boolean
   cardSlotsOpened   Int[]
   heartsLeft        Int
-  roundScore        Int      // server-computed
-  timeTaken         Int      // seconds
+  roundScore        Int // server-computed
+  timeTaken         Int // seconds
   createdAt         DateTime @default(now())
 
   session         GameSession @relation(fields: [sessionId], references: [id])
   player          Player      @relation(fields: [playerId], references: [id])
   microbe         Microbe     @relation("CorrectMicrobe", fields: [microbeId], references: [id])
-  answeredMicrobe Microbe     @relation("AnsweredMicrobe", fields: [answeredMicrobeId], references: [id])
+  answeredMicrobe Microbe?    @relation("AnsweredMicrobe", fields: [answeredMicrobeId], references: [id])
 
   @@unique([sessionId, roundNumber]) // guards against double-submit
+  @@index([playerId, createdAt(sort: Desc)])
+  @@index([microbeId]) // Admin per-microbe accuracy queries
 }
 
 // ─── 6. Microbe — the pathogens ─────────────────────────
@@ -152,7 +156,7 @@ model Microbe {
   gameMode       GameMode
   gramType       GramType
   tags           MicrobeTag[]
-  starRating     Int          // 1-5 difficulty
+  starRating     Int // 1-5 difficulty
 
   clues            MicrobeClue[]
   sessionMicrobes  SessionMicrobe[]
@@ -160,8 +164,8 @@ model Microbe {
   scoresAsAnswered Score[]                 @relation("AnsweredMicrobe")
   unlockedBy       PlayerMicrobeUnlocked[]
 
-  // NOTE: GIN index on `tags` — see notes below (enum-array GIN
-  // needs a raw-SQL index, not Prisma's @@index).
+  @@index([gameMode])
+  @@index([tags], type: Gin)
 }
 
 // ─── 7. ClueCard + MicrobeClue — hint cards ─────────────
@@ -173,6 +177,8 @@ model ClueCard {
   imageUrl String
 
   microbes MicrobeClue[]
+
+  @@index([category])
 }
 
 model MicrobeClue {
@@ -184,6 +190,7 @@ model MicrobeClue {
   clueCard ClueCard @relation(fields: [clueCardId], references: [id])
 
   @@id([microbeId, clueCardId])
+  @@index([clueCardId])
 }
 
 // ─── 8. PlayerMicrobeUnlocked — Pathogen Book progress ──
@@ -191,7 +198,7 @@ model MicrobeClue {
 model PlayerMicrobeUnlocked {
   playerId        String
   microbeId       String
-  cardSlotsOpened Int[]    // copied from the winning Score row
+  cardSlotsOpened Int[] // copied from the winning Score row
   firstUnlockedAt DateTime @default(now())
 
   player  Player  @relation(fields: [playerId], references: [id])
@@ -221,7 +228,7 @@ model PostTestQuestion {
   id            String         @id @default(cuid())
   period        PostTestPeriod
   body          String
-  options       String[]       // exactly 4: [0]=A, [1]=B, [2]=C, [3]=D
+  options       String[] // exactly 4: [0]=A, [1]=B, [2]=C, [3]=D
   correctOption AnswerOption
   sortOrder     Int
 }
