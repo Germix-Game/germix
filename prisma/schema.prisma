@@ -109,9 +109,10 @@ model GameSession {
 // ─── 4. SessionMicrobe — which microbes appear ──────────
 
 model SessionMicrobe {
-  sessionId   String
-  roundNumber Int
-  microbeId   String
+  sessionId     String
+  roundNumber   Int
+  microbeId     String
+  revealedSlots Int[]  @default([])
 
   session GameSession @relation(fields: [sessionId], references: [id])
   microbe Microbe     @relation(fields: [microbeId], references: [id])
