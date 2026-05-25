@@ -36,9 +36,9 @@ export async function POST(request: NextRequest) {
 
     if (!player) {
       return createErrorResponse({
-        status: 404,
-        code: 'username_not_found',
-        message: 'Username not found.',
+        status: 401,
+        code: 'invalid_credentials',
+        message: 'Invalid username or password.',
       })
     }
 
@@ -52,8 +52,8 @@ export async function POST(request: NextRequest) {
     if (error) {
       return createErrorResponse({
         status: 401,
-        code: 'incorrect_password',
-        message: 'Incorrect password. Please try again.',
+        code: 'invalid_credentials',
+        message: 'Invalid username or password.',
       })
     }
 

@@ -66,8 +66,8 @@ export async function POST(request: NextRequest) {
     })
 
     if (createUserError || !createdUser.user) {
-      const message = createUserError?.message ?? 'Unable to create Supabase user.'
-      const lowerMessage = message.toLowerCase()
+      const message = 'Unable to create account right now.'
+      const lowerMessage = createUserError?.message?.toLowerCase() ?? ''
       if (lowerMessage.includes('already') || lowerMessage.includes('duplicate')) {
         return createErrorResponse({
           status: 409,
@@ -113,8 +113,8 @@ export async function POST(request: NextRequest) {
       if (signInError) {
         return createErrorResponse({
           status: 500,
-          code: 'signup_session_failed',
-          message: 'Account was created, but the session could not be started.',
+          code: 'signup_failed',
+          message: 'Unable to create account right now.',
         })
       }
     }

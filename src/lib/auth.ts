@@ -37,18 +37,14 @@ export async function requireAuth(): Promise<Player> {
     })
   }
 
-  try {
-    const supabase = await createSupabaseServerClient()
-    const { data, error } = await supabase.auth.getUser()
-    if (error || !data.user) unauthorized()
+  const supabase = await createSupabaseServerClient()
+  const { data, error } = await supabase.auth.getUser()
+  if (error || !data.user) unauthorized()
 
-    const player = await prisma.player.findUnique({ where: { id: data.user.id } })
-    if (!player) unauthorized()
+  const player = await prisma.player.findUnique({ where: { id: data.user.id } })
+  if (!player) unauthorized()
 
-    return player
-  } catch {
-    unauthorized()
-  }
+  return player
 }
 
 /**

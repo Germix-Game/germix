@@ -53,8 +53,7 @@ Common auth codes:
 
 - `username_not_whitelisted`
 - `account_already_exists`
-- `username_not_found`
-- `incorrect_password`
+- `invalid_credentials`
 - `validation_error`
 
 ## Frontend rules
