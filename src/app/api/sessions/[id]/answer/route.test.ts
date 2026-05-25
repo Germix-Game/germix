@@ -68,14 +68,14 @@ type MockTx = {
 let capturedTx: MockTx
 
 function setupTransactionMock() {
-  vi.mocked(prisma.$transaction).mockImplementation(async (fn: (tx: unknown) => Promise<void>) => {
+  vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
     capturedTx = {
       score: { create: vi.fn() },
       gameSession: { update: vi.fn() },
       playerMicrobeUnlocked: { upsert: vi.fn() },
       player: { update: vi.fn() },
     }
-    await fn(capturedTx)
+    await (fn as (tx: unknown) => Promise<void>)(capturedTx)
   })
 }
 

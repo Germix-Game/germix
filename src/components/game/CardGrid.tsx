@@ -22,7 +22,7 @@ export function CardGrid({
 }: CardGridProps) {
   return (
     <div className="flex items-stretch gap-4 w-full">
-      <div className="grid grid-cols-5 gap-3 flex-1">
+      <div className="grid grid-cols-5 gap-3 flex-1 place-items-center">
         {slots.map((slot) => (
           <CardSlot
             key={slot.index}

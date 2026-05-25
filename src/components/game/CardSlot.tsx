@@ -12,7 +12,7 @@ interface CardSlotProps {
 
 export function CardSlot({ index, revealed, card, onReveal, disabled }: CardSlotProps) {
   return (
-    <div className="card-wrapper w-full" style={{ aspectRatio: "3/4" }}>
+    <div className="card-wrapper w-full mx-auto" style={{ aspectRatio: "3/4", maxHeight: "11rem", maxWidth: "8.25rem" }}>
       <div className={`card-inner${revealed ? " flipped" : ""}`}>
 
         {/*

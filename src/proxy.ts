@@ -6,6 +6,10 @@ const getSecret = () =>
   new TextEncoder().encode(process.env.JWT_SECRET ?? '')
 
 export async function proxy(request: NextRequest) {
+  if (process.env.NODE_ENV === 'development') {
+    return NextResponse.next()
+  }
+
   const token = request.cookies.get('token')?.value
 
   if (!token) {

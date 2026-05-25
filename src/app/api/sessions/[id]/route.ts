@@ -16,7 +16,13 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/sessions/[id]'>
 
     const totalScores = await prisma.score.count({ where: { sessionId: id } })
 
-    return Response.json(formatSession(session, totalScores))
+    const currentPosition = totalScores + 1
+    const sessionMicrobe = await prisma.sessionMicrobe.findUnique({
+      where: { sessionId_roundNumber: { sessionId: id, roundNumber: currentPosition } },
+      select: { revealedSlots: true },
+    })
+
+    return Response.json(formatSession(session, totalScores, sessionMicrobe?.revealedSlots ?? []))
   } catch (e) {
     if (e instanceof Response) return e
     throw e

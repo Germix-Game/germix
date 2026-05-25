@@ -16,6 +16,7 @@ export interface SessionShape {
   id: string
   gameMode: GameMode
   heartsLeft: number
+  totalScore: number
   currentRound: number
   currentMicrobeInRound: number
   slots: SlotShape[]

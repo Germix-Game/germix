@@ -65,6 +65,7 @@ export interface AnswerResponse {
     totalScore: number;
     completed: boolean;
     currentRound: number;
+    currentMicrobeInRound: number;
   };
 }
 
