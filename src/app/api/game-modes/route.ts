@@ -21,7 +21,11 @@ const POSTTEST_PERIODS: Array<{
 
 function parseConfigDate(value: string | undefined): Date | null {
   if (!value) return null
-  const d = new Date(value)
+  // Dates without an explicit timezone offset are interpreted as Asia/Bangkok (UTC+7)
+  const normalized = /[Zz]$|[+-]\d{2}:?\d{2}$/.test(value.trim())
+    ? value
+    : `${value}+07:00`
+  const d = new Date(normalized)
   return isNaN(d.getTime()) ? null : d
 }
 
@@ -74,12 +78,26 @@ export async function GET() {
     const activePeriod = activePeriodFromConfig(config, now)
 
     let posttestRequired = false
+    let posttest: {
+      period: PostTestPeriod
+      windowStart: string | null
+      windowEnd: string | null
+      submitted: boolean
+    } | null = null
+
     if (activePeriod) {
       const submission = await prisma.postTest.findUnique({
         where: { playerId_period: { playerId: player.id, period: activePeriod } },
         select: { id: true },
       })
       posttestRequired = !submission
+      const periodKey = activePeriod.toLowerCase()
+      posttest = {
+        period: activePeriod,
+        windowStart: config[`posttest_start_${periodKey}`] ?? null,
+        windowEnd: config[`posttest_end_${periodKey}`] ?? null,
+        submitted: !!submission,
+      }
     }
 
     return Response.json({
@@ -88,6 +106,7 @@ export async function GET() {
       fungi: modeStatus(parseConfigDate(config['fungi_unlock']), now),
       virus: modeStatus(parseConfigDate(config['virus_unlock']), now),
       posttestRequired,
+      posttest,
     })
   } catch (e) {
     if (e instanceof Response) return e
