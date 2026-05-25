@@ -10,12 +10,12 @@
 
 | Version | Date | Summary |
 |---|---|---|
-| 0.9 | 2026-05-18 | **Applied all 0.8 schema changes that were logged but never written to the schema:** `enum AnswerOption { A B C D }` added; `Microbe.answerImageUrl String` added; `Score.microbeId`/`answeredMicrobeId` now proper named `@relation` to `Microbe` (`"CorrectMicrobe"` / `"AnsweredMicrobe"`); `Score.gameMode` removed; `ClueCard.imageUrl` non-nullable; `PostTest.score Int @default(0)` non-nullable; `PostTestQuestion.correctOption AnswerOption`; `ApprovedStudentId` gains `registeredAt DateTime?` + 1-to-1 `Player?` back-relation; `Player` gains `approved ApprovedStudentId` FK (DB-enforces every player was whitelisted). **Over-engineering fixed:** `SessionMicrobe` and `PlayerMicrobeUnlocked` surrogate PKs removed — now use composite `@@id` (natural key). **Index added:** `Score.@@index([microbeId])` for admin per-microbe accuracy queries. |
-| 0.8 | 2026-05-18 | **Schema best-practice fixes (logged only — not applied until 0.9):** added `enum AnswerOption { A B C D }` for type-safe posttest answers; `Microbe.answerImageUrl String` added (required for Answer panel, End Screen, Pathogen Book); `Score.microbeId`/`answeredMicrobeId` now proper `@relation` to `Microbe` (was bare String — no referential integrity); `Score.gameMode` removed (redundant, derivable via session join); `ClueCard.imageUrl` is now non-nullable `String` (all cards are PNGs); `PostTest.score` is now non-nullable `Int @default(0)`; `PostTestQuestion.correctOption` now typed as `AnswerOption`; `ApprovedStudentId` gains `registeredAt DateTime?` and a 1-to-1 relation to `Player` (enforces that every registered player was whitelisted at DB level). |
+| 0.9 | 2026-05-18 | **Applied all 0.8 schema changes that were logged but never written to the schema:** `enum AnswerOption { A B C D }` added; `Microbe.answerImageUrl String` added; `Score.microbeId`/`answeredMicrobeId` now proper named `@relation` to `Microbe` (`"CorrectMicrobe"` / `"AnsweredMicrobe"`); `Score.gameMode` removed; `ClueCard.imageUrl` non-nullable; `PostTest.score Int @default(0)` non-nullable; `PostTestQuestion.correctOption AnswerOption`; `ApprovedUsername` gains `registeredAt DateTime?` + 1-to-1 `Player?` back-relation; `Player` gains `approved ApprovedUsername` FK (DB-enforces every player was whitelisted). **Over-engineering fixed:** `SessionMicrobe` and `PlayerMicrobeUnlocked` surrogate PKs removed — now use composite `@@id` (natural key). **Index added:** `Score.@@index([microbeId])` for admin per-microbe accuracy queries. |
+| 0.8 | 2026-05-18 | **Schema best-practice fixes (logged only — not applied until 0.9):** added `enum AnswerOption { A B C D }` for type-safe posttest answers; `Microbe.answerImageUrl String` added (required for Answer panel, End Screen, Pathogen Book); `Score.microbeId`/`answeredMicrobeId` now proper `@relation` to `Microbe` (was bare String — no referential integrity); `Score.gameMode` removed (redundant, derivable via session join); `ClueCard.imageUrl` is now non-nullable `String` (all cards are PNGs); `PostTest.score` is now non-nullable `Int @default(0)`; `PostTestQuestion.correctOption` now typed as `AnswerOption`; `ApprovedUsername` gains `registeredAt DateTime?` and a 1-to-1 relation to `Player` (enforces that every registered player was whitelisted at DB level). |
 | 0.7 | 2026-05-18 | **Session structure changed:** 5 rounds × 1 microbe = 5 total identifications to win (was 5 × 3 = 15). `MICROBES_PER_ROUND` is now 1. Max session score is now 500. All references updated. **Schema fixes:** `PlayerMicrobeSeen` renamed to `PlayerMicrobeUnlocked` (semantic clarity); `Json microbeIds` replaced with `SessionMicrobe` relation model (enforces no-duplicate microbes via DB constraint); `Score.microbeInRound` removed (always 1, redundant); `GameSession.currentMicrobeInRound` removed (same reason); `PostTestQuestion` model added so `/api/posttest` can compute scores server-side. |
 | 0.6 | 2026-05-17 | **Schema fixes:** removed redundant `Score.cardsOpened` (derive from `cardSlotsOpened.length`); replaced ad-hoc `Microbe.isAnaerobe` boolean with extensible `tags MicrobeTag[]`; `PostTest.period` is now a `PostTestPeriod` enum; clarified `GameSession.currentRound`/`currentMicrobeInRound` exist for server-side anti-cheat sequencing (not client resume). **API fixes:** added `POST /api/auth/signup` (was a spec hole vs §4.1); added §11 preamble defining response envelope and error format; specified `/reveal` and `/answer` request and response bodies; generalized `PUT /api/admin/deadline` to `PUT /api/admin/config/:key`; `/api/leaderboard` is now explicitly public. **New §10 Visual Design Direction:** tokens, type, color, motion, accessibility constraints. |
-| 0.5 | 2026-05-17 | Wrong-answer flow finalized (reveal all cards + correct answer → Next button). No auto-reveal — all 5 cards start hidden, player opens manually. Account creation: self-registration with Student_ID whitelist (CSV import). Leaderboard: masked Student_ID. Posttest: show score (X/30), no pass/fail gate. Pathogen Book: unlocks on correct answer only. Tutorial: YouTube embed. Session structure noted as scalable (5×N). PNG naming convention confirmed. |
-| 0.4 | 2026-05-17 | **Phaser.js removed — pure React/Next.js.** Google Sheets removed — Supabase only, CSV export. Login field changed to Student_ID (format 66XXXXXXX). Score formula finalized (100 max, card-based penalty only, no time factor). Session structure changed to 5 rounds × 3 microbes = 15 total. Leaderboard changed to top 5, equal rank for ties. Posttest changed to 30-question in-game web form, shuffled, locks game 2–3 days before exam. Card count changed to 600 (from 900). Focus on bacteria first. Admin dashboard marked optional. Sound: 1 min MP3 loop. Mobile: force landscape. No animations for v1. |
+| 0.5 | 2026-05-17 | Wrong-answer flow finalized (reveal all cards + correct answer → Next button). No auto-reveal — all 5 cards start hidden, player opens manually. Account creation: self-registration with username whitelist (CSV import). Leaderboard: username display. Posttest: show score (X/30), no pass/fail gate. Pathogen Book: unlocks on correct answer only. Tutorial: YouTube embed. Session structure noted as scalable (5×N). PNG naming convention confirmed. |
+| 0.4 | 2026-05-17 | **Phaser.js removed — pure React/Next.js.** Google Sheets removed — Supabase only, CSV export. Login field changed to username (1-10 chars). Score formula finalized (100 max, card-based penalty only, no time factor). Session structure changed to 5 rounds × 3 microbes = 15 total. Leaderboard changed to top 5, equal rank for ties. Posttest changed to 30-question in-game web form, shuffled, locks game 2–3 days before exam. Card count changed to 600 (from 900). Focus on bacteria first. Admin dashboard marked optional. Sound: 1 min MP3 loop. Mobile: force landscape. No animations for v1. |
 | 0.3 | 2026-05-15 | Removed REDCap. Auth switched to custom JWT + bcrypt. API redesigned to be server-authoritative. |
 | 0.2 | 2026-05 | Migrated stack to Next.js 14 + Phaser.js 3. |
 | 0.1 | — | Initial draft. |
@@ -82,8 +82,8 @@ An educational web-based card game for a research study on microbiology learning
 ## 3. Architecture Decisions
 
 ### ADR-1: Custom JWT + bcrypt, not Supabase Auth
-- **Context:** Login uses Student_ID (format: `66XXXXXXX`) and a short password. Supabase Auth requires email and enforces password minimums.
-- **Decision:** `/api/auth/login` validates `Player.passwordHash` (bcrypt) and issues a signed JWT (HS256, `JWT_SECRET` env var) stored in an `httpOnly`, `Secure`, `SameSite=Lax` cookie. JWT carries `{ playerId, studentId, iat, exp }`. Validated via `requireAuth()` on every protected route.
+- **Context:** Login uses a username (1-10 chars) and a short password. Supabase Auth requires email and enforces password minimums.
+- **Decision:** `/api/auth/login` validates `Player.passwordHash` (bcrypt) and issues a signed JWT (HS256, `JWT_SECRET` env var) stored in an `httpOnly`, `Secure`, `SameSite=Lax` cookie. JWT carries `{ playerId, username, iat, exp }`. Validated via `requireAuth()` on every protected route.
 
 ### ADR-2: Server is the source of truth for rounds (anti-cheat)
 - **Context:** Client-computed scores are trivially forgeable.
@@ -107,14 +107,14 @@ An educational web-based card game for a research study on microbiology learning
 
 ### 4.1 Sign-Up Flow (First Time)
 
-Students self-register inside the game. Only Student IDs that appear on the approved whitelist (imported from Google Form responses) are accepted.
+Students self-register inside the game. Only usernames that appear on the approved whitelist (imported from Google Form responses) are accepted.
 
 ```
-Research team exports approved Student IDs from Google Form
-  → Dev (or admin endpoint) imports CSV → creates ApprovedStudentId whitelist rows
+Research team exports approved usernames from Google Form
+  → Dev (or admin endpoint) imports CSV → creates ApprovedUsername whitelist rows
   → Student opens game → clicks "Sign Up"
-  → Enters Student ID → server checks ApprovedStudentId table
-      If not in whitelist → error: "Your Student ID is not registered.
+  → Enters username → server checks ApprovedUsername table
+      If not in whitelist → error: "Your username is not registered.
                                     Please complete the pre-test form first."
       If already registered → error: "Account already exists. Please log in."
       If approved + new → student sets a password (5–20 chars)
@@ -123,10 +123,10 @@ Research team exports approved Student IDs from Google Form
 
 ### 4.2 Login Flow (Returning Player)
 
-1. **Page 1 — Student ID**
-   - Input: Student ID in format `66XXXXXXX`
-   - Error if not found: _"Student ID not found."_
-   - On valid ID → Page 2
+1. **Page 1 — Username**
+   - Input: username (1-10 chars)
+   - Error if not found: _"Username not found."_
+   - On valid username → Page 2
 
 2. **Page 2 — Password**
    - Input: password (5–20 characters)
@@ -136,7 +136,7 @@ Research team exports approved Student IDs from Google Form
 
 ### 4.3 Whitelist Import
 
-Admin uploads a CSV of approved Student IDs via `POST /api/admin/import-students`. The CSV has one column: `student_id`. Duplicate imports are idempotent (upsert). This is the only way to add valid Student IDs — the game itself does not validate against Google Form directly.
+Admin uploads a CSV of approved usernames via `POST /api/admin/import-usernames`. The CSV has one column: `username`. Duplicate imports are idempotent (upsert). This is the only way to add valid usernames — the game itself does not validate against Google Form directly.
 
 ---
 
@@ -295,230 +295,6 @@ Cards in the answer panel are tagged with their filterable properties. These pro
 
 ---
 
-## 9. Prisma Schema
-
-```prisma
-// prisma/schema.prisma
-
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")        // Supabase pooler (pgbouncer)
-  directUrl = env("DIRECT_URL")          // direct connection for prisma migrate
-}
-
-generator client {
-  provider = "prisma-client-js"
-}
-
-enum GameMode {
-  BACTERIA
-  FUNGI
-  VIRUS
-  PARASITE
-}
-
-enum CardCategory {
-  GRAM_STAIN
-  VIRULENCE_FACTOR
-  LAB_CHARACTERISTIC
-  SPECIAL_TRAIT
-  CLINICAL_MANIFESTATION
-}
-
-enum GramType {
-  POSITIVE
-  NEGATIVE
-  ACID_FAST
-  NONE
-}
-
-// Filter tags for the Answer panel (multi-select stackable filters).
-// Extend this enum as the content team confirms additional taxonomy filters.
-enum MicrobeTag {
-  ANAEROBE
-  AEROBE
-  FACULTATIVE_ANAEROBE
-  SPORE_FORMER
-  ENCAPSULATED
-  INTRACELLULAR
-  // …more as confirmed (see §21 open questions)
-}
-
-enum PostTestPeriod {
-  MIDTERM
-  FINAL
-}
-
-enum AnswerOption {
-  A
-  B
-  C
-  D
-}
-
-model Player {
-  id               String                  @id @default(cuid())
-  studentId        String                  @unique               // e.g. "6612345678" — login field
-  passwordHash     String                                        // bcrypt
-  totalScore       Int                     @default(0)
-  gamesPlayed      Int                     @default(0)           // completed sessions only
-  createdAt        DateTime                @default(now())
-  approved         ApprovedStudentId       @relation(fields: [studentId], references: [studentId])
-  sessions         GameSession[]
-  scores           Score[]
-  postTests        PostTest[]
-  microbesUnlocked PlayerMicrobeUnlocked[]
-
-  @@index([totalScore(sort: Desc)])                             // leaderboard query
-}
-
-model GameSession {
-  id           String    @id @default(cuid())
-  player       Player    @relation(fields: [playerId], references: [id])
-  playerId     String
-  gameMode     GameMode
-  microbes     SessionMicrobe[]                            // 5 rows, one per round (ADR-2)
-  // Server-side progress cursor — used to validate that `/reveal` and `/answer`
-  // requests target the correct round in sequence (anti-cheat per ADR-2).
-  // NOT for client resume — §6.2 forbids cross-tab persistence.
-  currentRound Int       @default(1)                       // 1..5
-  totalScore   Int       @default(0)
-  totalTime    Int       @default(0)                       // seconds (admin tracking only)
-  heartsLeft   Int       @default(3)
-  completed    Boolean   @default(false)                   // true = all 5 microbes done
-  abandoned    Boolean   @default(false)                   // heart-out or drop-off; mutually exclusive with completed
-  // DB check constraint (add via raw SQL migration — Prisma has no @@check support):
-  // ALTER TABLE "GameSession" ADD CONSTRAINT chk_not_both_completed_abandoned
-  //   CHECK (NOT (completed = true AND abandoned = true));
-  startedAt    DateTime  @default(now())
-  completedAt  DateTime?
-  scores       Score[]
-
-  @@index([playerId, startedAt(sort: Desc)])
-  @@index([completed, completedAt])
-}
-
-model Score {
-  id                String      @id @default(cuid())
-  session           GameSession @relation(fields: [sessionId], references: [id])
-  sessionId         String
-  player            Player      @relation(fields: [playerId], references: [id])
-  playerId          String                                 // denormalized from session — avoids join on admin CSV export
-  roundNumber       Int                                    // 1..5
-  microbe           Microbe     @relation("CorrectMicrobe",  fields: [microbeId],         references: [id])
-  microbeId         String
-  answeredMicrobe   Microbe?    @relation("AnsweredMicrobe", fields: [answeredMicrobeId],  references: [id])
-  answeredMicrobeId String?                                // null if player abandoned mid-round
-  correct           Boolean     @default(false)
-  cardSlotsOpened   Json                                   // slot indices player revealed, e.g. [0,2]; cardsOpened = length
-  heartsLeft        Int
-  roundScore        Int                                    // server-computed
-  timeTaken         Int                                    // seconds (admin only)
-  createdAt         DateTime    @default(now())
-
-  @@unique([sessionId, roundNumber])
-  @@index([playerId, createdAt(sort: Desc)])
-  @@index([microbeId])                                     // admin per-microbe accuracy queries
-}
-
-model Microbe {
-  id               String                @id @default(cuid())
-  name             String                @unique                  // full Latin binomial, e.g. "Staphylococcus aureus"
-  shortName        String                                         // display short form, e.g. "S. aureus"
-  answerImageUrl   String                                         // Supabase Storage CDN URL — Answer panel, End Screen, Pathogen Book
-  gameMode         GameMode
-  gramType         GramType              @default(NONE)
-  tags             MicrobeTag[]                                   // Postgres native array; GIN-indexed below
-  starRating       Int                   @default(1)              // 1–3 difficulty (see §21 open question #6)
-  clueCards        ClueCard[]
-  playersUnlocked  PlayerMicrobeUnlocked[]
-  sessions         SessionMicrobe[]
-  correctInScores  Score[]               @relation("CorrectMicrobe")
-  answeredInScores Score[]               @relation("AnsweredMicrobe")
-
-  @@index([gameMode])
-  @@index([tags], type: Gin)
-}
-
-model ClueCard {
-  id        String       @id @default(cuid())
-  microbe   Microbe      @relation(fields: [microbeId], references: [id])
-  microbeId String
-  category  CardCategory
-  label     String
-  imageUrl  String                                        // Supabase Storage CDN URL
-  sortOrder Int          @default(0)
-
-  @@index([microbeId, category])
-}
-
-// Rows created ONLY on correct answer — wrong-answer encounters do NOT create a row.
-// Drives Pathogen Book unlock state; intentionally not a general "seen" log.
-model PlayerMicrobeUnlocked {
-  player          Player   @relation(fields: [playerId], references: [id])
-  playerId        String
-  microbe         Microbe  @relation(fields: [microbeId], references: [id])
-  microbeId       String
-  firstUnlockedAt DateTime @default(now())
-
-  @@id([playerId, microbeId])          // composite PK; Postgres indexes playerId as leading column — no extra index needed
-}
-
-// One row per round in a session. Replaces the old Json microbeIds field.
-// @@unique([sessionId, microbeId]) enforces no duplicate microbes within a session.
-model SessionMicrobe {
-  session     GameSession @relation(fields: [sessionId], references: [id])
-  sessionId   String
-  microbe     Microbe     @relation(fields: [microbeId], references: [id])
-  microbeId   String
-  roundNumber Int         // 1..5
-
-  @@id([sessionId, roundNumber])       // composite PK; Postgres indexes sessionId as leading column — no extra index needed
-  @@unique([sessionId, microbeId])     // no duplicate microbes in a session
-}
-
-// Rows created by admin CSV import only — no game-side creation.
-// player back-relation enforces DB-level FK: every Player.studentId must exist here.
-model ApprovedStudentId {
-  studentId    String    @id               // e.g. "6612345678"
-  importedAt   DateTime  @default(now())
-  registeredAt DateTime?                   // set at Player creation; null = not yet signed up
-  player       Player?
-}
-
-model PostTest {
-  id          String         @id @default(cuid())
-  player      Player         @relation(fields: [playerId], references: [id])
-  playerId    String
-  period      PostTestPeriod                                // MIDTERM | FINAL
-  answers     Json                                          // { [PostTestQuestion.id]: AnswerOption }
-  score       Int            @default(0)                   // 0–30; always set at submission
-  submittedAt DateTime       @default(now())
-
-  @@unique([playerId, period])          // one submission per player per period; unique constraint IS the index — no @@index needed
-}
-
-model PostTestQuestion {
-  id            String         @id @default(cuid())
-  period        PostTestPeriod                             // MIDTERM | FINAL
-  body          String                                     // question text
-  options       Json           // { A: "...", B: "...", C: "...", D: "..." }
-  correctOption AnswerOption                               // DB-enforced; not a raw string
-  sortOrder     Int            @default(0)                 // base order before shuffle
-
-  @@index([period])
-}
-
-model Config {
-  key   String @id
-  value String
-  // Keys: "posttest_start_midterm", "posttest_end_midterm",
-  //       "posttest_start_final", "posttest_end_final",
-  //       "parasite_unlock", "fungi_unlock", "virus_unlock"
-}
-```
-
----
 
 ## 10. Visual Design Direction
 
@@ -593,14 +369,14 @@ The **card reveal flip** is the emotional core. Use a 3D `rotateY` flip (~400ms,
 - Can show a simple splash screen with logo while assets load
 - If intro animation is delivered later, play it before the login page
 
-### Page 1 — Entry (Student ID)
+### Page 1 — Entry (Username)
 - Two tabs or toggle: **Log In** / **Sign Up**
-- Input: Student ID (format `66XXXXXXX`)
-- **Log In path:** check Student ID exists as a registered Player → Page 2 (password)
-- **Sign Up path:** check Student ID is in `ApprovedStudentId` whitelist and not yet registered → Page 2 (set password)
-- Error (Log In): _"Student ID not found."_
-- Error (Sign Up, not whitelisted): _"Your Student ID is not registered. Please complete the pre-test form first."_
-- Error (Sign Up, already registered): _"An account already exists for this Student ID. Please log in."_
+- Input: username (1-10 chars)
+- **Log In path:** check username exists as a registered Player → Page 2 (password)
+- **Sign Up path:** check username is in `ApprovedUsername` whitelist and not yet registered → Page 2 (set password)
+- Error (Log In): _"Username not found."_
+- Error (Sign Up, not whitelisted): _"Your username is not registered. Please complete the pre-test form first."_
+- Error (Sign Up, already registered): _"An account already exists for this username. Please log in."_
 
 ### Page 2 — Password
 - **Log In:** enter existing password → error: _"Incorrect password. Please try again."_
@@ -625,7 +401,7 @@ The **card reveal flip** is the emotional core. Use a 3D `rotateY` flip (~400ms,
 ### Page 6 — Leaderboard
 - Ranked by cumulative `totalScore` (descending)
 - **Top 5 players only**
-- Each row: `Rank | Student ID (masked, e.g. 66*****78) | Total Score | Games Completed`
+- Each row: `Rank | Username | Total Score | Games Completed`
 - Equal scores → equal rank (e.g., two players at 1500 are both Rank 1; next distinct score is Rank 3)
 - Time is **not** shown on leaderboard
 - No real-time updates required — fetch on page load is sufficient
@@ -680,7 +456,7 @@ All success responses use a flat shape — the resource is the response body. HT
 { "id": "abc", "totalScore": 1240, "gamesPlayed": 8 }
 
 // 200 OK — list (no pagination envelope needed; leaderboard is fixed at top 5)
-[{ "rank": 1, "studentId": "66*****78", "totalScore": 1500 }, …]
+[{ "rank": 1, "username": "player01", "totalScore": 1500 }, …]
 
 // 201 Created — includes Location header
 HTTP/1.1 201 Created
@@ -698,10 +474,10 @@ Every error response (4xx, 5xx) uses this shape. Never leak stack traces or SQL 
 ```jsonc
 {
   "error": {
-    "code": "student_id_not_whitelisted",
-    "message": "Your Student ID is not registered. Please complete the pre-test form first.",
+    "code": "username_not_whitelisted",
+    "message": "Your username is not registered. Please complete the pre-test form first.",
     "details": [                                        // optional, for validation errors
-      { "field": "studentId", "message": "Must match format 66XXXXXXX", "code": "invalid_format" }
+      { "field": "username", "message": "Must be 1-10 characters", "code": "invalid_format" }
     ]
   }
 }
@@ -721,8 +497,8 @@ Every error response (4xx, 5xx) uses this shape. Never leak stack traces or SQL 
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/api/auth/signup` | none | Body: `{ studentId, password }`. Validates `studentId` is in `ApprovedStudentId` and not yet a `Player`. bcrypt-hash password → create `Player` → set JWT cookie. Returns `201` with `{ id, studentId }`. |
-| POST | `/api/auth/login` | none | Body: `{ studentId, password }`. bcrypt-compare → set JWT cookie. Returns `200` with `{ id, studentId }`. |
+| POST | `/api/auth/signup` | none | Body: `{ username, password }`. Validates `username` is in `ApprovedUsername` and not yet a `Player`. bcrypt-hash password → create `Player` → set JWT cookie. Returns `201` with `{ id, username }`. |
+| POST | `/api/auth/login` | none | Body: `{ username, password }`. bcrypt-compare → set JWT cookie. Returns `200` with `{ id, username }`. |
 | POST | `/api/auth/logout` | required | Clear cookie. Returns `204`. |
 | GET | `/api/player/me` | required | Current player profile. |
 | POST | `/api/sessions` | required | Body: `{ gameMode }`. Server picks 5 distinct microbes (one per round) and creates `SessionMicrobe` rows. Returns `201` with `{ id, gameMode, heartsLeft, currentRound, slots: [{ index: 0..4, revealed: false }, …] }`. |
@@ -737,7 +513,7 @@ Every error response (4xx, 5xx) uses this shape. Never leak stack traces or SQL 
 | PUT | `/api/admin/config/:key` | admin bearer | Body: `{ value }`. Upserts a `Config` row. Used for posttest window dates, mode unlock dates, etc. |
 | GET | `/api/admin/export` | admin bearer | Query: `?format=csv` (default). CSV export of all sessions, scores, and posttests. |
 | GET | `/api/admin/dashboard` | admin bearer | Aggregate stats: active players, games played, time per microbe, accuracy. |
-| POST | `/api/admin/import-students` | admin bearer | Multipart upload of CSV with column `student_id`. Idempotent upsert into `ApprovedStudentId`. Returns `{ imported: N, skipped: M }`. |
+| POST | `/api/admin/import-usernames` | admin bearer | Multipart upload of CSV with column `username`. Idempotent upsert into `ApprovedUsername`. Returns `{ imported: N, skipped: M }`. |
 
 ### 12.5 CSRF Threat Model
 
@@ -811,7 +587,7 @@ The API checks `now() >= posttest_start AND now() <= posttest_end` on every game
 germix/
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx                            # Page 1: Student ID entry (login/signup toggle)
+│   │   ├── page.tsx                            # Page 1: Username entry (login/signup toggle)
 │   │   ├── login/
 │   │   │   └── password/page.tsx               # Page 2: Password (login or set password)
 │   │   ├── home/page.tsx                       # Page 3: Home
@@ -841,7 +617,7 @@ germix/
 │   │           ├── deadline/route.ts
 │   │           ├── export.csv/route.ts
 │   │           ├── dashboard/route.ts
-│   │           └── import-students/route.ts    # POST: upload Student_ID whitelist CSV
+│   │           └── import-usernames/route.ts   # POST: upload username whitelist CSV
 │   │
 │   ├── components/
 │   │   ├── game/
@@ -921,7 +697,7 @@ NEXT_PUBLIC_SENTRY_DSN=
 ## 19. Must Have vs. Nice to Have
 
 ### Must Have (MVP)
-- [x] Student_ID + password login (2-step)
+- [x] Username + password login (2-step)
 - [x] Bacteria game mode (5 rounds × 1 microbe = 5 total)
 - [x] Clue card reveal system (all 5 start hidden; player opens at cost; must open ≥1 before answering)
 - [x] Answer panel with drag-and-drop + filter bar

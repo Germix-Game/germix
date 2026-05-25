@@ -30,7 +30,18 @@ function forbidden(): never {
  *   try { const player = await requireAuth() }
  *   catch (e) { if (e instanceof Response) return e; throw e }
  */
+
+// bypassing authen for dev --remove this in production
 export async function requireAuth(): Promise<Player> {
+  if (process.env.NODE_ENV === 'development') {
+    const devId = process.env.DEV_PLAYER_ID ?? 'dev-00000000-0000-0000-0000-000000000001'
+    return prisma.player.upsert({
+      where: { id: devId },
+      update: {},
+      create: { id: devId, username: `dev-${devId.slice(-8)}` },
+    })
+  }
+
   const token = (await cookies()).get('token')?.value
   if (!token) unauthorized()
 
