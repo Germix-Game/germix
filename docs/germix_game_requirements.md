@@ -54,7 +54,7 @@ An educational web-based card game for a research study on microbiology learning
 | Runtime | Next.js API Route Handlers (TypeScript) | Co-located with frontend |
 | ORM | Prisma | Schema-first; pooled connection on Vercel |
 | Database | Supabase Postgres | Managed; PITR enabled during data collection |
-| Auth | Custom JWT + bcrypt | `jose` for signing, `bcryptjs` for hashing |
+| Auth | Supabase Auth + approved-username whitelist | Sessions managed by Supabase; `Player.id` is the auth UID |
 | Storage | Supabase Storage | 600 card PNGs (see §2.3 for rationale) |
 | Error tracking | Sentry | Client + server |
 
@@ -81,9 +81,9 @@ An educational web-based card game for a research study on microbiology learning
 
 ## 3. Architecture Decisions
 
-### ADR-1: Custom JWT + bcrypt, not Supabase Auth
-- **Context:** Login uses a username (1-10 chars) and a short password. Supabase Auth requires email and enforces password minimums.
-- **Decision:** `/api/auth/login` validates `Player.passwordHash` (bcrypt) and issues a signed JWT (HS256, `JWT_SECRET` env var) stored in an `httpOnly`, `Secure`, `SameSite=Lax` cookie. JWT carries `{ playerId, username, iat, exp }`. Validated via `requireAuth()` on every protected route.
+### ADR-1: Supabase Auth with approved-username whitelist
+- **Context:** The app needs username/password auth, but passwords should live in Supabase Auth rather than in the game database.
+- **Decision:** `/api/auth/signup` validates `username` against `ApprovedUsername`, creates the Supabase Auth user, then inserts `Player` with `id = Supabase Auth UID`. `/api/auth/login` signs the player in through Supabase Auth and the session is stored in Supabase-managed cookies. `requireAuth()` reads the Supabase session and loads `Player` by auth UID.
 
 ### ADR-2: Server is the source of truth for rounds (anti-cheat)
 - **Context:** Client-computed scores are trivially forgeable.
@@ -107,18 +107,18 @@ An educational web-based card game for a research study on microbiology learning
 
 ### 4.1 Sign-Up Flow (First Time)
 
-Students self-register inside the game. Only usernames that appear on the approved whitelist (imported from Google Form responses) are accepted.
+Students self-register inside the game. Only usernames that appear on the approved whitelist (imported from Google Form responses) are accepted, and the username is case sensitive.
 
 ```
 Research team exports approved usernames from Google Form
   → Dev (or admin endpoint) imports CSV → creates ApprovedUsername whitelist rows
   → Student opens game → clicks "Sign Up"
   → Enters username → server checks ApprovedUsername table
-      If not in whitelist → error: "Your username is not registered.
-                                    Please complete the pre-test form first."
-      If already registered → error: "Account already exists. Please log in."
-      If approved + new → student sets a password (5–20 chars)
-  → Player row created → JWT cookie set → Home page
+        If not in whitelist → error: "Your username is not registered.
+                      Please complete the pre-test form first."
+        If already registered → error: "Account already exists. Please log in."
+        If approved + new → student sets a password (6+ chars)
+      → Supabase Auth user created → Player row created → session cookie set → Home page
 ```
 
 ### 4.2 Login Flow (Returning Player)
@@ -130,13 +130,21 @@ Research team exports approved usernames from Google Form
 
 2. **Page 2 — Password**
    - Input: password (5–20 characters)
-   - `POST /api/auth/login` → bcrypt compare → JWT cookie
+  - `POST /api/auth/login` → Supabase Auth sign-in → session cookie
    - On success → Page 3 (Home)
    - Error if wrong: _"Incorrect password. Please try again."_
 
 ### 4.3 Whitelist Import
 
 Admin uploads a CSV of approved usernames via `POST /api/admin/import-usernames`. The CSV has one column: `username`. Duplicate imports are idempotent (upsert). This is the only way to add valid usernames — the game itself does not validate against Google Form directly.
+
+### 4.4 Frontend Contract
+
+- Signup body: `{ username, password }`
+- Login body: `{ username, password }`
+- `username` is case sensitive and must match the whitelist exactly
+- Backend returns `201`/`200` with `{ id, username }` on success
+- Error responses use the Section 12.3 envelope and the frontend should display `error.message` inline
 
 ---
 
@@ -380,8 +388,8 @@ The **card reveal flip** is the emotional core. Use a 3D `rotateY` flip (~400ms,
 
 ### Page 2 — Password
 - **Log In:** enter existing password → error: _"Incorrect password. Please try again."_
-- **Sign Up:** choose a password (5–20 characters) → account created
-- On success → server sets JWT cookie → Page 3
+- **Sign Up:** choose a password (6+ characters) → account created
+- On success → Supabase session is established → Page 3
 
 ### Page 3 — Home
 - Buttons: **Play**, **How to Play**, **Leaderboard**, **Pathogen Book**, **Credits & References**
@@ -441,9 +449,9 @@ The **card reveal flip** is the emotional core. Use a 3D `rotateY` flip (~400ms,
 ### 12.1 Auth Middleware
 
 All authenticated routes run through `requireAuth()`:
-1. Verify JWT cookie with `JWT_SECRET`
-2. Load `Player` by `playerId`
-3. Return `401` if invalid/expired
+1. Read the Supabase session from cookies
+2. Load `Player` by Supabase auth UID
+3. Return `401` if missing/invalid session or if the player row does not exist
 
 Routes marked `+ owner` additionally check that the resource belongs to the authenticated `playerId` and return `403` otherwise.
 
@@ -486,7 +494,7 @@ Every error response (4xx, 5xx) uses this shape. Never leak stack traces or SQL 
 | HTTP | Use |
 |---|---|
 | 400 | Malformed JSON, missing body |
-| 401 | Missing or invalid JWT |
+| 401 | Missing or invalid session |
 | 403 | Authenticated but not the resource owner / not admin |
 | 404 | Resource does not exist |
 | 409 | Conflict — e.g., card slot already revealed, account already exists |
@@ -497,9 +505,9 @@ Every error response (4xx, 5xx) uses this shape. Never leak stack traces or SQL 
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/api/auth/signup` | none | Body: `{ username, password }`. Validates `username` is in `ApprovedUsername` and not yet a `Player`. bcrypt-hash password → create `Player` → set JWT cookie. Returns `201` with `{ id, username }`. |
-| POST | `/api/auth/login` | none | Body: `{ username, password }`. bcrypt-compare → set JWT cookie. Returns `200` with `{ id, username }`. |
-| POST | `/api/auth/logout` | required | Clear cookie. Returns `204`. |
+| POST | `/api/auth/signup` | none | Body: `{ username, password }`. Validates `username` is in `ApprovedUsername` and not yet a `Player`. Creates Supabase Auth user, inserts `Player`, and starts a Supabase session. Returns `201` with `{ id, username }`. |
+| POST | `/api/auth/login` | none | Body: `{ username, password }`. Signs in through Supabase Auth and starts a Supabase session. Returns `200` with `{ id, username }`. |
+| POST | `/api/auth/logout` | required | Clears the Supabase session. Returns `204`. |
 | GET | `/api/player/me` | required | Current player profile. |
 | POST | `/api/sessions` | required | Body: `{ gameMode }`. Server picks 5 distinct microbes (one per round) and creates `SessionMicrobe` rows. Returns `201` with `{ id, gameMode, heartsLeft, currentRound, slots: [{ index: 0..4, revealed: false }, …] }`. |
 | GET | `/api/sessions/:id` | required + owner | Current session state (same shape as POST response). |
@@ -517,7 +525,7 @@ Every error response (4xx, 5xx) uses this shape. Never leak stack traces or SQL 
 
 ### 12.5 CSRF Threat Model
 
-JWT is stored in an `httpOnly`, `Secure`, `SameSite=Lax` cookie. `SameSite=Lax` blocks cross-site state-changing requests (POST/PUT/DELETE) — sufficient for this research-game threat model. No CSRF token middleware needed. **Trade-off accepted:** a malicious top-level form submission from another origin could trigger a state change, but the attack surface (mute toggle, abandon session) is not worth defending against for this audience.
+Supabase stores the auth session in `httpOnly`, `Secure`, `SameSite=Lax` cookies. `SameSite=Lax` blocks cross-site state-changing requests (POST/PUT/DELETE) — sufficient for this research-game threat model. No CSRF token middleware needed. **Trade-off accepted:** a malicious top-level form submission from another origin could trigger a state change, but the attack surface (mute toggle, abandon session) is not worth defending against for this audience.
 
 ---
 
@@ -680,11 +688,15 @@ DIRECT_URL=postgresql://...db.supabase.co:5432/postgres
 
 # Supabase Storage (for card image URLs)
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SERVICE_ROLE_KEY=                    # server-side only for storage admin
 
 # Auth
-JWT_SECRET=                                   # 32+ random bytes; rotate quarterly
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=                    # server-side only
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
 ADMIN_SECRET=                                 # bearer for /api/admin/*
 
 # Error tracking
