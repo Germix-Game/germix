@@ -52,7 +52,9 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
 
     const sessionMicrobe = await prisma.sessionMicrobe.findUnique({
       where: { sessionId_roundNumber: { sessionId: id, roundNumber: currentPosition } },
-      include: {
+      select: {
+        microbeId: true,
+        revealedSlots: true,
         microbe: { select: { id: true, name: true, shortName: true, answerImageUrl: true } },
       },
     })
