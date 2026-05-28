@@ -7,7 +7,8 @@
 // useState    → store reactive state (re-renders when changed)
 // useEffect   → run code after render (e.g., on mount, when deps change)
 // useCallback → memoize a function so it doesn't get recreated every render (perf optimization)
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, type RefObject } from "react";
+import { createAnimatable, spring } from "animejs";
 
 // Import game UI components from the components folder
 // The "@/..." path alias maps to "src/..." (configured in tsconfig.json)
@@ -99,11 +100,14 @@ export default function PlayPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);           // true while an answer fetch is in-flight (prevents double-submit)
 
   // ─── STATE: Answer panel (the microbe selection grid) ───────────
-  const [microbes, setMicrobes] = useState<Microbe[]>([]);                       // all microbes for this game mode
-  const [selectedMicrobeId, setSelectedMicrobeId] = useState<string | null>(null); // which microbe is currently selected
-  const [gramFilter, setGramFilter] = useState<GramType | null>(null);           // filter by gram type (or null for no filter)
-  const [tagFilters, setTagFilters] = useState<Set<MicrobeTag>>(new Set());      // multi-select tag filters (Set = no duplicates)
-  const [searchQuery, setSearchQuery] = useState("");                            // search input text
+  const [microbes, setMicrobes] = useState<Microbe[]>([]);
+  const [selectedMicrobeId, setSelectedMicrobeId] = useState<string | null>(null);
+  const [gramFilter, setGramFilter] = useState<GramType | null>(null);
+  const [tagFilters, setTagFilters] = useState<Set<MicrobeTag>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  const dropTargetRef = useRef<HTMLDivElement>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [pendingMicrobeId, setPendingMicrobeId] = useState<string | null>(null);
 
   // ─── STATE: Wrong-answer feedback ───────────────────────────────
   // After a wrong answer, we display the correct microbe here.
@@ -233,22 +237,27 @@ export default function PlayPage() {
   // Whether the player CAN currently submit an answer
   // All conditions must be true:
   const canAnswer =
-    phase === "playing" &&         // must be in playing phase
-    revealedCount > 0 &&            // must have revealed at least one clue
-    selectedMicrobeId !== null &&   // must have picked a microbe
-    !isSubmitting;                  // must not already be submitting
+    phase === "playing" &&
+    revealedCount > 0 &&
+    selectedMicrobeId !== null &&
+    !isSubmitting;
+
+  const canDropAnswer =
+    phase === "playing" &&
+    revealedCount > 0 &&
+    !isSubmitting;
 
   // The big handler for submitting an answer
-  const handleSubmitAnswer = useCallback(async () => {
-    // Guard: bail if nothing selected or already submitting (prevents double-submit)
-    if (!selectedMicrobeId || isSubmitting) return;
+  const handleSubmitAnswer = useCallback(async (overrideMicrobeId?: string) => {
+    const answerId = overrideMicrobeId ?? selectedMicrobeId;
+    if (!answerId || isSubmitting) return;
     setIsSubmitting(true);
 
     try {
       // ─── DEMO MODE answer logic ───────────────────────────────────
       if (isDemo) {
         // Hardcoded: "Staphylococcus aureus" (id "1") is the right answer
-        const correct = selectedMicrobeId === "1";
+        const correct = answerId === "1";
 
         // Scoring: start at 100, lose 20 per extra revealed card (more clues = lower score)
         // Math.max(0, ...) → never go below 0
@@ -290,7 +299,7 @@ export default function PlayPage() {
       const res = await fetch(`/api/sessions/${sessionId}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answeredMicrobeId: selectedMicrobeId }),
+        body: JSON.stringify({ answeredMicrobeId: answerId }),
       });
       if (!res.ok) return;
       // Server tells us if the answer was correct, the score, etc.
@@ -327,9 +336,10 @@ export default function PlayPage() {
 
   // Reset round-specific state (called when starting a new round)
   function resetRound() {
-    setSlots([...EMPTY_SLOTS]);     // fresh copy of empty slots (`...` spreads array)
+    setSlots([...EMPTY_SLOTS]);
     setSelectedMicrobeId(null);
     setCorrectMicrobe(null);
+    setPendingMicrobeId(null);
   }
 
   // Called when player clicks "Next Microbe" after a wrong answer
@@ -400,30 +410,6 @@ export default function PlayPage() {
     );
   }
 
-  // ─── END SCREEN ─────────────────────────────────────────────
-  if (phase === "end") {
-    return (
-      // Delegated to the <EndScreen> subcomponent defined below
-      // `onPlayAgain` is a callback prop — child calls it when player clicks the button
-      <EndScreen
-        won={won}
-        results={roundResults}
-        score={score}
-        onPlayAgain={() => {
-          if (isDemo) {
-            // Demo: just reset everything in-place
-            setRound(1); setScore(0); setHeartsLeft(3);
-            setRoundResults([]); setWon(false);
-            resetRound();
-            setPhase("playing");
-          } else {
-            // Real mode: go back to game mode selection
-            window.location.href = "/game-mode";
-          }
-        }}
-      />
-    );
-  }
 
   // ─── MAIN GAME SCREEN (phase === "playing" or "wrong") ──────
   return (
@@ -477,12 +463,24 @@ export default function PlayPage() {
         <div className="flex items-center gap-3">
           <HeartsBar heartsLeft={heartsLeft} vertical />
           <CardGrid
-            slots={slots}                          // current state of all 5 slots
-            onReveal={handleReveal}                // called when a card is clicked
-            locked={phase !== "playing"}           // cards become unclickable outside "playing"
-            canAnswer={canAnswer}                  // is the answer button enabled?
-            isSubmitting={isSubmitting}            // show loading state on answer button
-            onAnswer={handleSubmitAnswer}          // called when answer button is clicked
+            slots={slots}
+            onReveal={handleReveal}
+            locked={phase !== "playing"}
+            canAnswer={canAnswer}
+            isSubmitting={isSubmitting}
+            onAnswer={handleSubmitAnswer}
+            dropTargetRef={dropTargetRef}
+            isDraggingOver={isDraggingOver}
+            pendingMicrobeName={
+              pendingMicrobeId
+                ? (microbes.find((m) => m.id === pendingMicrobeId)?.shortName ?? null)
+                : null
+            }
+            onConfirm={() => {
+              if (pendingMicrobeId) void handleSubmitAnswer(pendingMicrobeId);
+              setPendingMicrobeId(null);
+            }}
+            onCancelPending={() => setPendingMicrobeId(null)}
           />
         </div>
 
@@ -601,49 +599,220 @@ export default function PlayPage() {
             </p>
           ) : (
             // Responsive grid: 4 columns on mobile, more on larger screens
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3">
-              {filteredMicrobes.map((microbe) => {
-                const selected = selectedMicrobeId === microbe.id;
-                return (
-                  <button
-                    key={microbe.id}
-                    role="option"
-                    aria-selected={selected}
-                    onClick={() =>
-                      // Toggle behavior: click selected one again → deselect
-                      setSelectedMicrobeId((prev) =>
-                        prev === microbe.id ? null : microbe.id,
-                      )
-                    }
-                    // Template literal with conditional class string
-                    // Selected microbe gets a darker border + bg; unselected get hover styles
-                    className={`flex flex-col items-center gap-1 rounded-xl border-2 p-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-[#5c2a0e] focus-visible:ring-offset-1 ${
-                      selected
-                        ? "border-[#5c2a0e] bg-[#5c2a0e]/15 shadow-sm"
-                        : "border-transparent bg-white/40 hover:bg-white/70 hover:border-[#c4a870]"
-                    }`}
-                  >
-                    <MicrobeThumb microbe={microbe} size="sm" />
-                    {/* line-clamp-2 → truncate to 2 lines with ellipsis */}
-                    <span className="w-full text-center text-[0.65rem] leading-tight italic text-[#3a2010] line-clamp-2">
-                      {microbe.shortName}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
+              {filteredMicrobes.map((microbe) => (
+                <DraggableMicrobeCard
+                  key={microbe.id}
+                  microbe={microbe}
+                  selected={selectedMicrobeId === microbe.id}
+                  dropTargetRef={dropTargetRef}
+                  canDrop={canDropAnswer}
+                  onDrop={(id) => { setPendingMicrobeId(id); }}
+                  onDragStateChange={setIsDraggingOver}
+                />
+              ))}
             </div>
           )}
         </div>
 
-        {/* SELECTED-MICROBE STRIP — only shows when something is selected */}
-        {selectedMicrobeId && (
-          <SelectedMicrobeBar
-            // .find() returns first match or undefined → fallback to null for type safety
-            microbe={microbes.find((m) => m.id === selectedMicrobeId) ?? null}
-            onClear={() => setSelectedMicrobeId(null)}
+      </div>
+
+      {phase === "end" && (
+        <EndScreen
+          won={won}
+          results={roundResults}
+          score={score}
+          onPlayAgain={() => {
+            if (isDemo) {
+              setRound(1); setScore(0); setHeartsLeft(3);
+              setRoundResults([]); setWon(false);
+              resetRound();
+              setPhase("playing");
+            } else {
+              window.location.href = "/game-mode";
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── draggable microbe card ───────────────────────────────────────────────────
+
+function DraggableMicrobeCard({
+  microbe,
+  selected,
+  dropTargetRef,
+  canDrop,
+  onDrop,
+  onDragStateChange,
+}: {
+  microbe: Microbe;
+  selected: boolean;
+  dropTargetRef: RefObject<HTMLDivElement | null>;
+  canDrop: boolean;
+  onDrop: (id: string) => void;
+  onDragStateChange: (isOver: boolean) => void;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const canDropRef = useRef(canDrop);
+  const onDropRef = useRef(onDrop);
+  const onDragStateChangeRef = useRef(onDragStateChange);
+
+  useEffect(() => { canDropRef.current = canDrop; }, [canDrop]);
+  useEffect(() => { onDropRef.current = onDrop; }, [onDrop]);
+  useEffect(() => { onDragStateChangeRef.current = onDragStateChange; }, [onDragStateChange]);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+
+    const releaseSpring = spring({ stiffness: 350, damping: 25 });
+
+    let ghost: HTMLElement | null = null;
+    let ghostAnim: ReturnType<typeof createAnimatable> | null = null;
+    let startPX = 0;
+    let startPY = 0;
+
+    const isPointerOverTarget = (cx: number, cy: number) => {
+      const drop = dropTargetRef.current;
+      if (!drop) return false;
+      const r = drop.getBoundingClientRect();
+      return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+    };
+
+    // Attached to document on drag start so the pointer can move freely over
+    // any element (including the scroll container) without losing events.
+    const onPointerMove = (e: PointerEvent) => {
+      if (!ghostAnim) return;
+      ghostAnim.translateX(e.clientX - startPX);
+      ghostAnim.translateY(e.clientY - startPY);
+      if (canDropRef.current) {
+        onDragStateChangeRef.current(isPointerOverTarget(e.clientX, e.clientY));
+      }
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerup", onPointerUp);
+      document.removeEventListener("pointercancel", onPointerUp);
+
+      if (!ghost || !ghostAnim) return;
+      const capturedGhost = ghost;
+      const capturedAnim = ghostAnim;
+      ghost = null;
+      ghostAnim = null;
+
+      el.style.opacity = "";
+
+      const dropped = canDropRef.current && isPointerOverTarget(e.clientX, e.clientY);
+      if (dropped) onDropRef.current(microbe.id);
+      onDragStateChangeRef.current(false);
+
+      if (dropped) {
+        // Successful drop — just remove the ghost immediately
+        capturedGhost.remove();
+      } else {
+        // Missed drop — spring back to origin
+        capturedAnim.translateX(0, releaseSpring.settlingDuration, releaseSpring);
+        capturedAnim.translateY(0, releaseSpring.settlingDuration, releaseSpring);
+        capturedAnim.scale(1, 200, "outQuad");
+        setTimeout(() => capturedGhost.remove(), releaseSpring.settlingDuration + 50);
+      }
+    };
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+
+      const rect = el.getBoundingClientRect();
+      startPX = e.clientX;
+      startPY = e.clientY;
+
+      ghost = el.cloneNode(true) as HTMLElement;
+      Object.assign(ghost.style, {
+        position: "fixed",
+        left: `${rect.left}px`,
+        top: `${rect.top}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`,
+        margin: "0",
+        pointerEvents: "none",
+        zIndex: "9999",
+      });
+      document.body.appendChild(ghost);
+
+      ghostAnim = createAnimatable(ghost, {
+        translateX: { duration: 0 },
+        translateY: { duration: 0 },
+        scale: { ease: "outQuad", duration: 100 },
+      });
+      ghostAnim.scale(1.12);
+
+      el.style.opacity = "0.3";
+
+      // Register move/up on document so any element the pointer passes over
+      // cannot intercept or lose the events
+      document.addEventListener("pointermove", onPointerMove);
+      document.addEventListener("pointerup", onPointerUp);
+      document.addEventListener("pointercancel", onPointerUp);
+    };
+
+    el.addEventListener("pointerdown", onPointerDown);
+
+    return () => {
+      el.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerup", onPointerUp);
+      document.removeEventListener("pointercancel", onPointerUp);
+      ghost?.remove();
+    };
+  }, [microbe.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const src = microbe.answerImageUrl ?? "";
+  const label = microbe.shortName ?? microbe.name ?? "";
+
+  return (
+    <div
+      ref={cardRef}
+      role="option"
+      aria-selected={selected}
+      style={{ touchAction: "none", aspectRatio: "3/4" }}
+      className={`cursor-grab relative w-full overflow-hidden rounded-xl border-2 transition-colors ${
+        selected
+          ? "border-[#5c2a0e] shadow-sm"
+          : "border-transparent hover:border-[#c4a870]"
+      }`}
+    >
+      {/* Card face — image fills the whole card */}
+      <div className="absolute inset-0 bg-[#e0c890] flex items-center justify-center">
+        <span className="px-1 text-center text-[0.5rem] font-medium italic leading-tight text-[#5c2a0e]">
+          {label}
+        </span>
+        {src && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={src}
+            alt={label}
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
           />
         )}
       </div>
+
+      {/* Name strip at the bottom */}
+      <div className="absolute bottom-0 inset-x-0 bg-[#2a1208]/70 px-1 py-0.5">
+        <span className="block w-full text-center text-[0.5rem] leading-tight italic text-[#f5e6c8] line-clamp-2">
+          {label}
+        </span>
+      </div>
+
+      {/* Selection highlight overlay */}
+      {selected && (
+        <div className="absolute inset-0 rounded-xl ring-2 ring-inset ring-[#5c2a0e] bg-[#5c2a0e]/10" />
+      )}
     </div>
   );
 }
@@ -704,36 +873,9 @@ function MicrobeThumb({
   );
 }
 
-// SUB-COMPONENT: the "selected microbe" bar shown at the bottom of the parchment area
-function SelectedMicrobeBar({
-  microbe,
-  onClear,
-}: {
-  microbe: Microbe | null;
-  onClear: () => void;            // callback type: takes nothing, returns nothing
-}) {
-  if (!microbe) return null;       // early return — render nothing if no microbe
-  return (
-    <div className="flex items-center gap-3 border-t border-[#c4a870] bg-[#e8cd94] px-6 py-2.5 flex-shrink-0">
-      <MicrobeThumb microbe={microbe} size="lg" />
-      {/* truncate → text-overflow:ellipsis on overflow */}
-      <span className="flex-1 min-w-0 italic text-sm text-[#3a2010] truncate">
-        {microbe.name}
-      </span>
-      <button
-        onClick={onClear}
-        className="text-[#9a7850] hover:text-[#5c2a0e] text-lg leading-none"
-        aria-label="Clear selection"
-      >
-        ×
-      </button>
-    </div>
-  );
-}
 
 // ─── end screen ───────────────────────────────────────────────────────────────
 
-// SUB-COMPONENT: the post-game summary screen shown when phase === "end"
 function EndScreen({
   won,
   results,
@@ -746,36 +888,32 @@ function EndScreen({
   onPlayAgain: () => void;
 }) {
   return (
-    <div className="flex h-screen w-screen flex-col bg-[#5c2a0e] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="flex flex-col w-full max-w-2xl max-h-[85vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
 
-      {/* HEADER: title (Win/Lose) + final score + Play Again button */}
-      <div className="flex items-center justify-between px-8 py-5 flex-shrink-0">
-        <div>
-          <h1 className="text-2xl font-bold text-[#d4a96a]">
-            {/* Inline ternary in JSX */}
-            {won ? "You Win!" : "Game Over"}
-          </h1>
-          {/* tabular-nums → fixed-width digits so numbers don't jitter when they change */}
-          <p className="font-mono text-[#f5e6c8] text-lg tabular-nums mt-0.5">
-            {/* String(123).padStart(4, "0") → "0123" — pad with leading zeros to 4 digits */}
-            Final score: {String(score).padStart(4, "0")}
-          </p>
+        <div className="flex items-center justify-between px-8 py-5 flex-shrink-0 border-b border-[#c4a870]">
+          <div>
+            <h1 className="text-2xl font-bold text-[#5c2a0e]">
+              {won ? "You Win!" : "Game Over"}
+            </h1>
+            <p className="font-mono text-[#3a2010] text-lg tabular-nums mt-0.5">
+              Final score: {String(score).padStart(4, "0")}
+            </p>
+          </div>
+          <button
+            onClick={onPlayAgain}
+            className="rounded-lg bg-[#d4a96a] px-6 py-2.5 font-semibold text-[#2a1208] hover:bg-[#e0b87a] transition-colors"
+          >
+            Play Again
+          </button>
         </div>
-        <button
-          onClick={onPlayAgain}
-          className="rounded-lg bg-[#d4a96a] px-6 py-2.5 font-semibold text-[#2a1208] hover:bg-[#e0b87a] transition-colors"
-        >
-          Play Again
-        </button>
-      </div>
 
-      {/* SCROLLABLE LIST of round recaps */}
-      {/* space-y-4 → vertical gap between siblings */}
-      <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-4">
-        {results.map((result) => (
-          // Each round gets a row — key={roundNumber} for React's diffing
-          <RoundReviewRow key={result.roundNumber} result={result} />
-        ))}
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
+          {results.map((result) => (
+            <RoundReviewRow key={result.roundNumber} result={result} />
+          ))}
+        </div>
+
       </div>
     </div>
   );
@@ -784,27 +922,23 @@ function EndScreen({
 // SUB-COMPONENT: one row in the end-screen recap (shows revealed cards + correct microbe per round)
 function RoundReviewRow({ result }: { result: RoundResult }) {
   return (
-    <div className="rounded-xl border border-[#6b3520] bg-[#3d1a0a]/60 p-4">
+    <div className="rounded-xl border border-[#c4a870] bg-[#e8cd94] p-4">
 
-      {/* Round label + result pill (green if correct, red if wrong) */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-[#d4a96a] text-sm font-medium">Round {result.roundNumber}</span>
+        <span className="text-[#5c2a0e] text-sm font-medium">Round {result.roundNumber}</span>
         <span
           className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
             result.correct
-              ? "bg-green-800/40 text-green-300"
-              : "bg-red-800/40 text-red-300"
+              ? "bg-green-600/20 text-green-800"
+              : "bg-red-600/20 text-red-800"
           }`}
         >
-          {/* Template literal: show "+score" if correct, "Wrong" otherwise */}
           {result.correct ? `+${result.roundScore}` : "Wrong"}
         </span>
       </div>
 
-      {/* CARDS ROW: opened clue cards + correct microbe answer */}
       <div className="flex items-start gap-3">
         <div className="flex gap-1.5">
-          {/* Loop over all 5 slots — show the clue if revealed, else a blank back */}
           {result.openedSlots.map((slot) => (
             <div
               key={slot.index}
@@ -813,15 +947,14 @@ function RoundReviewRow({ result }: { result: RoundResult }) {
               {slot.revealed && slot.card ? (
                 <ClueCardThumb card={slot.card} />
               ) : (
-                <div className="h-full w-full rounded bg-[#4a2210] border border-[#6b3520]" />
+                <div className="h-full w-full rounded bg-[#c4a870] border border-[#b09060]" />
               )}
             </div>
           ))}
         </div>
-        {/* Correct microbe shown to the right of the clue row */}
         <div className="flex items-center gap-2.5 ml-2">
           <MicrobeThumb microbe={result.correctMicrobe} size="lg" />
-          <span className="italic text-sm text-[#f5e6c8]">{result.correctMicrobe.name}</span>
+          <span className="italic text-sm text-[#3a2010]">{result.correctMicrobe.name}</span>
         </div>
       </div>
     </div>

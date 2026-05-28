@@ -50,33 +50,16 @@ export function HeartsBar({ heartsLeft, vertical }: HeartsBarProps) {
   );
 }
 
-/* Placeholder SVG heart — replace with PNG sprites (see IMAGE SLOT E above) */
 function PixelHeart({ filled }: { filled: boolean }) {
-  // 7×6 pixel grid:
-  //   . X X . X X .
-  //   X X X X X X X
-  //   X X X X X X X
-  //   . X X X X X .
-  //   . . X X X . .
-  //   . . . X . . .
-  const fill = filled ? "#8b3333" : "#2a1515";
-  const highlight = "#c45555";
-
   return (
-    <svg
-      width="28"
-      height="24"
-      viewBox="0 0 7 6"
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={filled ? "/asset/ui/heart-alive.png" : "/asset/ui/heart-dead.png"}
+      alt=""
+      width={56}
+      height={48}
       style={{ imageRendering: "pixelated" }}
       aria-hidden="true"
-    >
-      <rect x="1" y="0" width="2" height="1" fill={fill} />
-      <rect x="4" y="0" width="2" height="1" fill={fill} />
-      <rect x="0" y="1" width="7" height="2" fill={fill} />
-      <rect x="1" y="3" width="5" height="1" fill={fill} />
-      <rect x="2" y="4" width="3" height="1" fill={fill} />
-      <rect x="3" y="5" width="1" height="1" fill={fill} />
-      {filled && <rect x="1" y="1" width="1" height="1" fill={highlight} />}
-    </svg>
+    />
   );
 }
