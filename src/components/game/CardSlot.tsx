@@ -30,7 +30,6 @@ export function CardSlot({ index, revealed, card, onReveal, disabled }: CardSlot
     const rotY = (x - 0.5) * 24;
     el.style.transform = `perspective(700px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.08,1.08,1.08)`;
     el.style.transition = "transform 60ms linear";
-    el.style.animationPlayState = "paused";
     if (shineRef.current) {
       shineRef.current.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(255,255,200,0.28) 0%, transparent 65%)`;
       shineRef.current.style.opacity = "1";
@@ -47,7 +46,6 @@ export function CardSlot({ index, revealed, card, onReveal, disabled }: CardSlot
       if (tiltRef.current) {
         tiltRef.current.style.transform = "";
         tiltRef.current.style.transition = "";
-        tiltRef.current.style.animationPlayState = "";
       }
       leaveTimer.current = null;
     }, 450);
@@ -57,7 +55,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled }: CardSlot
     <div
       ref={tiltRef}
       className="card-tilt w-full"
-      style={{ aspectRatio: "1429 / 2000", animationDelay: `${index * -0.65}s` }}
+      style={{ aspectRatio: "1429 / 2000" }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >

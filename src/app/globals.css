@@ -188,12 +188,7 @@
   animation: heart-flash 800ms steps(1, end) both;
 }
 
-/* ─── Card float + tilt (Balatro-style) ─────────────────────── */
-@keyframes card-float {
-  0%, 100% { transform: translateY(0px) rotate(-0.8deg); }
-  50%       { transform: translateY(-9px) rotate(0.8deg); }
-}
-
+/* ─── Card tilt (Balatro-style) ─────────────────────────────── */
 .card-tilt {
   position: relative;
   transform-style: preserve-3d;

@@ -801,7 +801,6 @@ function DraggableMicrobeCard({
     const y = (e.clientY - rect.top) / rect.height;
     el.style.transform = `perspective(500px) rotateX(${(0.5 - y) * 20}deg) rotateY(${(x - 0.5) * 20}deg) scale3d(1.1,1.1,1.1)`;
     el.style.transition = "transform 60ms linear";
-    el.style.animationPlayState = "paused";
     if (shineRef.current) {
       shineRef.current.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(255,255,200,0.3) 0%, transparent 65%)`;
       shineRef.current.style.opacity = "1";
@@ -818,7 +817,6 @@ function DraggableMicrobeCard({
       if (tiltRef.current) {
         tiltRef.current.style.transform = "";
         tiltRef.current.style.transition = "";
-        tiltRef.current.style.animationPlayState = "";
       }
       leaveTimer.current = null;
     }, 450);
@@ -947,7 +945,7 @@ function DraggableMicrobeCard({
     <div
       ref={tiltRef}
       className="card-tilt w-full"
-      style={{ aspectRatio: "3/4", animationDelay: `${index * -0.55}s` }}
+      style={{ aspectRatio: "3/4" }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
