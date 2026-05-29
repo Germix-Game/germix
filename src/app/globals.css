@@ -157,3 +157,21 @@
 .card-face-front {
   transform: rotateY(180deg);
 }
+
+/* ─── Main menu animations ──────────────────────────────────── */
+@keyframes card-float-sm {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes card-float-md {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-9px); }
+}
+@keyframes card-float-lg {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-11px); }
+}
+@keyframes menu-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

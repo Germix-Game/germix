@@ -391,7 +391,7 @@ export default function PlayPage() {
         <p className="text-[#f5e6c8] text-lg">No active session found.</p>
         {/* <a href> here does a FULL page navigation. Use <Link> from "next/link" for client-side nav (faster). */}
         <a
-          href="/game-mode"
+          href="/select"
           className="rounded-lg bg-[#d4a96a] px-6 py-2.5 font-semibold text-[#2a1208] hover:bg-[#e0b87a] transition-colors"
         >
           Start a new game
@@ -418,7 +418,7 @@ export default function PlayPage() {
             setPhase("playing");
           } else {
             // Real mode: go back to game mode selection
-            window.location.href = "/game-mode";
+            window.location.href = "/select";
           }
         }}
       />

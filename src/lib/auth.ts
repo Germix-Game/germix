@@ -35,10 +35,16 @@ function forbidden(): never {
 export async function requireAuth(): Promise<Player> {
   if (process.env.NODE_ENV === 'development') {
     const devId = process.env.DEV_PLAYER_ID ?? 'dev-00000000-0000-0000-0000-000000000001'
+    const devUsername = `dev-${devId.slice(-8)}`
+    await prisma.approvedUsername.upsert({
+      where: { username: devUsername },
+      update: {},
+      create: { username: devUsername },
+    })
     return prisma.player.upsert({
       where: { id: devId },
       update: {},
-      create: { id: devId, username: `dev-${devId.slice(-8)}` },
+      create: { id: devId, username: devUsername },
     })
   }
 
