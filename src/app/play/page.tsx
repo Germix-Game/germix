@@ -344,7 +344,6 @@ export default function PlayPage() {
 
   // Called when player clicks "Next Microbe" after a wrong answer
   function handleNext() {
-    setRound((r) => r + 1);
     resetRound();
     setPhase("playing");
   }
@@ -600,9 +599,10 @@ export default function PlayPage() {
           ) : (
             // Responsive grid: 4 columns on mobile, more on larger screens
             <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
-              {filteredMicrobes.map((microbe) => (
+              {filteredMicrobes.map((microbe, i) => (
                 <DraggableMicrobeCard
                   key={microbe.id}
+                  index={i}
                   microbe={microbe}
                   selected={selectedMicrobeId === microbe.id}
                   dropTargetRef={dropTargetRef}
@@ -647,6 +647,7 @@ function DraggableMicrobeCard({
   canDrop,
   onDrop,
   onDragStateChange,
+  index,
 }: {
   microbe: Microbe;
   selected: boolean;
@@ -654,8 +655,44 @@ function DraggableMicrobeCard({
   canDrop: boolean;
   onDrop: (id: string) => void;
   onDragStateChange: (isOver: boolean) => void;
+  index: number;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const tiltRef = useRef<HTMLDivElement>(null);
+  const shineRef = useRef<HTMLDivElement>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    if (leaveTimer.current) { clearTimeout(leaveTimer.current); leaveTimer.current = null; }
+    const el = tiltRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    el.style.transform = `perspective(500px) rotateX(${(0.5 - y) * 20}deg) rotateY(${(x - 0.5) * 20}deg) scale3d(1.1,1.1,1.1)`;
+    el.style.transition = "transform 60ms linear";
+    el.style.animationPlayState = "paused";
+    if (shineRef.current) {
+      shineRef.current.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(255,255,200,0.3) 0%, transparent 65%)`;
+      shineRef.current.style.opacity = "1";
+    }
+  }
+
+  function handleMouseLeave() {
+    const el = tiltRef.current;
+    if (!el) return;
+    el.style.transition = "transform 450ms ease-out";
+    el.style.transform = "perspective(500px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
+    if (shineRef.current) shineRef.current.style.opacity = "0";
+    leaveTimer.current = setTimeout(() => {
+      if (tiltRef.current) {
+        tiltRef.current.style.transform = "";
+        tiltRef.current.style.transition = "";
+        tiltRef.current.style.animationPlayState = "";
+      }
+      leaveTimer.current = null;
+    }, 450);
+  }
   const canDropRef = useRef(canDrop);
   const onDropRef = useRef(onDrop);
   const onDragStateChangeRef = useRef(onDragStateChange);
@@ -775,11 +812,19 @@ function DraggableMicrobeCard({
 
   return (
     <div
+      ref={tiltRef}
+      className="card-tilt w-full"
+      style={{ aspectRatio: "3/4", animationDelay: `${index * -0.55}s` }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div ref={shineRef} className="card-shine" aria-hidden />
+    <div
       ref={cardRef}
       role="option"
       aria-selected={selected}
-      style={{ touchAction: "none", aspectRatio: "3/4" }}
-      className={`cursor-grab relative w-full overflow-hidden rounded-xl border-2 transition-colors ${
+      style={{ touchAction: "none", width: "100%", height: "100%" }}
+      className={`cursor-grab relative overflow-hidden rounded-xl border-2 transition-colors ${
         selected
           ? "border-[#5c2a0e] shadow-sm"
           : "border-transparent hover:border-[#c4a870]"
@@ -813,6 +858,7 @@ function DraggableMicrobeCard({
       {selected && (
         <div className="absolute inset-0 rounded-xl ring-2 ring-inset ring-[#5c2a0e] bg-[#5c2a0e]/10" />
       )}
+    </div>
     </div>
   );
 }
@@ -887,27 +933,48 @@ function EndScreen({
   score: number;
   onPlayAgain: () => void;
 }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="flex flex-col w-full max-w-2xl max-h-[85vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
+  const [displayScore, setDisplayScore] = useState(0);
 
+  useEffect(() => {
+    let raf: number;
+    const DELAY = 650;
+    const DURATION = 1000;
+    const start = Date.now();
+
+    const tick = () => {
+      const t = Math.min((Date.now() - start) / DURATION, 1);
+      const eased = 1 - (1 - t) * (1 - t); // ease-out quad
+      setDisplayScore(Math.round(eased * score));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+
+    const timeout = setTimeout(() => { raf = requestAnimationFrame(tick); }, DELAY);
+    return () => { clearTimeout(timeout); cancelAnimationFrame(raf); };
+  }, [score]);
+
+  return (
+    <div className="end-screen-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="end-screen-panel flex flex-col w-full max-w-2xl max-h-[85vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
+
+        {/* ── Title + score ─────────────────────────────────────── */}
         <div className="flex items-center justify-between px-8 py-5 flex-shrink-0 border-b border-[#c4a870]">
           <div>
             <h1 className="text-2xl font-bold text-[#5c2a0e]">
               {won ? "You Win!" : "Game Over"}
             </h1>
             <p className="font-mono text-[#3a2010] text-lg tabular-nums mt-0.5">
-              Final score: {String(score).padStart(4, "0")}
+              Final score: {String(displayScore).padStart(4, "0")}
             </p>
           </div>
           <button
             onClick={onPlayAgain}
-            className="rounded-lg bg-[#d4a96a] px-6 py-2.5 font-semibold text-[#2a1208] hover:bg-[#e0b87a] transition-colors"
+            className="balatro-btn rounded-lg bg-[#d4a96a] px-6 py-2.5 font-semibold text-[#2a1208] hover:bg-[#e0b87a]"
           >
             Play Again
           </button>
         </div>
 
+        {/* ── Round results ─────────────────────────────────────── */}
         <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
           {results.map((result) => (
             <RoundReviewRow key={result.roundNumber} result={result} />
@@ -940,10 +1007,7 @@ function RoundReviewRow({ result }: { result: RoundResult }) {
       <div className="flex items-start gap-3">
         <div className="flex gap-1.5">
           {result.openedSlots.map((slot) => (
-            <div
-              key={slot.index}
-              className="h-14 w-10 flex-shrink-0 rounded overflow-hidden"
-            >
+            <div key={slot.index} className="h-14 w-10 flex-shrink-0 rounded overflow-hidden">
               {slot.revealed && slot.card ? (
                 <ClueCardThumb card={slot.card} />
               ) : (
@@ -957,6 +1021,7 @@ function RoundReviewRow({ result }: { result: RoundResult }) {
           <span className="italic text-sm text-[#3a2010]">{result.correctMicrobe.name}</span>
         </div>
       </div>
+
     </div>
   );
 }
