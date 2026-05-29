@@ -4,11 +4,173 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL") // pooled connection for queries
-  directUrl = env("DIRECT_URL") // direct connection for migrations
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-// ─── Enums ──────────────────────────────────────────────
+model ApprovedUsername {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  importedAt   DateTime  @default(now())
+  registeredAt DateTime?
+  player       Player?
+}
+
+model Player {
+  id               String                  @id
+  username         String                  @unique
+  totalScore       Int                     @default(0)
+  gamesPlayed      Int                     @default(0)
+  createdAt        DateTime                @default(now())
+  sessions         GameSession[]
+  approvedUsername ApprovedUsername        @relation(fields: [username], references: [username])
+  unlockedMicrobes PlayerMicrobeUnlocked[]
+  postTests        PostTest[]
+  scores           Score[]
+
+  @@index([totalScore(sort: Desc)])
+}
+
+model AdminUser {
+  id        String   @id // Supabase Auth UID
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model GameSession {
+  id           String           @id @default(cuid())
+  playerId     String
+  gameMode     GameMode
+  currentRound Int              @default(1)
+  totalScore   Int              @default(0)
+  totalTime    Int              @default(0)
+  heartsLeft   Int              @default(3)
+  completed    Boolean          @default(false)
+  abandoned    Boolean          @default(false)
+  startedAt    DateTime         @default(now())
+  completedAt  DateTime?
+  player       Player           @relation(fields: [playerId], references: [id])
+  scores       Score[]
+  microbes     SessionMicrobe[]
+
+  @@index([playerId, startedAt(sort: Desc)])
+  @@index([completed, completedAt])
+}
+
+model SessionMicrobe {
+  sessionId     String
+  roundNumber   Int
+  microbeId     String
+  revealedSlots Int[]       @default([])
+  microbe       Microbe     @relation(fields: [microbeId], references: [id])
+  session       GameSession @relation(fields: [sessionId], references: [id])
+
+  @@id([sessionId, roundNumber])
+  @@unique([sessionId, microbeId])
+}
+
+model Score {
+  id                String      @id @default(cuid())
+  sessionId         String
+  playerId          String
+  microbeId         String
+  answeredMicrobeId String?
+  roundNumber       Int
+  correct           Boolean
+  cardSlotsOpened   Int[]
+  heartsLeft        Int
+  roundScore        Int
+  timeTaken         Int
+  createdAt         DateTime    @default(now())
+  answeredMicrobe   Microbe?    @relation("AnsweredMicrobe", fields: [answeredMicrobeId], references: [id])
+  microbe           Microbe     @relation("CorrectMicrobe", fields: [microbeId], references: [id])
+  player            Player      @relation(fields: [playerId], references: [id])
+  session           GameSession @relation(fields: [sessionId], references: [id])
+
+  @@unique([sessionId, roundNumber])
+  @@index([playerId, createdAt(sort: Desc)])
+  @@index([microbeId])
+}
+
+model Microbe {
+  id               String                  @id @default(cuid())
+  name             String                  @unique
+  shortName        String
+  answerImageUrl   String
+  gameMode         GameMode
+  gramType         GramType
+  tags             MicrobeTag[]
+  starRating       Int
+  clues            MicrobeClue[]
+  unlockedBy       PlayerMicrobeUnlocked[]
+  scoresAsAnswered Score[]                 @relation("AnsweredMicrobe")
+  scoresAsCorrect  Score[]                 @relation("CorrectMicrobe")
+  sessionMicrobes  SessionMicrobe[]
+
+  @@index([gameMode])
+  @@index([tags], type: Gin)
+}
+
+model ClueCard {
+  id       String        @id @default(cuid())
+  category CardCategory
+  label    String
+  imageUrl String
+  microbes MicrobeClue[]
+
+  @@index([category])
+}
+
+model MicrobeClue {
+  microbeId  String
+  clueCardId String
+  sortOrder  Int
+  clueCard   ClueCard @relation(fields: [clueCardId], references: [id])
+  microbe    Microbe  @relation(fields: [microbeId], references: [id])
+
+  @@id([microbeId, clueCardId])
+  @@index([clueCardId])
+}
+
+model PlayerMicrobeUnlocked {
+  playerId        String
+  microbeId       String
+  cardSlotsOpened Int[]
+  firstUnlockedAt DateTime @default(now())
+  microbe         Microbe  @relation(fields: [microbeId], references: [id])
+  player          Player   @relation(fields: [playerId], references: [id])
+
+  @@id([playerId, microbeId])
+}
+
+model PostTest {
+  id          String         @id @default(cuid())
+  playerId    String
+  period      PostTestPeriod
+  answers     AnswerOption[]
+  score       Int
+  submittedAt DateTime       @default(now())
+  player      Player         @relation(fields: [playerId], references: [id])
+
+  @@unique([playerId, period])
+}
+
+model PostTestQuestion {
+  id            String         @id @default(cuid())
+  period        PostTestPeriod
+  body          String
+  options       String[]
+  correctOption AnswerOption
+  sortOrder     Int
+}
+
+model Config {
+  key   String @id
+  value String
+}
 
 enum GameMode {
   BACTERIA
@@ -51,192 +213,4 @@ enum AnswerOption {
   B
   C
   D
-}
-
-// ─── 1. ApprovedUsername — the whitelist ────────────────
-
-model ApprovedUsername {
-  id           String    @id @default(cuid())
-  username     String    @unique
-  importedAt   DateTime  @default(now())
-  registeredAt DateTime?
-
-  player Player? // 1:1 optional — null until the student signs up
-}
-
-// ─── 2. Player — the user account ───────────────────────
-
-model Player {
-  id          String   @id // Supabase Auth UID — NOT a generated cuid
-  username    String   @unique
-  totalScore  Int      @default(0)
-  gamesPlayed Int      @default(0)
-  createdAt   DateTime @default(now())
-
-  approvedUsername ApprovedUsername @relation(fields: [username], references: [username])
-
-  sessions         GameSession[]
-  scores           Score[]
-  unlockedMicrobes PlayerMicrobeUnlocked[]
-  postTests        PostTest[]
-
-  @@index([totalScore(sort: Desc)]) // Leaderboard query
-}
-
-// ─── 3. GameSession — one playthrough ───────────────────
-
-model GameSession {
-  id           String    @id @default(cuid())
-  playerId     String
-  gameMode     GameMode
-  currentRound Int       @default(1) // 1-5
-  totalScore   Int       @default(0)
-  totalTime    Int       @default(0) // seconds
-  heartsLeft   Int       @default(3)
-  completed    Boolean   @default(false)
-  abandoned    Boolean   @default(false)
-  startedAt    DateTime  @default(now())
-  completedAt  DateTime?
-
-  player   Player           @relation(fields: [playerId], references: [id])
-  microbes SessionMicrobe[]
-  scores   Score[]
-
-  @@index([playerId, startedAt(sort: Desc)])
-  @@index([completed, completedAt])
-}
-
-// ─── 4. SessionMicrobe — which microbes appear ──────────
-
-model SessionMicrobe {
-  sessionId     String
-  roundNumber   Int
-  microbeId     String
-  revealedSlots Int[]  @default([])
-
-  session GameSession @relation(fields: [sessionId], references: [id])
-  microbe Microbe     @relation(fields: [microbeId], references: [id])
-
-  @@id([sessionId, roundNumber])
-  @@unique([sessionId, microbeId]) // a microbe can't repeat across rounds
-}
-
-// ─── 5. Score — one row per round answered ──────────────
-
-model Score {
-  id                String   @id @default(cuid())
-  sessionId         String
-  playerId          String // denormalized for fast CSV export
-  microbeId         String // correct answer
-  answeredMicrobeId String? // player's guess — nullable if abandoned
-  roundNumber       Int
-  correct           Boolean
-  cardSlotsOpened   Int[]
-  heartsLeft        Int
-  roundScore        Int // server-computed
-  timeTaken         Int // seconds
-  createdAt         DateTime @default(now())
-
-  session         GameSession @relation(fields: [sessionId], references: [id])
-  player          Player      @relation(fields: [playerId], references: [id])
-  microbe         Microbe     @relation("CorrectMicrobe", fields: [microbeId], references: [id])
-  answeredMicrobe Microbe?    @relation("AnsweredMicrobe", fields: [answeredMicrobeId], references: [id])
-
-  @@unique([sessionId, roundNumber]) // guards against double-submit
-  @@index([playerId, createdAt(sort: Desc)])
-  @@index([microbeId]) // Admin per-microbe accuracy queries
-}
-
-// ─── 6. Microbe — the pathogens ─────────────────────────
-
-model Microbe {
-  id             String       @id @default(cuid())
-  name           String       @unique
-  shortName      String
-  answerImageUrl String
-  gameMode       GameMode
-  gramType       GramType
-  tags           MicrobeTag[]
-  starRating     Int // 1-5 difficulty
-
-  clues            MicrobeClue[]
-  sessionMicrobes  SessionMicrobe[]
-  scoresAsCorrect  Score[]                 @relation("CorrectMicrobe")
-  scoresAsAnswered Score[]                 @relation("AnsweredMicrobe")
-  unlockedBy       PlayerMicrobeUnlocked[]
-
-  @@index([gameMode])
-  @@index([tags], type: Gin)
-}
-
-// ─── 7. ClueCard + MicrobeClue — hint cards ─────────────
-
-model ClueCard {
-  id       String       @id @default(cuid())
-  category CardCategory
-  label    String
-  imageUrl String
-
-  microbes MicrobeClue[]
-
-  @@index([category])
-}
-
-model MicrobeClue {
-  microbeId  String
-  clueCardId String
-  sortOrder  Int
-
-  microbe  Microbe  @relation(fields: [microbeId], references: [id])
-  clueCard ClueCard @relation(fields: [clueCardId], references: [id])
-
-  @@id([microbeId, clueCardId])
-  @@index([clueCardId])
-}
-
-// ─── 8. PlayerMicrobeUnlocked — Pathogen Book progress ──
-
-model PlayerMicrobeUnlocked {
-  playerId        String
-  microbeId       String
-  cardSlotsOpened Int[] // copied from the winning Score row
-  firstUnlockedAt DateTime @default(now())
-
-  player  Player  @relation(fields: [playerId], references: [id])
-  microbe Microbe @relation(fields: [microbeId], references: [id])
-
-  @@id([playerId, microbeId])
-}
-
-// ─── 9. PostTest — in-game post-test submission ─────────
-
-model PostTest {
-  id          String         @id @default(cuid())
-  playerId    String
-  period      PostTestPeriod
-  answers     AnswerOption[] // canonical question order, NOT shuffled
-  score       Int
-  submittedAt DateTime       @default(now())
-
-  player Player @relation(fields: [playerId], references: [id])
-
-  @@unique([playerId, period]) // one submission per period
-}
-
-// ─── 10. PostTestQuestion — the question bank ───────────
-
-model PostTestQuestion {
-  id            String         @id @default(cuid())
-  period        PostTestPeriod
-  body          String
-  options       String[] // exactly 4: [0]=A, [1]=B, [2]=C, [3]=D
-  correctOption AnswerOption
-  sortOrder     Int
-}
-
-// ─── 11. Config — admin settings ────────────────────────
-
-model Config {
-  key   String @id
-  value String
 }
