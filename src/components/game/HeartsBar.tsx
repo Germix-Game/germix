@@ -1,7 +1,13 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+
 const MAX_HEARTS = 3;
+const FLASH_MS = 800;
 
 interface HeartsBarProps {
   heartsLeft: number;
+  vertical?: boolean;
 }
 
 /*
@@ -35,47 +41,57 @@ interface HeartsBarProps {
  *
  *   The HeartsBar component itself (the parent) does not need to change.
  */
-export function HeartsBar({ heartsLeft }: HeartsBarProps) {
+export function HeartsBar({ heartsLeft, vertical }: HeartsBarProps) {
+  // displayHearts stays at the old value while the flash animation plays,
+  // then snaps to the real heartsLeft after FLASH_MS so the dead image appears.
+  const [displayHearts, setDisplayHearts] = useState(heartsLeft);
+  const [flashSet, setFlashSet] = useState<ReadonlySet<number>>(new Set());
+  const prevRef = useRef(heartsLeft);
+
+  useEffect(() => {
+    const prev = prevRef.current;
+    prevRef.current = heartsLeft;
+
+    if (heartsLeft < prev) {
+      const losing = new Set<number>();
+      for (let i = heartsLeft; i < prev; i++) losing.add(i);
+      setFlashSet(losing);
+
+      const t = setTimeout(() => {
+        setDisplayHearts(heartsLeft);
+        setFlashSet(new Set());
+      }, FLASH_MS);
+
+      return () => clearTimeout(t);
+    } else {
+      setDisplayHearts(heartsLeft);
+    }
+  }, [heartsLeft]);
+
   return (
     <div
-      className="flex items-center gap-2"
+      className={vertical ? "flex flex-col items-center gap-2" : "flex items-center gap-2"}
       role="img"
       aria-label={`${heartsLeft} of ${MAX_HEARTS} lives remaining`}
     >
       {Array.from({ length: MAX_HEARTS }, (_, i) => (
-        <PixelHeart key={i} filled={i < heartsLeft} />
+        <PixelHeart key={i} filled={i < displayHearts} flashing={flashSet.has(i)} />
       ))}
     </div>
   );
 }
 
-/* Placeholder SVG heart — replace with PNG sprites (see IMAGE SLOT E above) */
-function PixelHeart({ filled }: { filled: boolean }) {
-  // 7×6 pixel grid:
-  //   . X X . X X .
-  //   X X X X X X X
-  //   X X X X X X X
-  //   . X X X X X .
-  //   . . X X X . .
-  //   . . . X . . .
-  const fill = filled ? "#8b3333" : "#2a1515";
-  const highlight = "#c45555";
-
+function PixelHeart({ filled, flashing }: { filled: boolean; flashing: boolean }) {
   return (
-    <svg
-      width="28"
-      height="24"
-      viewBox="0 0 7 6"
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={filled ? "/assets/ui/heart-alive.png" : "/assets/ui/heart-dead.png"}
+      alt=""
+      width={56}
+      height={48}
       style={{ imageRendering: "pixelated" }}
+      className={flashing ? "heart-flash" : undefined}
       aria-hidden="true"
-    >
-      <rect x="1" y="0" width="2" height="1" fill={fill} />
-      <rect x="4" y="0" width="2" height="1" fill={fill} />
-      <rect x="0" y="1" width="7" height="2" fill={fill} />
-      <rect x="1" y="3" width="5" height="1" fill={fill} />
-      <rect x="2" y="4" width="3" height="1" fill={fill} />
-      <rect x="3" y="5" width="1" height="1" fill={fill} />
-      {filled && <rect x="1" y="1" width="1" height="1" fill={highlight} />}
-    </svg>
+    />
   );
 }

@@ -129,6 +129,87 @@
   }
 }
 
+/* ─── End screen (Balatro-style) ────────────────────────────── */
+@keyframes end-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Slam down from above, rotate as it falls, bounce on landing */
+@keyframes end-panel-in {
+  0%   { opacity: 0; transform: translateY(-110px) rotate(-6deg) scale(0.8);  }
+  50%  { opacity: 1; transform: translateY(18px)  rotate(2deg)  scale(1.05); }
+  68%  { transform: translateY(-9px)  rotate(-0.8deg) scale(0.98); }
+  84%  { transform: translateY(4px)   rotate(0.3deg)  scale(1.01); }
+  100% { transform: translateY(0)     rotate(0deg)    scale(1);    }
+}
+
+/* Staggered fade-up for each section inside the panel */
+@keyframes end-item-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.end-screen-overlay {
+  animation: end-overlay-in 300ms ease both;
+}
+
+.end-screen-panel {
+  animation: end-panel-in 600ms ease-out both;
+}
+
+.end-screen-panel > *:nth-child(1) { animation: end-item-in 350ms ease both 300ms; }
+.end-screen-panel > *:nth-child(2) { animation: end-item-in 350ms ease both 400ms; }
+.end-screen-panel > *:nth-child(3) { animation: end-item-in 350ms ease both 460ms; }
+.end-screen-panel > *:nth-child(4) { animation: end-item-in 350ms ease both 520ms; }
+
+.balatro-btn {
+  box-shadow: 0 5px 0 #8b6030, 0 8px 20px rgba(0,0,0,0.35);
+  transition: transform 70ms ease, box-shadow 70ms ease;
+}
+
+.balatro-btn:hover {
+  filter: brightness(1.08);
+}
+
+.balatro-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #8b6030, 0 3px 8px rgba(0,0,0,0.25);
+}
+
+/* ─── Heart damage flash (Minecraft-style) ──────────────────── */
+@keyframes heart-flash {
+  0%,  24%, 48%, 72% { filter: brightness(1) saturate(1); }
+  12%, 36%, 60%, 84% { filter: brightness(12) saturate(0); }
+  100%               { filter: brightness(1) saturate(1); }
+}
+
+.heart-flash {
+  animation: heart-flash 800ms steps(1, end) both;
+}
+
+/* ─── Card float + tilt (Balatro-style) ─────────────────────── */
+@keyframes card-float {
+  0%, 100% { transform: translateY(0px) rotate(-0.8deg); }
+  50%       { transform: translateY(-9px) rotate(0.8deg); }
+}
+
+.card-tilt {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.card-shine {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.75rem;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 10;
+  transition: opacity 200ms ease;
+}
+
 /* ─── Card 3D flip ──────────────────────────────────────────── */
 .card-wrapper {
   perspective: 1000px;
@@ -139,7 +220,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  transition: transform 400ms ease-out;
+  transition: transform 220ms ease-out;
   transform-style: preserve-3d;
 }
 

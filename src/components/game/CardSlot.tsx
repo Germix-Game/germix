@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import type { ClueCard } from "@/types/game";
 
 interface CardSlotProps {
@@ -11,8 +12,57 @@ interface CardSlotProps {
 }
 
 export function CardSlot({ index, revealed, card, onReveal, disabled }: CardSlotProps) {
+  const tiltRef = useRef<HTMLDivElement>(null);
+  const shineRef = useRef<HTMLDivElement>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    if (leaveTimer.current) {
+      clearTimeout(leaveTimer.current);
+      leaveTimer.current = null;
+    }
+    const el = tiltRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    const rotX = (0.5 - y) * 24;
+    const rotY = (x - 0.5) * 24;
+    el.style.transform = `perspective(700px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.08,1.08,1.08)`;
+    el.style.transition = "transform 60ms linear";
+    el.style.animationPlayState = "paused";
+    if (shineRef.current) {
+      shineRef.current.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(255,255,200,0.28) 0%, transparent 65%)`;
+      shineRef.current.style.opacity = "1";
+    }
+  }
+
+  function handleMouseLeave() {
+    const el = tiltRef.current;
+    if (!el) return;
+    el.style.transition = "transform 450ms ease-out";
+    el.style.transform = "perspective(700px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
+    if (shineRef.current) shineRef.current.style.opacity = "0";
+    leaveTimer.current = setTimeout(() => {
+      if (tiltRef.current) {
+        tiltRef.current.style.transform = "";
+        tiltRef.current.style.transition = "";
+        tiltRef.current.style.animationPlayState = "";
+      }
+      leaveTimer.current = null;
+    }, 450);
+  }
+
   return (
-    <div className="card-wrapper w-full mx-auto" style={{ aspectRatio: "3/4", maxHeight: "11rem", maxWidth: "8.25rem" }}>
+    <div
+      ref={tiltRef}
+      className="card-tilt w-full"
+      style={{ aspectRatio: "1429 / 2000", animationDelay: `${index * -0.65}s` }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div ref={shineRef} className="card-shine" aria-hidden />
+      <div className="card-wrapper w-full h-full">
       <div className={`card-inner${revealed ? " flipped" : ""}`}>
 
         {/*
@@ -36,6 +86,13 @@ export function CardSlot({ index, revealed, card, onReveal, disabled }: CardSlot
           className="card-face card-face-front w-full h-full rounded-xl overflow-hidden shadow-lg bg-[#f5e6c8] relative flex flex-col items-center justify-center gap-1.5 p-2"
           aria-hidden={!revealed}
         >
+          {revealed && !card && (
+            <div className="flex flex-col items-center gap-2 w-3/4">
+              <div className="h-1.5 w-full rounded-full bg-[#d4a96a]/50 animate-pulse" />
+              <div className="h-1.5 w-4/5 rounded-full bg-[#d4a96a]/40 animate-pulse" style={{ animationDelay: "0.15s" }} />
+              <div className="h-1.5 w-3/5 rounded-full bg-[#d4a96a]/30 animate-pulse" style={{ animationDelay: "0.3s" }} />
+            </div>
+          )}
           {card && (
             <>
               {/* Text fallback shown while/if image is absent */}
@@ -71,6 +128,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled }: CardSlot
           )}
         </div>
 
+      </div>
       </div>
     </div>
   );
