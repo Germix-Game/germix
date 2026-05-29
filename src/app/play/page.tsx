@@ -377,9 +377,49 @@ export default function PlayPage() {
   // ─── LOADING SCREEN ─────────────────────────────────────────
   if (phase === "loading") {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#5c2a0e]">
-        {/* animate-pulse → Tailwind utility that fades opacity in/out (loading shimmer) */}
-        <p className="font-mono text-[#d4a96a] text-lg animate-pulse">Loading game…</p>
+      <div
+        className="relative flex h-screen w-screen flex-col items-center justify-center overflow-hidden"
+        style={{
+          backgroundImage: "url('/assets/ui/wood-bg.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-[#1a0a04]/65" />
+
+        <div className="relative flex flex-col items-center gap-8">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/ui/game-logo.png"
+            alt="Germix"
+            width={360}
+            style={{
+              filter: "drop-shadow(0 6px 28px rgba(0,0,0,0.85))",
+              animation: "menu-fade-in 500ms ease-out both",
+            }}
+            draggable={false}
+          />
+
+          <div
+            className="flex flex-col items-center gap-4 rounded-xl border border-[#d4a96a]/30 bg-[#2a1208]/75 px-12 py-6 backdrop-blur-sm"
+            style={{ animation: "menu-fade-in 500ms ease-out 120ms both" }}
+          >
+            <p className="font-mono text-[#d4a96a]/90 text-sm tracking-[0.25em] uppercase">
+              Loading game
+            </p>
+            <div className="flex gap-2">
+              {[0, 1, 2, 3].map((i) => (
+                <span
+                  key={i}
+                  className="block h-2.5 w-2.5 rounded-full bg-[#d4a96a]"
+                  style={{
+                    animation: `loading-bounce 1.1s ease-in-out ${i * 0.18}s infinite`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -391,7 +431,7 @@ export default function PlayPage() {
         <p className="text-[#f5e6c8] text-lg">No active session found.</p>
         {/* <a href> here does a FULL page navigation. Use <Link> from "next/link" for client-side nav (faster). */}
         <a
-          href="/game-mode"
+          href="/select"
           className="rounded-lg bg-[#d4a96a] px-6 py-2.5 font-semibold text-[#2a1208] hover:bg-[#e0b87a] transition-colors"
         >
           Start a new game
@@ -418,7 +458,7 @@ export default function PlayPage() {
             setPhase("playing");
           } else {
             // Real mode: go back to game mode selection
-            window.location.href = "/game-mode";
+            window.location.href = "/select";
           }
         }}
       />
@@ -434,14 +474,14 @@ export default function PlayPage() {
        * IMAGE SLOT H — Game background (wood texture)
        * What: Dark wood-grain texture filling the entire top area
        *       (behind cards, top bar, hearts, score).
-       * Source: /public/asset/ui/wood-bg.png (served at /asset/ui/wood-bg.png)
+       * Source: /public/assets/ui/wood-bg.png (served at /assets/ui/wood-bg.png)
        * Applied on the next div via Tailwind arbitrary-value bg utility + bg-cover + bg-center.
-       * To swap: drop a new file at /public/asset/ui/wood-bg.png — no code change needed.
+       * To swap: drop a new file at /public/assets/ui/wood-bg.png — no code change needed.
        */}
       {/* ── Wood area (top zone: cards + score/hearts) ───────────────── */}
       {/* flex-shrink-0 → don't let this zone shrink when parchment grows */}
       {/* Arbitrary background image (Tailwind bg-[url-syntax]), bg-cover scales to fill, bg-center centers it */}
-      <div className="flex flex-col px-6 pt-4 pb-6 bg-[url('/asset/ui/wood-bg.png')] bg-cover bg-center flex-shrink-0">
+      <div className="flex flex-col px-6 pt-4 pb-6 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-shrink-0">
 
         {/* Top bar: Score on left, Hearts on right (round counter moved below as a centered image) */}
         {/* justify-between → pushes children to opposite ends */}
@@ -452,7 +492,7 @@ export default function PlayPage() {
 
         {/*
          * ROUND COUNTER IMAGE — centered above the card slots.
-         * Source: /public/asset/ui/round-${round}.png (one per round: round-1.png … round-5.png)
+         * Source: /public/assets/ui/round-${round}.png (one per round: round-1.png … round-5.png)
          * `round` is 1-indexed (1, 2, 3, 4, 5).
          * If a file for the current round is missing, the alt text + broken-image icon will show
          * — that's intentional so missing assets are obvious during dev.
@@ -462,7 +502,7 @@ export default function PlayPage() {
         <div className="flex justify-center -mt-8 mb-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`/asset/ui/round-${round}.png`}
+            src={`/assets/ui/round-${round}.png`}
             alt={`Round ${round} of 5`}
             className="h-[10.5rem] w-[40rem] object-contain select-none pointer-events-none"
             // h-[10.5rem] w-[40rem] → fixed 168×640px display box, identical for every round

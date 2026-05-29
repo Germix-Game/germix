@@ -18,13 +18,13 @@ export function CardSlot({ index, revealed, card, onReveal, disabled }: CardSlot
         {/*
          * IMAGE SLOT A — Card back (face-down state)
          * What: The design shown on the back of every hidden card before the player flips it.
-         * Source: /public/asset/ui/Backcard.png (served at /asset/ui/Backcard.png)
+         * Source: /public/assets/ui/Backcard.png (served at /assets/ui/Backcard.png)
          * Applied as a Tailwind arbitrary-value background utility (bg-cover, bg-center).
          * The hover:brightness-125 stays — gives visual feedback when the card is hoverable.
          * To swap: drop a new file at the same path. No code change needed.
          */}
         <button
-          className="card-face w-full h-full rounded-xl bg-[url('/asset/ui/Backcard.png')] bg-cover bg-center shadow-lg hover:brightness-125 focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] disabled:cursor-default disabled:hover:brightness-100 transition-[filter]"
+          className="card-face w-full h-full rounded-xl bg-[url('/assets/ui/Backcard.png')] bg-cover bg-center shadow-lg hover:brightness-125 focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] disabled:cursor-default disabled:hover:brightness-100 transition-[filter]"
           onClick={() => onReveal(index)}
           disabled={revealed || disabled}
           aria-label={`Reveal clue card ${index + 1}`}

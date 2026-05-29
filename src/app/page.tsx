@@ -1,122 +1,170 @@
-// Import Next.js's built-in Image component — optimizes images automatically
-// (lazy loading, responsive sizes, modern formats like WebP). Always prefer this over plain <img>.
 import Image from "next/image";
+import { MenuButtons } from "@/components/menu/MenuButtons";
 
-// `export default` = the main thing this file gives to Next.js.
-// In the App Router, the default export of `page.tsx` IS the page that renders at this route.
-// This file is at `src/app/page.tsx` → it renders at the root URL "/"
-// `function Home()` — name can be anything; "Home" is convention for the root page.
-export default function Home() {
-  // React components return JSX (HTML-like syntax that compiles to JS function calls).
-  // Everything inside `return ( ... )` is what gets rendered to the browser.
+// ─── Card layout data ─────────────────────────────────────────────────────────
+// Positions are percentages of the 1280×720 reference canvas used in the original
+// Phaser scene (x/1280, y/720). Each card is centered at its (left, top) point.
+
+const C13 = "/assets/cards/card_13.png";
+const C14 = "/assets/cards/card_14.png";
+const C15 = "/assets/cards/card_15.png";
+
+type FloatSize = "card-float-sm" | "card-float-md" | "card-float-lg";
+
+type CardDef = {
+  src: string;
+  left: string;
+  top: string;
+  rotate: number;
+  float: FloatSize;
+  dur: number;
+  delay: number;
+};
+const CARDS: CardDef[] = [
+  // ── Top-Left Cluster ───────────────────────────────────────────────────────
+  { src: C13, left: "0%",   top: "8%",   rotate: -25, float: "card-float-md", dur: 2500, delay: 0 },     // Leishmania spp. (Fly)
+  { src: C14, left: "14%",  top: "12%",  rotate: 15,  float: "card-float-sm", dur: 2900, delay: 200 },   // W. bancrofti (Globe)
+  { src: C15, left: "2%",   top: "35%",  rotate: -35, float: "card-float-lg", dur: 2300, delay: 400 },   // C. trachomatis (White cell)
+  { src: C13, left: "20%",  top: "35%",  rotate: 10,  float: "card-float-md", dur: 2400, delay: 600 },   // S. aureus (Purple cluster)
+
+  // ── Mid-Left Cluster ───────────────────────────────────────────────────────
+  { src: C14, left: "16%",  top: "55%",  rotate: 5,   float: "card-float-sm", dur: 2800, delay: 800 },   // M. tuberculosis
+  { src: C15, left: "6%",   top: "65%",  rotate: -20, float: "card-float-lg", dur: 2200, delay: 1000 },  // N. gonorrhoeae (Pink twins)
+  { src: C13, left: "26%",  top: "65%",  rotate: 15,  float: "card-float-md", dur: 2450, delay: 1200 },  // B. pseudomallei (Hat)
+
+  // ── Bottom-Left Cluster ────────────────────────────────────────────────────
+  { src: C14, left: "1%",   top: "88%",  rotate: -15, float: "card-float-md", dur: 2500, delay: 1400 },  // O. tsutsugamushi (Orange bug)
+  { src: C15, left: "14%",  top: "85%",  rotate: -5,  float: "card-float-lg", dur: 2900, delay: 1600 },  // P. falciparum (Purple pot)
+  { src: C13, left: "25%",  top: "92%",  rotate: 5,   float: "card-float-sm", dur: 2300, delay: 1800 },  // T. saginata (Dog worm)
+
+  // ── Top-Right Cluster ──────────────────────────────────────────────────────
+  { src: C14, left: "80%",  top: "12%",  rotate: 15,  float: "card-float-md", dur: 2400, delay: 100 },   // S. pneumoniae (Purple pair)
+  { src: C15, left: "95%",  top: "15%",  rotate: -10, float: "card-float-sm", dur: 2800, delay: 300 },   // E. vermicularis (Brown oval)
+  
+  // ── Mid-Right Cluster ──────────────────────────────────────────────────────
+  { src: C13, left: "78%",  top: "38%",  rotate: 0,   float: "card-float-lg", dur: 2200, delay: 500 },   // T. pallidum (White squiggly)
+  { src: C14, left: "88%",  top: "35%",  rotate: -5,  float: "card-float-md", dur: 2450, delay: 700 },   // E. histolytica (Brown poop)
+  { src: C15, left: "74%",  top: "62%",  rotate: -5,  float: "card-float-sm", dur: 2600, delay: 900 },   // C. perfringens (Gas mask)
+  { src: C13, left: "85%",  top: "60%",  rotate: 5,   float: "card-float-lg", dur: 2350, delay: 1100 },  // P. aeruginosa (Pink pill)
+  { src: C14, left: "95%",  top: "60%",  rotate: 15,  float: "card-float-md", dur: 2800, delay: 1300 },  // S. japonicum (Blood fluke)
+
+  // ── Bottom-Right Cluster ───────────────────────────────────────────────────
+  { src: C15, left: "76%",  top: "88%",  rotate: -15, float: "card-float-sm", dur: 2200, delay: 1500 },  // S. stercoralis (Muscle worm)
+  { src: C13, left: "85%",  top: "85%",  rotate: -20, float: "card-float-lg", dur: 2550, delay: 1700 },  // P. westermani (Lung fluke)
+  { src: C14, left: "95%",  top: "92%",  rotate: 25,  float: "card-float-md", dur: 2700, delay: 1900 },  // C. belli (Red eyes poop)
+];
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function HomePage() {
   return (
-    // OUTER WRAPPER — full-screen flex container
-    // flex flex-col       → vertical stacking
-    // flex-1              → fills available height
-    // items-center        → horizontal centering
-    // justify-center      → vertical centering
-    // bg-zinc-50          → very light grey background (light mode)
-    // dark:bg-black       → black background when dark mode is on
-    // font-sans           → use the project's sans-serif font (set in layout.tsx)
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+    <div
+      className="relative h-screen w-screen overflow-hidden bg-cover bg-center"
+      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
+    >
+      {/* Scattered floating card decorations */}
+      {CARDS.map((card, i) => (
+        <div
+          key={i}
+          className="absolute"
+          style={{
+            left: card.left,
+            top: card.top,
+            transform: `translate(-50%, -50%) rotate(${card.rotate}deg)`,
+            animation: `menu-fade-in 500ms ease-in ${card.delay + 80}ms both`,
+          }}
+        >
+          <div
+            style={{
+              animationName: card.float,
+              animationDuration: `${card.dur}ms`,
+              animationTimingFunction: "ease-in-out",
+              animationIterationCount: "infinite",
+              animationDelay: `${card.delay}ms`,
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={card.src}
+              alt=""
+              aria-hidden="true"
+              width={118}
+              style={{
+                filter:
+                  "drop-shadow(4px 8px 14px rgba(0,0,0,0.65)) drop-shadow(1px 2px 4px rgba(0,0,0,0.40))",
+              }}
+              draggable={false}
+            />
+          </div>
+        </div>
+      ))}
 
-      {/* MAIN CONTENT BOX — the centered card holding everything */}
-      {/* max-w-3xl  → caps width so it doesn't stretch on huge screens */}
-      {/* py-32 px-16 → vertical padding 32 units, horizontal padding 16 units */}
-      {/* sm:items-start → on small+ screens, left-align instead of center */}
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+      {/* Parchment element — sits behind the logo at the bottom-centre */}
+      <div
+        className="absolute left-1/2 pointer-events-none"
+        style={{
+          top: "95%",
+          width: "44%",
+          transform: "translate(-50%, -50%)",
+          opacity: 0.88,
+          animation: "menu-fade-in 650ms ease-out 200ms both",
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/assets/ui/main-page-element-bg.png"
+          alt=""
+          aria-hidden="true"
+          className="w-full"
+          draggable={false}
+        />
+      </div>
 
-        {/* NEXT.JS LOGO at the top */}
-        {/* dark:invert → in dark mode, flip black→white so the logo stays visible */}
-        {/* src="/next.svg" → file in the `public/` folder, served at root URL */}
-        {/* width/height → REQUIRED by next/image (prevents layout shift) */}
-        {/* priority → tells Next to load this image immediately (it's above the fold) */}
+      {/* GERMIX logo — centred at 27% height */}
+      <div
+        className="absolute left-1/2 pointer-events-none"
+        style={{
+          top: "27%",
+          width: "50%",
+          transform: "translate(-50%, -50%)",
+          animation: "menu-fade-in 650ms ease-out 200ms both",
+        }}
+      >
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
+          src="/assets/ui/game-logo.png"
+          alt="Germix — Microbiology Card Game"
+          width={800}
+          height={300}
+          className="w-full h-auto"
           priority
         />
+      </div>
 
-        {/* HEADING + PARAGRAPH BLOCK */}
-        {/* gap-6 → spacing between child elements (h1 and p) */}
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-
-          {/* MAIN HEADING */}
-          {/* text-3xl  → font size large */}
-          {/* font-semibold → bold-ish */}
-          {/* tracking-tight → tighter letter spacing */}
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-
-          {/* DESCRIPTIVE PARAGRAPH with inline links */}
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            {/* {" "} → JSX trick to preserve a single space between text and the next element */}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+      {/* POST TEST — locked, pinned to top-right */}
+      <div
+        className="absolute top-4 right-4 z-20"
+        style={{ animation: "menu-fade-in 600ms ease-out 500ms both" }}
+      >
+        <div
+          className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-3 text-xs font-semibold tracking-wide text-[#6b5040] shadow cursor-not-allowed select-none"
+          aria-disabled="true"
+          title="Post test is not yet available"
+        >
+          <span>🔒</span>
+          <span>POST TEST</span>
         </div>
+      </div>
 
-        {/* BUTTON ROW — Deploy + Documentation links */}
-        {/* flex-col on mobile → stacked vertically */}
-        {/* sm:flex-row → side-by-side on screens ≥640px */}
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-
-          {/* "Deploy Now" BUTTON — primary (filled) style */}
-          {/* h-12 → height 48px */}
-          {/* rounded-full → pill shape */}
-          {/* bg-foreground / text-background → uses CSS variables for theme colors */}
-          {/* hover:bg-[#383838] → dark grey on hover */}
-          {/* md:w-[158px] → fixed width on medium+ screens */}
-          {/* target="_blank" → open in new tab */}
-          {/* rel="noopener noreferrer" → security best practice when using target=_blank */}
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {/* Vercel logo inside the button */}
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-
-          {/* "Documentation" BUTTON — secondary (outlined) style */}
-          {/* border border-solid → 1px solid border */}
-          {/* border-black/[.08] → 8% opacity black border (very subtle) */}
-          {/* hover:bg-black/[.04] → faint hover background */}
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      {/* Menu button group */}
+      <div
+        className="absolute left-1/2 z-10"
+        style={{
+          top: "75%",
+          transform: "translate(-50%, -50%)",
+          animation: "menu-fade-in 600ms ease-out 500ms both",
+        }}
+      >
+        <MenuButtons />
+      </div>
     </div>
   );
 }
