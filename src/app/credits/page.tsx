@@ -61,7 +61,7 @@ export default function CreditsPage() {
         {/* Team graphic */}
         <div className="mb-6 overflow-hidden rounded-2xl border border-[#d4a96a]/60 shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
           <Image
-            src="/assets/Credit/Germix%20graphic%20game.png"
+            src="/assets/credit/germix-graphic-game.png"
             alt="Germix Game Team"
             width={1280}
             height={720}

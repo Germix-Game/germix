@@ -32,7 +32,7 @@ export default function LevelSelectPage() {
       >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/assets/Game selection/Germix graphic game - 26.png"
+        src="/assets/game-selection/germix-graphic-game-26.png"
         alt=""
         aria-hidden
         draggable={false}
@@ -48,7 +48,7 @@ export default function LevelSelectPage() {
       {/* Bacteria level button — top-left */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/assets/Game selection/bateria_level.png"
+        src="/assets/game-selection/bateria_level.png"
         alt="Bacteria"
         draggable={false}
         onClick={() => handleSelect("BACTERIA")}
@@ -61,7 +61,7 @@ export default function LevelSelectPage() {
       {/* Parasite level button — bottom-right (locked) */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/assets/Game selection/parasite_level.png"
+        src="/assets/game-selection/parasite_level.png"
         alt="Parasites"
         draggable={false}
         className="absolute select-none cursor-not-allowed grayscale opacity-50 transition-transform duration-200"

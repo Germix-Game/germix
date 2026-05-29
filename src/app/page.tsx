@@ -111,7 +111,7 @@ export default function HomePage() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/assets/ui/Main_Page_element_bg.png"
+          src="/assets/ui/main-page-element-bg.png"
           alt=""
           aria-hidden="true"
           className="w-full"
@@ -130,7 +130,7 @@ export default function HomePage() {
         }}
       >
         <Image
-          src="/assets/ui/Game_Logo.png"
+          src="/assets/ui/game-logo.png"
           alt="Germix — Microbiology Card Game"
           width={800}
           height={300}
