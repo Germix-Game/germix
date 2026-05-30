@@ -129,39 +129,88 @@
   }
 }
 
-/* ─── End screen (Balatro-style) ────────────────────────────── */
+/* ─── Shared smooth easing ──────────────────────────────────── */
+/* iOS-style deceleration: fast start, glides to rest */
+:root { --ease-out-spring: cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* ─── End screen ────────────────────────────────────────────── */
 @keyframes end-overlay-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
-/* Slam down from above, rotate as it falls, bounce on landing */
 @keyframes end-panel-in {
-  0%   { opacity: 0; transform: translateY(-110px) rotate(-6deg) scale(0.8);  }
-  50%  { opacity: 1; transform: translateY(18px)  rotate(2deg)  scale(1.05); }
-  68%  { transform: translateY(-9px)  rotate(-0.8deg) scale(0.98); }
-  84%  { transform: translateY(4px)   rotate(0.3deg)  scale(1.01); }
-  100% { transform: translateY(0)     rotate(0deg)    scale(1);    }
+  0%   { opacity: 0; transform: translateY(36px) scale(0.95); }
+  55%  { opacity: 1; transform: translateY(-6px)  scale(1.015); }
+  78%  { transform: translateY(3px)  scale(0.998); }
+  100% { transform: translateY(0)    scale(1); }
 }
 
-/* Staggered fade-up for each section inside the panel */
 @keyframes end-item-in {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 
 .end-screen-overlay {
-  animation: end-overlay-in 300ms ease both;
+  animation: end-overlay-in 320ms ease both;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 
 .end-screen-panel {
-  animation: end-panel-in 600ms ease-out both;
+  animation: end-panel-in 480ms var(--ease-out-spring) both;
 }
 
-.end-screen-panel > *:nth-child(1) { animation: end-item-in 350ms ease both 300ms; }
-.end-screen-panel > *:nth-child(2) { animation: end-item-in 350ms ease both 400ms; }
-.end-screen-panel > *:nth-child(3) { animation: end-item-in 350ms ease both 460ms; }
-.end-screen-panel > *:nth-child(4) { animation: end-item-in 350ms ease both 520ms; }
+.end-screen-panel > *:nth-child(1) { animation: end-item-in 260ms var(--ease-out-spring) both 180ms; }
+.end-screen-panel > *:nth-child(2) { animation: end-item-in 260ms var(--ease-out-spring) both 240ms; }
+.end-screen-panel > *:nth-child(3) { animation: end-item-in 260ms var(--ease-out-spring) both 295ms; }
+.end-screen-panel > *:nth-child(4) { animation: end-item-in 260ms var(--ease-out-spring) both 350ms; }
+
+/* ─── Score earned popup ────────────────────────────────────── */
+@keyframes score-expand {
+  0%   { transform: translate(-50%, -50%) scale(0.1);  opacity: 0; }
+  38%  { transform: translate(-50%, -50%) scale(1.35); opacity: 1; }
+  56%  { transform: translate(-50%, -50%) scale(0.92); opacity: 1; }
+  72%  { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.0);  opacity: 1; }
+}
+
+.score-expand {
+  animation: score-expand 680ms var(--ease-out-spring) both;
+}
+
+/* ─── Score bar pulse when points land ──────────────────────── */
+@keyframes score-bar-pulse {
+  0%   { transform: scale(1);    filter: brightness(1);   }
+  30%  { transform: scale(1.2);  filter: brightness(1.7); }
+  60%  { transform: scale(0.95); filter: brightness(1.1); }
+  100% { transform: scale(1);    filter: brightness(1);   }
+}
+
+.score-bar-pulse {
+  animation: score-bar-pulse 420ms var(--ease-out-spring) both;
+  display: inline-block;
+}
+
+/* ─── Toast notification (drop-blocked message) ─────────────── */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.94); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0)      scale(1);   }
+}
+
+.popup-toast {
+  animation: toast-in 300ms var(--ease-out-spring) both;
+}
+
+/* ─── Feedback bar (wrong answer, etc.) ─────────────────────── */
+@keyframes bar-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.popup-bar {
+  animation: bar-in 300ms var(--ease-out-spring) both;
+}
 
 .balatro-btn {
   box-shadow: 0 5px 0 #8b6030, 0 8px 20px rgba(0,0,0,0.35);
@@ -232,6 +281,40 @@
 
 .card-face-front {
   transform: rotateY(180deg);
+}
+
+/* ─── Clue card point-loss pop ─────────────────────────────── */
+@keyframes point-pop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  18%  { opacity: 1; transform: translate(-50%, -62%)  scale(1.35); }
+  50%  { opacity: 1; transform: translate(-50%, -125%) scale(1.05); }
+  100% { opacity: 0; transform: translate(-50%, -195%) scale(0.9);  }
+}
+
+.point-pop {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 20;
+  color: #ef4444;
+  font-size: 1.6rem;
+  font-weight: 900;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.55), 0 0 12px rgba(239,68,68,0.5);
+  animation: point-pop 1100ms var(--ease-out-spring) forwards;
+}
+
+/* ─── Card idle bobbing (Balatro-style) ────────────────────── */
+@keyframes card-idle {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  40%       { transform: translateY(-7px) rotate(0.8deg); }
+  80%       { transform: translateY(-3px) rotate(-0.5deg); }
+}
+
+.card-idle {
+  animation: card-idle 2.8s ease-in-out infinite;
+  animation-delay: var(--card-idle-delay, 0s);
 }
 
 /* ─── Main menu animations ──────────────────────────────────── */

@@ -31,6 +31,8 @@ export function CardGrid({
   onConfirm,
   onCancelPending,
 }: CardGridProps) {
+  const revealedCount = slots.filter((s) => s.revealed).length;
+
   return (
     <div className="grid grid-cols-6 gap-3 w-full">
       {slots.map((slot) => (
@@ -41,6 +43,7 @@ export function CardGrid({
           card={slot.card}
           onReveal={onReveal}
           disabled={locked}
+          revealedCount={revealedCount}
         />
       ))}
 

@@ -111,6 +111,10 @@ export default function PlayPage() {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [pendingMicrobeId, setPendingMicrobeId] = useState<string | null>(null);
   const [dropBlockedMsg, setDropBlockedMsg] = useState<string | null>(null);
+  const scoreBarRef = useRef<HTMLDivElement>(null);
+  const pointsPillRef = useRef<HTMLDivElement>(null);
+  const [scorePop, setScorePop] = useState<{ points: number; startX: number; startY: number } | null>(null);
+  const [scoreFlashKey, setScoreFlashKey] = useState(0);
 
   // ─── STATE: Wrong-answer feedback ───────────────────────────────
   // After a wrong answer, we display the correct microbe here.
@@ -335,6 +339,10 @@ export default function PlayPage() {
         setCorrectMicrobe(demoCorrect);
 
         if (correct) {
+          if (roundScore > 0) {
+            const r = pointsPillRef.current?.getBoundingClientRect();
+            setScorePop({ points: roundScore, startX: r ? r.left + r.width / 2 : window.innerWidth / 2, startY: r ? r.top + r.height / 2 : window.innerHeight * 0.4 });
+          }
           setScore((s) => s + roundScore);  // functional update — based on previous score
           if (round >= 5) {
             // Won the game (5 rounds completed)
@@ -382,6 +390,10 @@ export default function PlayPage() {
       setCorrectMicrobe(data.correctMicrobe);
       setHeartsLeft(data.session.heartsLeft);                          // server is source of truth for hearts
       setScore(data.session.totalScore);
+      if (data.correct && data.roundScore > 0) {
+        const r = pointsPillRef.current?.getBoundingClientRect();
+        setScorePop({ points: data.roundScore, startX: r ? r.left + r.width / 2 : window.innerWidth / 2, startY: r ? r.top + r.height / 2 : window.innerHeight * 0.4 });
+      }
 
       if (data.correct) {
         if (data.session.completed) { setWon(true); setPhase("end"); }
@@ -392,6 +404,7 @@ export default function PlayPage() {
           setPhase("playing");
         }
       } else {
+        setRound(data.session.currentRound);
         // Reveal all cards using pre-fetched data so they appear instantly
         setSlots((prev) => prev.map((s) => ({
           ...s,
@@ -539,8 +552,17 @@ export default function PlayPage() {
     // Full-screen layout, two zones: wood area (top) + parchment area (bottom)
     // overflow-hidden → prevent scrollbars on the outer container
     <div className="flex flex-col min-h-screen w-full">
+      {scorePop !== null && (
+        <ScorePopup
+          points={scorePop.points}
+          startX={scorePop.startX}
+          startY={scorePop.startY}
+          scoreBarRef={scoreBarRef}
+          onDone={() => { setScorePop(null); setScoreFlashKey((k) => k + 1); }}
+        />
+      )}
       {dropBlockedMsg && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-[#2a1208] border border-[#d4a96a] px-5 py-2.5 text-sm font-semibold text-[#f5e6c8] shadow-xl pointer-events-none">
+        <div className="popup-toast fixed top-6 left-1/2 z-50 rounded-xl bg-[#2a1208] border border-[#d4a96a] px-5 py-2.5 text-sm font-semibold text-[#f5e6c8] shadow-xl pointer-events-none">
           {dropBlockedMsg}
         </div>
       )}
@@ -559,7 +581,7 @@ export default function PlayPage() {
 
         {/* Top bar: Score on left */}
         <div className="flex items-center">
-          <ScoreBar score={score} />
+          <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
         </div>
 
         {/*
@@ -571,21 +593,26 @@ export default function PlayPage() {
          * `-mt-8` pulls the image upward so it sits closer to the very top of the wood area
          * (overlapping vertically with the score/hearts row, but centered horizontally between them).
          */}
-        <div className="flex justify-center -mt-8 mb-2">
+        <div className="flex justify-center -mt-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/assets/ui/round-${round}.png`}
             alt={`Round ${round} of 5`}
             className="h-[10.5rem] w-[40rem] object-contain select-none pointer-events-none"
-            // h-[10.5rem] w-[40rem] → fixed 168×640px display box, identical for every round
-            // object-contain → scales the image to fit inside the box without cropping or stretching;
-            //                  any leftover space stays transparent. This normalizes the on-screen size
-            //                  even if round-1.png and round-2.png have different source dimensions.
-            // select-none → can't be highlighted by drag (feels more like a graphic, less like text)
-            // pointer-events-none → clicks pass through (not interactive)
             draggable={false}
           />
         </div>
+        {phase === "playing" && (
+          <div className="flex justify-center mt-2 mb-6">
+            <div ref={pointsPillRef} className="flex items-baseline gap-1.5 px-4 py-1 rounded-full bg-[#2a1208]/85 border border-[#d4a96a]/50 shadow-lg">
+              <span className="text-[#d4a96a] text-[0.65rem] font-semibold uppercase tracking-wider">Answer now for</span>
+              <span className="text-[#f5e6c8] text-base font-black tabular-nums">
+                {Math.max(0, 100 - Math.max(0, revealedCount - 1) * 20)}
+              </span>
+              <span className="text-[#d4a96a] text-[0.65rem] font-semibold">pts</span>
+            </div>
+          </div>
+        )}
 
         {/* The 5 clue cards + hearts (vertical) + the "Answer" button */}
         <div className="flex items-center gap-3">
@@ -615,7 +642,7 @@ export default function PlayPage() {
         {/* Wrong-answer feedback bar — only shows during "wrong" phase */}
         {/* `{condition && <JSX>}` → conditional rendering (shorthand for "render JSX if condition is truthy") */}
         {phase === "wrong" && correctMicrobe && (
-          <div className="mt-4 flex items-center gap-4 rounded-xl border border-[#6b3520] bg-[#3d1a0a]/70 p-3">
+          <div className="popup-bar mt-4 flex items-center gap-4 rounded-xl border border-[#6b3520] bg-[#3d1a0a]/70 p-3">
             {/* /70 in bg-[#3d1a0a]/70 → 70% opacity */}
             <MicrobeThumb microbe={correctMicrobe} size="lg" />
             {/* min-w-0 → required for text-truncate to work inside flex children */}
@@ -796,13 +823,18 @@ function DraggableMicrobeCard({
     if (leaveTimer.current) { clearTimeout(leaveTimer.current); leaveTimer.current = null; }
     const el = tiltRef.current;
     if (!el) return;
+    el.classList.remove("card-idle");
     const rect = el.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
-    el.style.transform = `perspective(500px) rotateX(${(0.5 - y) * 20}deg) rotateY(${(x - 0.5) * 20}deg) scale3d(1.1,1.1,1.1)`;
+    const angle = Math.atan2(y - 0.5, x - 0.5) * (180 / Math.PI) + 90;
+    el.style.transform = `perspective(500px) rotateX(${(0.5 - y) * 30}deg) rotateY(${(x - 0.5) * 30}deg) scale3d(1.1,1.1,1.1)`;
     el.style.transition = "transform 60ms linear";
     if (shineRef.current) {
-      shineRef.current.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(255,255,200,0.3) 0%, transparent 65%)`;
+      shineRef.current.style.background = [
+        `radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(255,255,220,0.6) 0%, transparent 52%)`,
+        `linear-gradient(${angle}deg, rgba(255,80,80,0.08), rgba(80,255,180,0.08), rgba(80,130,255,0.08))`,
+      ].join(", ");
       shineRef.current.style.opacity = "1";
     }
   }
@@ -810,16 +842,17 @@ function DraggableMicrobeCard({
   function handleMouseLeave() {
     const el = tiltRef.current;
     if (!el) return;
-    el.style.transition = "transform 450ms ease-out";
+    el.style.transition = "transform 500ms cubic-bezier(0.23,1,0.32,1)";
     el.style.transform = "perspective(500px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
     if (shineRef.current) shineRef.current.style.opacity = "0";
     leaveTimer.current = setTimeout(() => {
       if (tiltRef.current) {
         tiltRef.current.style.transform = "";
         tiltRef.current.style.transition = "";
+        tiltRef.current.classList.add("card-idle");
       }
       leaveTimer.current = null;
-    }, 450);
+    }, 500);
   }
   const canDropRef = useRef(canDrop);
   const onDropRef = useRef(onDrop);
@@ -944,8 +977,11 @@ function DraggableMicrobeCard({
   return (
     <div
       ref={tiltRef}
-      className="card-tilt w-full"
-      style={{ aspectRatio: "3/4" }}
+      className="card-tilt card-idle w-full"
+      style={{
+        aspectRatio: "3/4",
+        "--card-idle-delay": `${(index % 9) * 0.18}s`,
+      } as React.CSSProperties}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -1109,7 +1145,7 @@ function EndScreen({
         {/* ── Round results ─────────────────────────────────────── */}
         <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
           {results.map((result, i) => (
-            <RoundReviewRow key={i} result={result} />
+            <RoundReviewRow key={i} result={result} attemptNumber={i + 1} />
           ))}
         </div>
 
@@ -1119,12 +1155,12 @@ function EndScreen({
 }
 
 // SUB-COMPONENT: one row in the end-screen recap (shows revealed cards + correct microbe per round)
-function RoundReviewRow({ result }: { result: RoundResult }) {
+function RoundReviewRow({ result, attemptNumber }: { result: RoundResult; attemptNumber: number }) {
   return (
     <div className="rounded-xl border border-[#c4a870] bg-[#e8cd94] p-4">
 
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-[#5c2a0e] text-sm font-medium">Round {result.roundNumber}</span>
+        <span className="text-[#5c2a0e] text-sm font-medium">Microbe {attemptNumber}</span>
         <span
           className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
             result.correct
@@ -1186,6 +1222,63 @@ function ClueCardThumb({ card }: { card: ClueCard }) {
           onError={(e) => { e.currentTarget.style.display = "none"; }}
         />
       )}
+    </div>
+  );
+}
+
+// ─── score popup ──────────────────────────────────────────────────────────────
+
+function ScorePopup({
+  points,
+  startX,
+  startY,
+  scoreBarRef,
+  onDone,
+}: {
+  points: number;
+  startX: number;
+  startY: number;
+  scoreBarRef: RefObject<HTMLDivElement | null>;
+  onDone: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const flyTimer = setTimeout(() => {
+      const el = ref.current;
+      const bar = scoreBarRef.current;
+      if (!el || !bar) return;
+      const barRect = bar.getBoundingClientRect();
+      const dx = barRect.left + barRect.width / 2 - startX;
+      const dy = barRect.top + barRect.height / 2 - startY;
+      el.style.animation = "none";
+      void el.offsetHeight;
+      el.style.transition = "transform 420ms cubic-bezier(0.4,0,1,1), opacity 340ms ease-in 80ms";
+      el.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.15)`;
+      el.style.opacity = "0";
+    }, 680);
+
+    const doneTimer = setTimeout(onDone, 1120);
+    return () => { clearTimeout(flyTimer); clearTimeout(doneTimer); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <div
+      ref={ref}
+      className="score-expand fixed pointer-events-none select-none z-50"
+      style={{
+        top: startY,
+        left: startX,
+        transform: "translate(-50%, -50%)",
+        color: "#d4a96a",
+        fontSize: "4.5rem",
+        fontWeight: 900,
+        lineHeight: 1,
+        textShadow: "0 0 40px rgba(212,169,106,0.65), 0 4px 24px rgba(0,0,0,0.9)",
+        whiteSpace: "nowrap",
+      }}
+    >
+      +{points}
     </div>
   );
 }
