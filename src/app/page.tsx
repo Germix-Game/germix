@@ -21,38 +21,39 @@ type CardDef = {
   float: FloatSize;
   dur: number;
   delay: number;
+  width?: number;
 };
 const CARDS: CardDef[] = [
   // ── Top-Left Cluster ───────────────────────────────────────────────────────
-  { src: B(13), left: "0%",   top: "8%",   rotate: -25, float: "card-float-md", dur: 2500, delay: 0 },     // Leishmania spp. (Fly)
+  { src: P(89), left: "5%",   top: "10%",   rotate: -25, float: "card-float-md", dur: 2500, delay: 0 },     // Leishmania spp. (Fly)
   { src: P(78), left: "14%",  top: "12%",  rotate: 15,  float: "card-float-sm", dur: 2900, delay: 200 },   // W. bancrofti (Globe)
-  { src: B(14), left: "2%",   top: "35%",  rotate: -35, float: "card-float-lg", dur: 2300, delay: 400 },   // C. trachomatis (White cell)
-  { src: P(79), left: "20%",  top: "35%",  rotate: 10,  float: "card-float-md", dur: 2400, delay: 600 },   // S. aureus (Purple cluster)
+  { src: B(66), left: "2%",   top: "35%",  rotate: -35, float: "card-float-lg", dur: 2300, delay: 400 },   // C. trachomatis (White cell)
+  { src: B(13), left: "20%",  top: "35%",  rotate: 10,  float: "card-float-md", dur: 2400, delay: 600 },   // S. aureus (Purple cluster)
 
   // ── Mid-Left Cluster ───────────────────────────────────────────────────────
-  { src: B(15), left: "16%",  top: "55%",  rotate: 5,   float: "card-float-sm", dur: 2800, delay: 800 },   // M. tuberculosis
-  { src: P(80), left: "6%",   top: "65%",  rotate: -20, float: "card-float-lg", dur: 2200, delay: 1000 },  // N. gonorrhoeae (Pink twins)
-  { src: B(16), left: "26%",  top: "65%",  rotate: 15,  float: "card-float-md", dur: 2450, delay: 1200 },  // B. pseudomallei (Hat)
+  { src: B(29), left: "16%",  top: "55%",  rotate: 5,   float: "card-float-sm", dur: 2800, delay: 800 },   // M. tuberculosis
+  { src: B(37), left: "6%",   top: "65%",  rotate: -20, float: "card-float-lg", dur: 2200, delay: 1000 },  // N. gonorrhoeae (Pink twins)
+  { src: B(50), left: "26%",  top: "65%",  rotate: 15,  float: "card-float-md", dur: 2450, delay: 1200 },  // B. pseudomallei (Hat)
 
   // ── Bottom-Left Cluster ────────────────────────────────────────────────────
   { src: P(82), left: "1%",   top: "88%",  rotate: -15, float: "card-float-md", dur: 2500, delay: 1400 },  // O. tsutsugamushi (Orange bug)
   { src: B(18), left: "14%",  top: "85%",  rotate: -5,  float: "card-float-lg", dur: 2900, delay: 1600 },  // P. falciparum (Purple pot)
-  { src: P(85), left: "25%",  top: "92%",  rotate: 5,   float: "card-float-sm", dur: 2300, delay: 1800 },  // T. saginata (Dog worm)
+  { src: P(104), left: "25%",  top: "92%",  rotate: 5,   float: "card-float-sm", dur: 2300, delay: 1800 },  // T. saginata (Dog worm)
 
   // ── Top-Right Cluster ──────────────────────────────────────────────────────
-  { src: B(19), left: "80%",  top: "12%",  rotate: 15,  float: "card-float-md", dur: 2400, delay: 100 },   // S. pneumoniae (Purple pair)
-  { src: P(88), left: "95%",  top: "15%",  rotate: -10, float: "card-float-sm", dur: 2800, delay: 300 },   // E. vermicularis (Brown oval)
+  { src: B(21), left: "80%",  top: "12%",  rotate: 15,  float: "card-float-md", dur: 2400, delay: 100 },   // S. pneumoniae (Purple pair)
+  { src: P(108), left: "95%",  top: "15%",  rotate: -10, float: "card-float-lg", dur: 2800, delay: 300 },   // E. vermicularis (Brown oval)
 
   // ── Mid-Right Cluster ──────────────────────────────────────────────────────
-  { src: B(20), left: "78%",  top: "38%",  rotate: 0,   float: "card-float-lg", dur: 2200, delay: 500 },   // T. pallidum (White squiggly)
+  { src: B(61), left: "78%",  top: "38%",  rotate: 0,   float: "card-float-lg", dur: 2200, delay: 500 },   // T. pallidum (White squiggly)
   { src: P(90), left: "88%",  top: "35%",  rotate: -5,  float: "card-float-md", dur: 2450, delay: 700 },   // E. histolytica (Brown poop)
-  { src: B(21), left: "74%",  top: "62%",  rotate: -5,  float: "card-float-sm", dur: 2600, delay: 900 },   // C. perfringens (Gas mask)
-  { src: P(92), left: "85%",  top: "60%",  rotate: 5,   float: "card-float-lg", dur: 2350, delay: 1100 },  // P. aeruginosa (Pink pill)
-  { src: B(22), left: "95%",  top: "60%",  rotate: 15,  float: "card-float-md", dur: 2800, delay: 1300 },  // S. japonicum (Blood fluke)
+  { src: B(35), left: "74%",  top: "62%",  rotate: -5,  float: "card-float-sm", dur: 2600, delay: 900 },   // C. perfringens (Gas mask)
+  { src: B(36), left: "85%",  top: "60%",  rotate: 5,   float: "card-float-lg", dur: 2350, delay: 1100 },  // P. aeruginosa (Pink pill)
+  { src: P(103), left: "95%",  top: "60%",  rotate: 15,  float: "card-float-lg", dur: 2800, delay: 1300 },  // S. japonicum (Blood fluke)
 
   // ── Bottom-Right Cluster ───────────────────────────────────────────────────
   { src: P(95), left: "76%",  top: "88%",  rotate: -15, float: "card-float-sm", dur: 2200, delay: 1500 },  // S. stercoralis (Muscle worm)
-  { src: B(23), left: "85%",  top: "85%",  rotate: -20, float: "card-float-lg", dur: 2550, delay: 1700 },  // P. westermani (Lung fluke)
+  { src: P(96), left: "85%",  top: "85%",  rotate: -20, float: "card-float-lg", dur: 2550, delay: 1700 },  // P. westermani (Lung fluke)
   { src: P(98), left: "95%",  top: "92%",  rotate: 25,  float: "card-float-md", dur: 2700, delay: 1900 },  // C. belli (Red eyes poop)
 ];
 
@@ -147,7 +148,7 @@ export default function HomePage() {
                 src={card.src}
                 alt=""
                 aria-hidden="true"
-                width={118}
+                width={card.width ?? 118}
                 style={{
                   filter:
                     "drop-shadow(4px 8px 14px rgba(0,0,0,0.65)) drop-shadow(1px 2px 4px rgba(0,0,0,0.40))",
