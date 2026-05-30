@@ -103,7 +103,7 @@ model Microbe {
   gameMode         GameMode
   gramType         GramType
   tags             MicrobeTag[]
-  starRating       Int
+  starRating       Float
   clues            MicrobeClue[]
   unlockedBy       PlayerMicrobeUnlocked[]
   scoresAsAnswered Score[]                 @relation("AnsweredMicrobe")
