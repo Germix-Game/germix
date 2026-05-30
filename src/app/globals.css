@@ -317,18 +317,35 @@
   animation-delay: var(--card-idle-delay, 0s);
 }
 
+/* ─── Main menu hover spring ────────────────────────────────── */
+.menu-btn {
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 150ms ease,
+              border-color 150ms ease;
+}
+.menu-btn:hover  { transform: scale(1.07); }
+.menu-btn:active { transform: scale(0.97); transition-duration: 80ms; }
+
+.menu-bg-card {
+  transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.menu-bg-card:hover { transform: scale(1.18); }
+
 /* ─── Main menu animations ──────────────────────────────────── */
 @keyframes card-float-sm {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+  0%, 100% { transform: translateY(0px)   rotate(0deg);   }
+  30%       { transform: translateY(-7px)  rotate(0.9deg); }
+  70%       { transform: translateY(-3px)  rotate(-0.6deg);}
 }
 @keyframes card-float-md {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-9px); }
+  0%, 100% { transform: translateY(0px)    rotate(0deg);   }
+  35%       { transform: translateY(-10px)  rotate(1.2deg); }
+  72%       { transform: translateY(-5px)   rotate(-0.8deg);}
 }
 @keyframes card-float-lg {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-11px); }
+  0%, 100% { transform: translateY(0px)    rotate(0deg);   }
+  40%       { transform: translateY(-13px)  rotate(1.5deg); }
+  75%       { transform: translateY(-6px)   rotate(-1.1deg);}
 }
 @keyframes menu-fade-in {
   from { opacity: 0; }

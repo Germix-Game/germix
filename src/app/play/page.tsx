@@ -8,6 +8,7 @@
 // useEffect   → run code after render (e.g., on mount, when deps change)
 // useCallback → memoize a function so it doesn't get recreated every render (perf optimization)
 import { useState, useEffect, useCallback, useRef, type RefObject } from "react";
+import Link from "next/link";
 import { createAnimatable, spring } from "animejs";
 
 // Import game UI components from the components folder
@@ -111,6 +112,7 @@ export default function PlayPage() {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [pendingMicrobeId, setPendingMicrobeId] = useState<string | null>(null);
   const [dropBlockedMsg, setDropBlockedMsg] = useState<string | null>(null);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const scoreBarRef = useRef<HTMLDivElement>(null);
   const pointsPillRef = useRef<HTMLDivElement>(null);
   const [scorePop, setScorePop] = useState<{ points: number; startX: number; startY: number } | null>(null);
@@ -579,9 +581,16 @@ export default function PlayPage() {
       {/* Arbitrary background image (Tailwind bg-[url-syntax]), bg-cover scales to fill, bg-center centers it */}
       <div className="flex flex-col px-6 pt-4 pb-6 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-shrink-0">
 
-        {/* Top bar: Score on left */}
-        <div className="flex items-center">
+        {/* Top bar: Score on left, Exit on right */}
+        <div className="flex items-center justify-between">
           <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
+          <button
+            onClick={() => setShowExitConfirm(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-[#6b3520] bg-[#2a1208]/80 px-3 py-1 text-xs font-semibold text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
+          >
+            <span className="text-sm leading-none">✕</span>
+            Exit
+          </button>
         </div>
 
         {/*
@@ -771,6 +780,31 @@ export default function PlayPage() {
         </div>
 
       </div>
+
+      {showExitConfirm && (
+        <div className="end-screen-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="end-screen-panel flex flex-col gap-5 rounded-2xl border border-[#c4a870] bg-[#f0d9a8] p-7 shadow-2xl w-full max-w-xs text-center">
+            <div>
+              <h2 className="text-xl font-bold text-[#5c2a0e]">Exit Game?</h2>
+              <p className="mt-1 text-sm text-[#6a4a30]">Your current session progress will be lost.</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowExitConfirm(false)}
+                className="balatro-btn flex-1 rounded-lg bg-[#4a3020] py-2.5 text-sm font-semibold text-[#d4a96a] hover:bg-[#5a4030]"
+              >
+                Cancel
+              </button>
+              <Link
+                href="/select"
+                className="balatro-btn flex-1 rounded-lg bg-[#8b2020] py-2.5 text-sm font-semibold text-white hover:bg-[#a02828] text-center"
+              >
+                Exit
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {phase === "end" && (
         <EndScreen
