@@ -167,7 +167,7 @@ export default function LeaderboardPage() {
       />
       {/* Back button */}
       <Link
-        href="/"
+        href="/home"
         className="absolute top-4 left-4 z-20 rounded-lg border px-4 py-2 text-sm font-medium"
         style={{
           background: "rgba(42,20,0,0.9)",
