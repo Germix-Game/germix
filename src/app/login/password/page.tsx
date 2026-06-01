@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { mockAuth } from "@/lib/mock-auth";
 
 type Mode = "login" | "signup";
 
