@@ -1,16 +1,17 @@
-// Mock-up data for testing purpose 
-// Swap back to fetch (and delete this file) once the backend is live.
+// Mock-up data for testing purpose
+// Swap back to real fetch (and delete this file) once the backend is live.
 
 export type Mode = "login" | "signup";
 
 // Pretend these usernames already have accounts (used for Log In).
 const MOCK_PLAYERS: Record<string, string> = {
-  alice: "secret123",
-  bob: "password",
+  hello: "123456",
+  hi: "654321",
 };
 
-// Pretend these usernames are on the pre-test whitelist (allowed to Sign Up).
-const MOCK_WHITELIST = ["pory", "hahaha"];
+// Pre-test whitelist (allowed to Sign Up).
+// `BukayoSaka` is whitelisted but has NO account yet → use it to test a successful sign-up.
+const MOCK_WHITELIST = ["hello", "hi", "BukayoSaka"];
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -18,12 +19,39 @@ function delay(ms: number) {
 
 export type AuthResult = { ok: true } | { ok: false; message: string };
 
+// STEP 1 (username page): existence / whitelist / duplicate checks — no password yet.
+export async function mockCheckUsername(
+  mode: Mode,
+  username: string,
+): Promise<AuthResult> {
+  await delay(500);
+
+  if (mode === "login") {
+    if (!MOCK_PLAYERS[username]) return { ok: false, message: "Username not found." };
+    return { ok: true };
+  }
+
+  // signup
+  if (!MOCK_WHITELIST.includes(username))
+    return {
+      ok: false,
+      message: "Your username is not registered. Please complete the pre-test form first.",
+    };
+  if (MOCK_PLAYERS[username])
+    return {
+      ok: false,
+      message: "An account already exists for this username. Please log in.",
+    };
+  return { ok: true };
+}
+
+// STEP 2 (password page): the actual login / sign-up.
 export async function mockAuth(
   mode: Mode,
   username: string,
   password: string,
 ): Promise<AuthResult> {
-  await delay(700); // simulate a network round-trip so the loading state is visible
+  await delay(700);
 
   if (mode === "login") {
     const realPassword = MOCK_PLAYERS[username];
@@ -37,8 +65,7 @@ export async function mockAuth(
   if (!MOCK_WHITELIST.includes(username))
     return {
       ok: false,
-      message:
-        "Your username is not registered. Please complete the pre-test form first.",
+      message: "Your username is not registered. Please complete the pre-test form first.",
     };
   if (MOCK_PLAYERS[username])
     return {

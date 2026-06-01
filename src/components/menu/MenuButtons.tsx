@@ -5,6 +5,7 @@ const NAV_LINKS = [
   { label: "LEADERBOARD",          href: "/leaderboard"  },
   { label: "PATHOGEN BOOK",        href: "/pathogen-book"},
   { label: "CREDITS & REFERENCES", href: "/credits"      },
+  { label: "log out"             , href: "/logout"} // If you think it's not important, this can be removed. 
 ] as const;
 
 export function MenuButtons() {
