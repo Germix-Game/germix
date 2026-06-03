@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import type { ClueCard } from "@/types/game";
 
 interface CardSlotProps {
@@ -9,12 +9,23 @@ interface CardSlotProps {
   card: ClueCard | null;
   onReveal: (index: number) => void;
   disabled?: boolean;
+  revealedCount?: number;
 }
 
-export function CardSlot({ index, revealed, card, onReveal, disabled }: CardSlotProps) {
+export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCount = 0 }: CardSlotProps) {
   const tiltRef = useRef<HTMLDivElement>(null);
   const shineRef = useRef<HTMLDivElement>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showPop, setShowPop] = useState(false);
+  const [popLabel, setPopLabel] = useState("-20");
+
+  useEffect(() => {
+    if (!revealed) return;
+    setPopLabel(revealedCount <= 1 ? "-0" : "-20");
+    setShowPop(true);
+    const t = setTimeout(() => setShowPop(false), 1100);
+    return () => clearTimeout(t);
+  }, [revealed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     if (leaveTimer.current) {
@@ -23,15 +34,20 @@ export function CardSlot({ index, revealed, card, onReveal, disabled }: CardSlot
     }
     const el = tiltRef.current;
     if (!el) return;
+    el.classList.remove("card-idle");
     const rect = el.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
-    const rotX = (0.5 - y) * 24;
-    const rotY = (x - 0.5) * 24;
-    el.style.transform = `perspective(700px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.08,1.08,1.08)`;
+    const rotX = (0.5 - y) * 30;
+    const rotY = (x - 0.5) * 30;
+    el.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.1,1.1,1.1)`;
     el.style.transition = "transform 60ms linear";
     if (shineRef.current) {
-      shineRef.current.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(255,255,200,0.28) 0%, transparent 65%)`;
+      const angle = Math.atan2(y - 0.5, x - 0.5) * (180 / Math.PI) + 90;
+      shineRef.current.style.background = [
+        `radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(255,255,220,0.6) 0%, transparent 52%)`,
+        `linear-gradient(${angle}deg, rgba(255,80,80,0.08), rgba(80,255,180,0.08), rgba(80,130,255,0.08))`,
+      ].join(", ");
       shineRef.current.style.opacity = "1";
     }
   }
@@ -39,27 +55,35 @@ export function CardSlot({ index, revealed, card, onReveal, disabled }: CardSlot
   function handleMouseLeave() {
     const el = tiltRef.current;
     if (!el) return;
-    el.style.transition = "transform 450ms ease-out";
-    el.style.transform = "perspective(700px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
+    el.style.transition = "transform 500ms cubic-bezier(0.23,1,0.32,1)";
+    el.style.transform = "perspective(900px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
     if (shineRef.current) shineRef.current.style.opacity = "0";
     leaveTimer.current = setTimeout(() => {
       if (tiltRef.current) {
         tiltRef.current.style.transform = "";
         tiltRef.current.style.transition = "";
+        if (tiltRef.current.dataset.revealed !== "true") {
+          tiltRef.current.classList.add("card-idle");
+        }
       }
       leaveTimer.current = null;
-    }, 450);
+    }, 500);
   }
 
   return (
     <div
       ref={tiltRef}
-      className="card-tilt w-full"
-      style={{ aspectRatio: "1429 / 2000" }}
+      className={`card-tilt w-full${!revealed && !disabled ? " card-idle" : ""}`}
+      data-revealed={revealed ? "true" : "false"}
+      style={{
+        aspectRatio: "1429 / 2000",
+        "--card-idle-delay": `${index * 0.35}s`,
+      } as React.CSSProperties}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
       <div ref={shineRef} className="card-shine" aria-hidden />
+      {showPop && <span className="point-pop" aria-hidden>{popLabel}</span>}
       <div className="card-wrapper w-full h-full">
       <div className={`card-inner${revealed ? " flipped" : ""}`}>
 

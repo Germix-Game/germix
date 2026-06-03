@@ -142,19 +142,27 @@ export default function HomePage() {
                 : "none",
             }}
           >
-            <div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={card.src}
-                alt=""
-                aria-hidden="true"
-                width={card.width ?? 118}
+            <div className="menu-bg-card">
+              <div
                 style={{
-                  filter:
-                    "drop-shadow(4px 8px 14px rgba(0,0,0,0.65)) drop-shadow(1px 2px 4px rgba(0,0,0,0.40))",
+                  animation: loaded
+                    ? `${card.float} ${card.dur}ms ease-in-out ${card.delay + 600}ms infinite both`
+                    : "none",
                 }}
-                draggable={false}
-              />
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={card.src}
+                  alt=""
+                  aria-hidden="true"
+                  width={card.width ?? 150}
+                  style={{
+                    filter:
+                      "drop-shadow(4px 8px 14px rgba(0,0,0,0.65)) drop-shadow(1px 2px 4px rgba(0,0,0,0.40))",
+                  }}
+                  draggable={false}
+                />
+              </div>
             </div>
           </div>
         ))}

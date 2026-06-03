@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fredoka } from "next/font/google";
 import "./globals.css";
+import { NavigationLoader } from "@/components/NavigationLoader";
 
 const fredoka = Fredoka({
   subsets: ["latin"],
@@ -19,7 +20,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${fredoka.className} h-full w-full antialiased`}>
-      <body className="min-h-full w-full flex flex-col">{children}</body>
+      <body className="min-h-full w-full flex flex-col">
+        <NavigationLoader />
+        {children}
+      </body>
     </html>
   );
 }
