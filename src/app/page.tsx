@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { MOCK_USERS } from "@/lib/mock-users";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -23,22 +24,15 @@ export default function AuthPage() {
 
     setError(null);
     setSubmitting(true);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim(), password }),
-      });
-      if (res.ok) {
-        router.push("/home");
-        return;
-      }
-      setError("Incorrect username or password. Please try again.");
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setSubmitting(false);
+
+    // Mock login — checks the hardcoded list, no database needed.
+    if (MOCK_USERS[username.trim()] === password) {
+      router.push("/home");
+      return;
     }
+
+    setSubmitting(false);
+    setError("Incorrect username or password. Please try again.");
   }
 
   return (
