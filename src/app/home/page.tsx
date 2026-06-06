@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MenuButtons } from "@/components/menu/MenuButtons";
+import { createClient } from "@/utils/supabase/client";
 
 // ─── Card layout data ─────────────────────────────────────────────────────────
 // Positions are percentages of the 1280×720 reference canvas used in the original
@@ -68,6 +70,25 @@ const PRELOAD_ASSETS = [
 
 export default function HomePage() {
   const [loaded, setLoaded] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        const raw = data.user.user_metadata?.username as string | undefined;
+        setUsername(raw ?? data.user.email?.split("@")[0] ?? null);
+      }
+    });
+  }, []);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/");
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -208,26 +229,51 @@ export default function HomePage() {
           />
         </div>
 
-        {/* POST TEST — locked, pinned to top-right */}
-        <div
-          className="absolute top-4 right-4 z-20"
-          style={{
-            animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
-          }}
-        >
+        {/* Username chip — pinned to top-left */}
+        {username && (
           <div
-            className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-3 text-xs font-semibold tracking-wide text-[#6b5040] shadow cursor-not-allowed select-none"
-            aria-disabled="true"
-            title="Post test is not yet available"
+            className="absolute top-4 left-4 z-20"
+            style={{
+              animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
+            }}
           >
-            <span>🔒</span>
-            <span>POST TEST</span>
+            <div className="flex h-8 items-center gap-1.5 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-3 text-xs font-semibold tracking-wide text-[#f5e6c8] shadow select-none">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a96a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+              </svg>
+              <span>{username}</span>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Menu button group */}
+        {/* Logout button — pinned to top-right */}
+        {username && (
+          <div
+            className="absolute top-4 right-4 z-20"
+            style={{
+              animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
+            }}
+          >
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="flex h-8 items-center gap-1.5 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-3 text-xs font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Log out"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span>{loggingOut ? "..." : "Logout"}</span>
+            </button>
+          </div>
+        )}
+
+        {/* Menu button group + POST TEST below */}
         <div
-          className="absolute left-1/2 z-10"
+          className="absolute left-1/2 z-10 flex flex-col items-center gap-3"
           style={{
             top: "75%",
             transform: "translate(-50%, -50%)",
@@ -235,6 +281,14 @@ export default function HomePage() {
           }}
         >
           <MenuButtons />
+          <div
+            className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-4 text-xs font-semibold tracking-wide text-[#6b5040] shadow cursor-not-allowed select-none"
+            aria-disabled="true"
+            title="Post test is not yet available"
+          >
+            <span>🔒</span>
+            <span>POST TEST</span>
+          </div>
         </div>
       </div>
     </>
