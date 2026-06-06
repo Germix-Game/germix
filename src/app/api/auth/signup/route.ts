@@ -3,8 +3,18 @@ import { createErrorResponse, validationDetailsFromIssues } from '@/lib/api-erro
 import { createSupabaseServerClient, createSupabaseServiceClient, deriveAuthEmail } from '@/lib/supabase'
 import { signupSchema } from '@/lib/schemas/auth'
 import { prisma } from '@/lib/prisma'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (!checkRateLimit(`signup:${ip}`, 5, 60_000)) {
+    return createErrorResponse({
+      status: 429,
+      code: 'rate_limited',
+      message: 'Too many signup attempts. Please wait a minute and try again.',
+    })
+  }
+
   let body: unknown
   try {
     body = await request.json()

@@ -29,12 +29,12 @@ function PasswordForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (mode === "signup" && (password.length < 6 || password.length > 72)) {
-      setError("Password must be 6–72 characters.");
-      return;
-    }
     if (!password) {
       setError("Please enter your password.");
+      return;
+    }
+    if (mode === "signup" && (password.length < 6 || password.length > 72)) {
+      setError("Password must be 6–72 characters.");
       return;
     }
 
