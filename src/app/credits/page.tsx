@@ -1,100 +1,125 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const CREDITS = [
-  {
-    section: "Game Design & Development",
-    entries: [
-      { role: "Project Lead", name: "Germix Game Team" },
-      { role: "UI/UX Design", name: "Germix Game Team" },
-      { role: "Backend Engineering", name: "Germix Game Team" },
-    ],
-  },
-  {
-    section: "Academic Content",
-    entries: [
-      { role: "Microbiology Content", name: "Faculty of Medicine" },
-      { role: "Clinical Case Review", name: "Medical Advisors" },
-    ],
-  },
-  {
-    section: "References",
-    entries: [
-      { role: "Textbook", name: "Murray PR et al. — Medical Microbiology, 9th ed." },
-      { role: "Textbook", name: "Brooks GF et al. — Jawetz, Melnick & Adelberg's Medical Microbiology, 28th ed." },
-      { role: "Guidelines", name: "CDC — Antimicrobial Resistance Threats Report" },
-    ],
-  },
-  {
-    section: "Technology",
-    entries: [
-      { role: "Framework", name: "Next.js — Vercel" },
-      { role: "Database ORM", name: "Prisma" },
-      { role: "Styling", name: "Tailwind CSS" },
-    ],
-  },
-] as const;
+const RESEARCHERS = [
+  "Chonticha Nopmaneejumruslers",
+  "Keerada Keeratihuttyakorn",
+  "Chatakarn Surawatanawisase",
+  "Veerin Banjongpru",
+];
+
+const ADVISORS = [
+  "AJ. Aekkacha Moonwiriyakit",
+  "AJ. Thachawech Kimprasit",
+  "AJ. Suthan Srisangkaew",
+];
+
+const ILLUSTRATORS = ["Akikun"];
+
+const REFERENCES = [
+  { label: "Textbook", title: "X" },
+  { label: "Textbook", title: "X" },
+  { label: "Guidelines", title: "X" },
+];
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2
+      className="mb-3 text-sm font-bold uppercase tracking-widest text-black"
+      style={{ fontFamily: "'Impact','Arial Black',sans-serif" }}
+    >
+      {children}
+    </h2>
+  );
+}
+
+function ReferenceList({ entries }: { entries: readonly { label: string; title: string }[] }) {
+  return (
+    <ul className="flex flex-col items-center gap-2">
+      {entries.map((ref, i) => (
+        <li key={i} className="flex flex-col items-center leading-tight">
+          <span className="text-[11px] uppercase tracking-wider text-black/50">{ref.label}</span>
+          <span className="text-[13px] font-semibold text-black text-center">{ref.title}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function EntryList({ entries }: { entries: readonly string[] }) {
+  return (
+    <ul className="flex flex-col items-center gap-1.5">
+      {entries.map((name, i) => (
+        <li key={i} className="text-base font-semibold text-black leading-tight">
+          {name}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export default function CreditsPage() {
   return (
     <div
-      className="min-h-screen w-full bg-cover bg-center px-4 py-8"
+      className="relative min-h-screen w-full bg-cover bg-center"
       style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
     >
-      <div className="mx-auto max-w-2xl">
-        {/* Back button */}
-        <div className="mb-6 flex items-center gap-4">
-          <Link
-            href="/"
-            className="flex h-9 items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
-          >
-            ← Back
-          </Link>
-          <h1
-            className="text-2xl font-bold tracking-wide text-[#d4a96a]"
-            style={{ fontFamily: "'Impact','Arial Black',sans-serif" }}
-          >
-            CREDITS &amp; REFERENCES
-          </h1>
-        </div>
-
-        {/* Team graphic */}
-        <div className="mb-6 overflow-hidden rounded-2xl border border-[#d4a96a]/60 shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
+      {/* Game graphic — 80% wide, centered, behind text */}
+      <div className="absolute inset-0 flex justify-center">
+        <div className="relative w-4/5 h-full">
           <Image
             src="/assets/credit/germix-graphic-game.png"
-            alt="Germix Game Team"
-            width={1280}
-            height={720}
-            className="w-full h-auto"
+            alt="Germix Credits"
+            fill
+            className="object-contain object-top"
             priority
           />
         </div>
+      </div>
 
-        {/* Credits sections */}
-        <div className="space-y-4">
-          {CREDITS.map((group) => (
-            <div
-              key={group.section}
-              className="rounded-2xl border border-[#d4a96a]/60 bg-[#1a0a04]/90 px-5 py-4"
-            >
-              <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#d4a96a]">
-                {group.section}
-              </h2>
-              <ul className="space-y-2">
-                {group.entries.map((entry, i) => (
-                  <li key={`${entry.role}-${i}`} className="flex gap-3 text-sm">
-                    <span className="w-40 flex-shrink-0 text-[#9a7850]">{entry.role}</span>
-                    <span className="text-[#f5e6c8]">{entry.name}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+      {/* Credits overlay */}
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-end pb-4 px-4">
+        {/* 2-column grid */}
+        <div className="w-full max-w-lg grid grid-cols-2 gap-x-8 gap-y-6 text-center">
+          {/* Left: Researchers */}
+          <div className="flex flex-col items-center">
+            <SectionTitle>Researchers</SectionTitle>
+            <EntryList entries={RESEARCHERS} />
+          </div>
+
+          {/* Right: Advisors */}
+          <div className="flex flex-col items-center">
+            <SectionTitle>Advisors</SectionTitle>
+            <EntryList entries={ADVISORS} />
+          </div>
+
+          {/* Bottom: Illustrator — spans both columns */}
+          <div className="col-span-2 flex flex-col items-center">
+            <SectionTitle>Illustrator</SectionTitle>
+            <EntryList entries={ILLUSTRATORS} />
+          </div>
+
+          {/* Bottom: Academic References — spans both columns */}
+          <div className="col-span-2 flex flex-col items-center">
+            <SectionTitle>Academic References</SectionTitle>
+            <ReferenceList entries={REFERENCES} />
+          </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-[#9a7850]">
+        <p className="mt-5 text-[13px] text-black/40">
           © {new Date().getFullYear()} Germix — Microbiology Card Game. All rights reserved.
+
         </p>
+      </div>
+
+      {/* Back button */}
+      <div className="fixed top-4 left-4 z-20">
+        <Link
+          href="/"
+          className="flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 py-2 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
+        >
+          ← Back
+        </Link>
       </div>
     </div>
   );
