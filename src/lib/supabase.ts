@@ -41,5 +41,5 @@ export function getSupabasePublishableKeyForServer(): string {
 }
 
 export function deriveAuthEmail(username: string): string {
-  return `${Buffer.from(username, 'utf8').toString('base64url')}@example.com`
+  return `${Buffer.from(username, 'utf8').toString('base64url')}@germix.local`
 }
