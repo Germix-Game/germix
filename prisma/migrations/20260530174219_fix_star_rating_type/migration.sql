@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Microbe" ALTER COLUMN "starRating" SET DATA TYPE DOUBLE PRECISION;

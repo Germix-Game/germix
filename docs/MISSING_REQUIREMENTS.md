@@ -38,7 +38,7 @@
 | R18 | Animations | None for v1. Simple splash screen only. |
 | R19 | Card count | 600 cards. Focus on bacteria first. CSV content coming later. |
 | R20 | Win/lose screen | Scrollable rows (5 clue cards + 1 answer card per microbe). Wrong-answer rows show all revealed. |
-| R21 | Wrong answer behavior | −1 heart → reveal all 5 cards + correct answer → "Next" button. No retry on same microbe. |
+| R21 | Wrong answer behavior | −1 heart per wrong attempt. Wrong option marked red + disabled. Player retries same microbe until correct or hearts = 0. First wrong attempt → 0 pts for that microbe even if later correct. Hearts = 0 → immediate game over. |
 | R22 | Account creation | Self-registration with Student_ID whitelist. Admin imports CSV of approved IDs. Students sign up in-game using their approved Student_ID. |
 | R23 | Auto-reveal | **No auto-reveal.** All 5 cards start hidden. Player must open at least 1 card manually before answering. |
 | R24 | Posttest pass/fail | No threshold. Show "You scored X / 30". Any submission unlocks game. |

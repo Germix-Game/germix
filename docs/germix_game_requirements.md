@@ -1,8 +1,8 @@
 # Germix — Project Requirements Document
 
-**Version:** 0.9  
-**Last Updated:** 2026-05-18  
-**Status:** Draft — schema and API hardened after design review. Visual design direction added. Signup endpoint, response envelope, error format, and reveal/answer contracts now explicit.
+**Version:** 1.0  
+**Last Updated:** 2026-06-07  
+**Status:** Draft — Pathogen Book layout expanded (§9): two-panel open book, PNG-only chrome, left microbe grid, right detail + characteristic cards.
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Version | Date | Summary |
 |---|---|---|
+| 1.0 | 2026-06-07 | **Pathogen Book layout specified (§9):** two-panel open book; left page = microbe grid per category with PNG cards, star rating, gram badge, locked/unlocked state; right page = selected microbe detail with large card + all ClueCard PNGs grouped by category. All visual chrome is PNG-based — no CSS-drawn UI elements. Category navigation via tab strip. Seven open questions added (PB-1 through PB-7). |
 | 0.9 | 2026-05-18 | **Applied all 0.8 schema changes that were logged but never written to the schema:** `enum AnswerOption { A B C D }` added; `Microbe.answerImageUrl String` added; `Score.microbeId`/`answeredMicrobeId` now proper named `@relation` to `Microbe` (`"CorrectMicrobe"` / `"AnsweredMicrobe"`); `Score.gameMode` removed; `ClueCard.imageUrl` non-nullable; `PostTest.score Int @default(0)` non-nullable; `PostTestQuestion.correctOption AnswerOption`; `ApprovedUsername` gains `registeredAt DateTime?` + 1-to-1 `Player?` back-relation; `Player` gains `approved ApprovedUsername` FK (DB-enforces every player was whitelisted). **Over-engineering fixed:** `SessionMicrobe` and `PlayerMicrobeUnlocked` surrogate PKs removed — now use composite `@@id` (natural key). **Index added:** `Score.@@index([microbeId])` for admin per-microbe accuracy queries. |
 | 0.8 | 2026-05-18 | **Schema best-practice fixes (logged only — not applied until 0.9):** added `enum AnswerOption { A B C D }` for type-safe posttest answers; `Microbe.answerImageUrl String` added (required for Answer panel, End Screen, Pathogen Book); `Score.microbeId`/`answeredMicrobeId` now proper `@relation` to `Microbe` (was bare String — no referential integrity); `Score.gameMode` removed (redundant, derivable via session join); `ClueCard.imageUrl` is now non-nullable `String` (all cards are PNGs); `PostTest.score` is now non-nullable `Int @default(0)`; `PostTestQuestion.correctOption` now typed as `AnswerOption`; `ApprovedUsername` gains `registeredAt DateTime?` and a 1-to-1 relation to `Player` (enforces that every registered player was whitelisted at DB level). |
 | 0.7 | 2026-05-18 | **Session structure changed:** 5 rounds × 1 microbe = 5 total identifications to win (was 5 × 3 = 15). `MICROBES_PER_ROUND` is now 1. Max session score is now 500. All references updated. **Schema fixes:** `PlayerMicrobeSeen` renamed to `PlayerMicrobeUnlocked` (semantic clarity); `Json microbeIds` replaced with `SessionMicrobe` relation model (enforces no-duplicate microbes via DB constraint); `Score.microbeInRound` removed (always 1, redundant); `GameSession.currentMicrobeInRound` removed (same reason); `PostTestQuestion` model added so `/api/posttest` can compute scores server-side. |
@@ -428,11 +429,88 @@ The **card reveal flip** is the emotional core. Use a 3D `rotateY` flip (~400ms,
 - [Play Again] → new session
 
 ### Page 9 — Pathogen Book
-- Grid of all microbes in the current game mode
-- **Unlocked:** show microbe cartoon image + name (full card)
-- **Locked:** black card with "?" — name hidden
-- A microbe is unlocked **only when the player answers it correctly** — encountering it (opening cards) without a correct answer does not unlock it
-- Recorded in `PlayerMicrobeSeen` when the server confirms a correct answer
+
+#### 9.1 Overall Layout
+
+The Pathogen Book renders as a two-page open book. **All visual chrome (background, book frame, panels, tabs, stars) is PNG — no CSS-drawn UI elements.** React components position PNG `<img>` tags and microbe data on top of these backgrounds.
+
+```
+┌──────┬───────────────────────────┬───────────────────────────┐
+│      │  LEFT PAGE                │  RIGHT PAGE               │
+│ tabs │  Category Title           │  Selected Microbe Detail  │
+│      │  Microbe Grid             │  Characteristic Cards     │
+└──────┴───────────────────────────┴───────────────────────────┘
+```
+
+- **Background:** full-screen PNG (`/assets/pathogen-book/{category}.png`) — one per category (bacteria, virus, fungi, parasite)
+- **Category tabs (far-left strip):** vertical column of circular/icon PNGs, one per microbe type; clicking a tab navigates to that category's page
+- The book uses `position: relative` / `absolute` to layer microbe data on top of the background PNG
+
+#### 9.2 Left Page — Microbe Grid
+
+Displays all microbes for the current category in a scrollable grid.
+
+- **Title:** category name at the top of the left page (e.g. "Bacteria"), rendered as text positioned over the background PNG
+- **Grid:** 4 columns, fixed
+- **Each microbe entry card contains (all PNGs):**
+  - Microbe cartoon image (`Microbe.answerImageUrl`)
+  - Short name label beneath the image (`Microbe.shortName`)
+  - Clinical Relevance star rating beneath the name — one static PNG per rating value (e.g. `stars-1.png` … `stars-5.png`); chosen by rounding `Microbe.starRating Float` to the nearest integer (1–5 max)
+  - Gram-type indicator badge in the top-left corner of the card (PNG icon showing GRAM+/GRAM−/ACID-FAST)
+- **Locked state:** if the microbe has not been unlocked by the player, the microbe image is replaced with a locked-state PNG (black card / "?"); the name and stars are hidden
+- **Unlocked state:** full card shown as described above
+- **Selection:** clicking an unlocked microbe entry updates the right page to show that microbe's detail; the selected card has a visual highlight
+- A microbe is unlocked **only when the player answers it correctly** in-game
+
+#### 9.3 Right Page — Microbe Detail
+
+Shows the full detail for the currently selected microbe.
+
+- **Microbe card (top section):**
+  - Large microbe cartoon image (`Microbe.answerImageUrl`) in a card frame PNG
+  - Full name beneath or beside the card (`Microbe.name`) in italic serif
+  - "Clinical Relevance Rating" label + the same static `stars-{n}.png` as the grid card
+- **Characteristic cards (bottom grid) — ⚠️ NOT YET IMPLEMENTED:**
+  - Each microbe has one or more characteristic cards sourced from `public/assets/cards/clues/`
+  - Card categories (each is a sub-folder under `clues/`):
+    | Category | Folder | `CardCategory` enum |
+    |---|---|---|
+    | Gram Stain | `gram-stain/` | `GRAM_STAIN` |
+    | Clinical Manifestation | `clinical-manifistation/` | `CLINICAL_MANIFESTATION` | <!-- folder name has a typo — matches actual directory name on disk -->
+    | Lab Characteristic | `lab-characteristic/` | `LAB_CHARACTERISTIC` |
+    | Virulence Factor | `virulence-factor/` | `VIRULENCE_FACTOR` |
+    | Special Trait | `special-trait/` | `SPECIAL_TRAIT` |
+  - Each microbe may have **one or many** cards per category (e.g. 3 Virulence Factor cards shown side-by-side)
+  - Each card is a PNG (`ClueCard.imageUrl`) with a category label above it
+  - Layout order: Gram Stain → Clinical Manifestation → Lab Characteristic → Virulence Factor → Special Trait
+  - Data source: `GET /api/pathogen-book/{microbeId}/clues` → array of `{ id, category, label, imageUrl, sortOrder }`
+  - **Implementation note:** The API endpoint already exists. UI display in `PathogenBookLayout.tsx` right panel is pending — see `ClueSection` component and `ClueCardEntry` type already scaffolded in that file.
+- When no microbe is selected (page first load), the right page shows the book background only
+
+#### 9.4 Navigation
+
+- Entry point from Home (Page 3) → `/pathogen-book` → landing page with category selector (or directly to bacteria by default — TBD)
+- Category sub-routes: `/pathogen-book/bacteria`, `/pathogen-book/fungi`, `/pathogen-book/parasite`, `/pathogen-book/virus`
+- Tab strip on the left edge navigates between categories without a full page reload (client-side route)
+- Back button / close returns to Home
+
+#### 9.5 Data Source
+
+- `GET /api/pathogen-book?gameMode=BACTERIA` returns all microbes + `unlocked: boolean` per player
+- `ClueCard` rows for the selected microbe are fetched on selection (or eagerly with the microbe list — TBD)
+- Unauthenticated users see all microbes as locked
+
+#### 9.6 Open Questions — Pathogen Book
+
+| # | Question |
+|---|---|
+| ~~PB-1~~ | ~~How many columns?~~ — **resolved: 4 columns, fixed** |
+| PB-2 | Is there a separate bacteria background PNG, or is only fungi/parasite/virus provided? |
+| PB-3 | Are the category tab icons already provided as PNGs, or do we create them? |
+| PB-4 | What is the `clinicalRelevance` field on `Microbe`? (not in current schema — is it a 1–5 int, or derived from tags?) |
+| PB-5 | Are ClueCards fetched alongside the microbe list, or on-demand when a microbe is selected? |
+| PB-6 | Does the right page show all ClueCards for a microbe regardless of which ones the player revealed in-game? |
+| ~~PB-7~~ | ~~Shared vs per-microbe star PNGs?~~ — **resolved: static `stars-{1..5}.png` per rating value; `Microbe.starRating` rounded to nearest int selects the image** |
 
 ### Page 10 — Posttest (In-Game)
 - Full-page React component (not a modal) — player cannot skip

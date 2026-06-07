@@ -90,7 +90,7 @@ model Score {
   player            Player      @relation(fields: [playerId], references: [id])
   session           GameSession @relation(fields: [sessionId], references: [id])
 
-  @@unique([sessionId, roundNumber])
+  @@index([sessionId, roundNumber])
   @@index([playerId, createdAt(sort: Desc)])
   @@index([microbeId])
 }
@@ -103,7 +103,7 @@ model Microbe {
   gameMode         GameMode
   gramType         GramType
   tags             MicrobeTag[]
-  starRating       Int
+  starRating       Float
   clues            MicrobeClue[]
   unlockedBy       PlayerMicrobeUnlocked[]
   scoresAsAnswered Score[]                 @relation("AnsweredMicrobe")
@@ -192,6 +192,8 @@ enum CardCategory {
   LAB_CHARACTERISTIC
   SPECIAL_TRAIT
   CLINICAL_MANIFESTATION
+  TRANSMISSION
+  MORPHOLOGY
 }
 
 enum MicrobeTag {

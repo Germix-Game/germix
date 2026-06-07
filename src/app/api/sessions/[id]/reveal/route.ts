@@ -37,8 +37,8 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
       return Response.json({ error: 'Session is no longer active' }, { status: 409 })
     }
 
-    const totalScores = await prisma.score.count({ where: { sessionId: id } })
-    const currentPosition = totalScores + 1
+    const correctCount = await prisma.score.count({ where: { sessionId: id, correct: true } })
+    const currentPosition = correctCount + 1
 
     const sessionMicrobe = await prisma.sessionMicrobe.findUnique({
       where: { sessionId_roundNumber: { sessionId: id, roundNumber: currentPosition } },

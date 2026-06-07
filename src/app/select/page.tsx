@@ -70,7 +70,7 @@ export default function LevelSelectPage() {
 
       {/* Back button — top-left */}
       <button
-        onClick={() => router.push("/")}
+        onClick={() => router.push("/home")}
         className="absolute left-6 top-[18px] rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
         style={{
           background: "rgba(42, 20, 0, 0.9)",
