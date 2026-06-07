@@ -591,7 +591,7 @@ export default function PlayPage() {
       <div className="flex flex-col px-6 pt-4 pb-6 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-shrink-0">
 
         {/* Top bar: Score on left, Exit on right */}
-        <div className="flex items-center justify-between">
+        <div className="relative z-10 flex items-center justify-between">
           <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
           <button
             onClick={() => setShowExitConfirm(true)}
@@ -785,7 +785,7 @@ export default function PlayPage() {
           <div className="end-screen-panel flex flex-col gap-5 rounded-2xl border border-[#c4a870] bg-[#f0d9a8] p-7 shadow-2xl w-full max-w-xs text-center">
             <div>
               <h2 className="text-xl font-bold text-[#5c2a0e]">Exit Game?</h2>
-              <p className="mt-1 text-sm text-[#6a4a30]">Your current session progress will be lost.</p>
+              <p className="mt-1 text-sm text-[#6a4a30]">Your score will <span className="font-semibold text-[#8b2020]">not</span> be counted. You will need to restart the game.</p>
             </div>
             <div className="flex gap-3">
               <button
@@ -810,16 +810,7 @@ export default function PlayPage() {
           won={won}
           results={roundResults}
           score={score}
-          onPlayAgain={() => {
-            if (isDemo) {
-              setRound(1); setScore(0); setHeartsLeft(3);
-              setRoundResults([]); setWon(false);
-              resetRound();
-              setPhase("playing");
-            } else {
-              window.location.href = "/select";
-            }
-          }}
+          onExit={() => { window.location.href = "/"; }}
         />
       )}
     </div>
@@ -1144,12 +1135,12 @@ function EndScreen({
   won,
   results,
   score,
-  onPlayAgain,
+  onExit,
 }: {
   won: boolean;
   results: RoundResult[];
   score: number;
-  onPlayAgain: () => void;
+  onExit: () => void;
 }) {
   const [displayScore, setDisplayScore] = useState(0);
 
@@ -1175,7 +1166,14 @@ function EndScreen({
       <div className="end-screen-panel flex flex-col w-full max-w-2xl max-h-[85vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
 
         {/* ── Title + score ─────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-8 py-5 flex-shrink-0 border-b border-[#c4a870]">
+        <div className="relative flex items-center justify-between px-8 py-5 flex-shrink-0 border-b border-[#c4a870]">
+          <button
+            onClick={onExit}
+            aria-label="Exit"
+            className="absolute top-3 right-3 flex items-center justify-center w-7 h-7 rounded-full text-[#5c2a0e] hover:bg-[#c4a870]/40 transition-colors"
+          >
+            ✕
+          </button>
           <div>
             <h1 className="text-2xl font-bold text-[#5c2a0e]">
               {won ? "You Win!" : "Game Over"}
@@ -1184,12 +1182,6 @@ function EndScreen({
               Final score: {String(displayScore).padStart(4, "0")}
             </p>
           </div>
-          <button
-            onClick={onPlayAgain}
-            className="balatro-btn rounded-lg bg-[#d4a96a] px-6 py-2.5 font-semibold text-[#2a1208] hover:bg-[#e0b87a]"
-          >
-            Play Again
-          </button>
         </div>
 
         {/* ── Round results ─────────────────────────────────────── */}
