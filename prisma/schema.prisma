@@ -184,6 +184,9 @@ enum GramType {
   NEGATIVE
   ACID_FAST
   NONE
+  PROTOZOA
+  PLATYHEMINTH
+  NEMATODE
 }
 
 enum CardCategory {
@@ -194,8 +197,6 @@ enum CardCategory {
   LAB_CHARACTERISTIC
   SPECIAL_TRAIT
   CLINICAL_MANIFESTATION
-  TRANSMISSION
-  MORPHOLOGY
 }
 
 enum MicrobeTag {
