@@ -39,14 +39,16 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
       return Response.json({ error: 'Session is no longer active' }, { status: 409 })
     }
 
-    const totalScores = await prisma.score.count({ where: { sessionId: id } })
-    const currentPosition = totalScores + 1
+    // Position is determined by how many microbes have been correctly answered so far.
+    // Wrong attempts do not advance position — the player retries the same microbe.
+    const correctCount = await prisma.score.count({ where: { sessionId: id, correct: true } })
+    const currentPosition = correctCount + 1
 
-    // Idempotency: check if this round was already answered
-    const existingScore = await prisma.score.findUnique({
-      where: { sessionId_roundNumber: { sessionId: id, roundNumber: currentPosition } },
+    // Idempotency: prevent re-submitting a microbe that was already answered correctly
+    const existingCorrect = await prisma.score.findFirst({
+      where: { sessionId: id, roundNumber: currentPosition, correct: true },
     })
-    if (existingScore) {
+    if (existingCorrect) {
       return Response.json({ error: 'Answer already submitted for this round' }, { status: 409 })
     }
 
@@ -69,15 +71,23 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
 
     const correct = answeredMicrobeId === sessionMicrobe.microbeId
     const newHeartsLeft = correct ? session.heartsLeft : session.heartsLeft - 1
-    const roundScore = calculateRoundScore(sessionMicrobe.revealedSlots.length, correct)
+
+    // Any previous wrong attempt on this question means 0 pts even if now correct
+    const hadWrongAttempt = await prisma.score.findFirst({
+      where: { sessionId: id, roundNumber: currentPosition, correct: false },
+    })
+    const roundScore = correct && !hadWrongAttempt
+      ? calculateRoundScore(sessionMicrobe.revealedSlots.length, true)
+      : 0
+
     const newTotalScore = session.totalScore + roundScore
-    const newTotalScores = totalScores + 1
-    const completed = correct && newTotalScores >= TOTAL_MICROBES
+    const newTotalCorrect = correctCount + (correct ? 1 : 0)
+    const completed = correct && newTotalCorrect >= TOTAL_MICROBES
     const abandoned = newHeartsLeft <= 0
     const newCurrentRound = completed || abandoned
       ? session.currentRound
-      : Math.min(TOTAL_ROUNDS, Math.floor(newTotalScores / MICROBES_PER_ROUND) + 1)
-    const newCurrentMicrobeInRound = (newTotalScores % MICROBES_PER_ROUND) + 1
+      : Math.min(TOTAL_ROUNDS, Math.floor(newTotalCorrect / MICROBES_PER_ROUND) + 1)
+    const newCurrentMicrobeInRound = (newTotalCorrect % MICROBES_PER_ROUND) + 1
 
     await prisma.$transaction(async (tx) => {
       await tx.score.create({

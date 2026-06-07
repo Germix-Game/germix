@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fredoka } from "next/font/google";
 import "./globals.css";
 import { NavigationLoader } from "@/components/NavigationLoader";
@@ -11,6 +11,11 @@ const fredoka = Fredoka({
 export const metadata: Metadata = {
   title: "Germix — Microbiology Card Game",
   description: "Educational microbiology card game for medical students",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
