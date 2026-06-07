@@ -73,7 +73,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
   return (
     <div
       ref={tiltRef}
-      className={`card-tilt w-full${!revealed && !disabled ? " card-idle" : ""}`}
+      className={`card-tilt w-full min-h-[17rem]${!revealed && !disabled ? " card-idle" : ""}`}
       data-revealed={revealed ? "true" : "false"}
       style={{
         aspectRatio: "1429 / 2000",

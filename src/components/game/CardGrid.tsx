@@ -48,7 +48,7 @@ export function CardGrid({
       ))}
 
       {/* Answer drop zone — same size as a card slot (6th column) */}
-      <div ref={dropTargetRef} style={{ aspectRatio: "1429 / 2000" }}>
+      <div ref={dropTargetRef} className="min-h-[17rem]" style={{ aspectRatio: "1429 / 2000" }}>
         {pendingMicrobeName ? (
           /* Confirmation state — shown after a microbe is dropped */
           <div

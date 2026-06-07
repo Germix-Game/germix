@@ -3,21 +3,22 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-type ModeStatus = { unlocked: true } | { unlocked: false; unlocksAt?: string };
-
-interface GameModesResponse {
-  bacteria: ModeStatus;
-  parasite: ModeStatus;
-  fungi: ModeStatus;
-  virus: ModeStatus;
-  posttestRequired: boolean;
+interface ModeEntry {
+  mode: string;
+  locked: boolean;
+  unlocksAt?: string | null;
 }
 
-const MODES: { key: keyof Omit<GameModesResponse, "posttestRequired">; label: string; apiValue: string }[] = [
-  { key: "bacteria", label: "Bacteria", apiValue: "BACTERIA" },
-  { key: "parasite", label: "Parasite", apiValue: "PARASITE" },
-  { key: "fungi", label: "Fungi", apiValue: "FUNGI" },
-  { key: "virus", label: "Virus", apiValue: "VIRUS" },
+interface GameModesResponse {
+  posttestRequired: boolean;
+  modes: ModeEntry[];
+}
+
+const MODES: { apiValue: string; label: string }[] = [
+  { apiValue: "BACTERIA", label: "Bacteria" },
+  { apiValue: "PARASITE", label: "Parasite" },
+  { apiValue: "FUNGI", label: "Fungi" },
+  { apiValue: "VIRUS", label: "Virus" },
 ];
 
 export default function GameModePage() {
@@ -83,18 +84,18 @@ export default function GameModePage() {
       )}
 
       <div className="grid grid-cols-2 gap-5 w-full max-w-xl sm:grid-cols-4">
-        {MODES.map(({ key, label, apiValue }) => {
-          const status = modes[key] as ModeStatus;
-          const locked = !status.unlocked || modes.posttestRequired;
+        {MODES.map(({ apiValue, label }) => {
+          const entry = modes.modes.find((m) => m.mode === apiValue);
+          const locked = !entry || entry.locked || modes.posttestRequired;
           const unlocksAt =
-            !status.unlocked && "unlocksAt" in status && status.unlocksAt
-              ? new Date(status.unlocksAt).toLocaleDateString()
+            entry && entry.locked && entry.unlocksAt
+              ? new Date(entry.unlocksAt).toLocaleDateString()
               : null;
           const isStarting = starting === apiValue;
 
           return (
             <button
-              key={key}
+              key={apiValue}
               disabled={locked}
               onClick={() => handleSelect(apiValue)}
               className={`flex flex-col items-center gap-3 rounded-2xl border-2 p-5 transition-all focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] ${
@@ -106,7 +107,7 @@ export default function GameModePage() {
               }`}
             >
               <div className="h-16 w-16 rounded-xl bg-[#5c2a0e] border border-[#6b3520] flex items-center justify-center">
-                <span className="text-2xl select-none">{modeEmoji(key)}</span>
+                <span className="text-2xl select-none">{modeEmoji(apiValue)}</span>
               </div>
               <span className="font-semibold text-[#f5e6c8] text-sm">{label}</span>
               {locked && !modes.posttestRequired && (
@@ -125,12 +126,12 @@ export default function GameModePage() {
   );
 }
 
-function modeEmoji(key: string) {
-  switch (key) {
-    case "bacteria": return "🦠";
-    case "parasite": return "🪱";
-    case "fungi": return "🍄";
-    case "virus": return "🧬";
+function modeEmoji(apiValue: string) {
+  switch (apiValue) {
+    case "BACTERIA": return "🦠";
+    case "PARASITE": return "🪱";
+    case "FUNGI": return "🍄";
+    case "VIRUS": return "🧬";
     default: return "❓";
   }
 }

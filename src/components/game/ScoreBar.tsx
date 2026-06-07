@@ -14,7 +14,7 @@ export const ScoreBar = forwardRef<HTMLDivElement, ScoreBarProps>(
         </span>
         <span
           key={flashKey}
-          className={`font-mono font-bold tabular-nums text-lg${flashKey > 0 ? " score-bar-pulse text-white" : " text-[#f5e6c8]"}`}
+          className={`font-mono font-bold tabular-nums text-2xl${flashKey > 0 ? " score-bar-pulse text-[#f5e6c8]" : " text-[#d4a96a]"}`}
           aria-label={`Score: ${score}`}
         >
           {String(score).padStart(4, "0")}
