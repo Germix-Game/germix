@@ -1,7 +1,7 @@
 import type { GameSession } from '@prisma/client'
 import type { SessionShape } from '@/lib/schemas/sessions'
 
-export const MICROBES_PER_ROUND = 3
+export const MICROBES_PER_ROUND = 1
 export const TOTAL_ROUNDS = 5
 export const TOTAL_MICROBES = TOTAL_ROUNDS * MICROBES_PER_ROUND
 

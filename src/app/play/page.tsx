@@ -117,6 +117,7 @@ export default function PlayPage() {
   const pointsPillRef = useRef<HTMLDivElement>(null);
   const [scorePop, setScorePop] = useState<{ points: number; startX: number; startY: number } | null>(null);
   const [scoreFlashKey, setScoreFlashKey] = useState(0);
+  const [pendingRevealCount, setPendingRevealCount] = useState(0);
 
   // ─── STATE: Wrong-answer retry tracking ─────────────────────────
   // Set of microbe IDs the player has guessed wrong for the current question.
@@ -258,12 +259,15 @@ export default function PlayPage() {
         setSlots((prev) =>
           prev.map((s) => (s.index === index ? { ...s, revealed: true, card: preCard } : s)),
         );
-        // Fire-and-forget: server still needs to record which slots were revealed (used for scoring)
+        // Track this reveal so answer submission waits for the server to record it
+        setPendingRevealCount((n) => n + 1);
         void fetch(`/api/sessions/${sessionId}/reveal`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ slotIndex: index }),
-        }).catch(() => {});
+        }).finally(() => {
+          setPendingRevealCount((n) => n - 1);
+        });
         return;
       }
 
@@ -315,12 +319,14 @@ export default function PlayPage() {
     phase === "playing" &&
     revealedCount > 0 &&
     selectedMicrobeId !== null &&
-    !isSubmitting;
+    !isSubmitting &&
+    pendingRevealCount === 0;
 
   const canDropAnswer =
     phase === "playing" &&
     revealedCount > 0 &&
-    !isSubmitting;
+    !isSubmitting &&
+    pendingRevealCount === 0;
 
   // The big handler for submitting an answer
   const handleSubmitAnswer = useCallback(async (overrideMicrobeId?: string) => {
@@ -446,6 +452,7 @@ export default function PlayPage() {
     setPendingMicrobeId(null);
     setWrongMicrobeIds(new Set());
     setQuestionHasWrong(false);
+    setPendingRevealCount(0);
     prefetchedCardsRef.current = [null, null, null, null, null];
   }
 
