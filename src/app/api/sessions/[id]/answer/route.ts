@@ -131,7 +131,7 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
         })
       }
 
-      if (completed) {
+      if (completed || abandoned) {
         await tx.player.update({
           where: { id: player.id },
           data: {
