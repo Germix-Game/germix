@@ -11,7 +11,7 @@ export const ScoreBar = forwardRef<HTMLDivElement, ScoreBarProps>(
       <div ref={ref} className="bg-[#3d1a0a] border border-[#6b3520] rounded-lg px-3 py-1">
         <span
           key={flashKey}
-          className={`font-mono font-bold tabular-nums text-base${flashKey > 0 ? " score-bar-pulse text-[#f5e6c8]" : " text-[#d4a96a]"}`}
+          className={`font-mono font-bold tabular-nums text-2xl${flashKey > 0 ? " score-bar-pulse text-[#f5e6c8]" : " text-[#d4a96a]"}`}
           aria-label={`Score: ${score}`}
         >
           {String(score).padStart(4, "0")}

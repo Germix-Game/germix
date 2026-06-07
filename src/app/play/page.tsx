@@ -553,7 +553,7 @@ export default function PlayPage() {
   return (
     // Full-screen layout, two zones: wood area (top) + parchment area (bottom)
     // overflow-hidden → prevent scrollbars on the outer container
-    <div className="flex flex-col min-h-screen w-full">
+    <div className="flex flex-col h-screen w-full overflow-hidden">
       {scorePop !== null && (
         <ScorePopup
           points={scorePop.points}
@@ -579,7 +579,7 @@ export default function PlayPage() {
       {/* ── Wood area (top zone: cards + score/hearts) ───────────────── */}
       {/* flex-shrink-0 → don't let this zone shrink when parchment grows */}
       {/* Arbitrary background image (Tailwind bg-[url-syntax]), bg-cover scales to fill, bg-center centers it */}
-      <div className="flex flex-col px-6 pt-4 pb-6 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-shrink-0">
+      <div className="flex flex-col px-6 pt-2 pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-shrink-0">
 
         {/* Top bar: Score on left, Exit on right */}
         <div className="flex items-center justify-between">
@@ -602,7 +602,7 @@ export default function PlayPage() {
          * `-mt-8` pulls the image upward so it sits closer to the very top of the wood area
          * (overlapping vertically with the score/hearts row, but centered horizontally between them).
          */}
-        <div className="flex justify-center -mt-8">
+        <div className="flex justify-center -mt-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/assets/ui/round-${round}.png`}
@@ -612,7 +612,7 @@ export default function PlayPage() {
           />
         </div>
         {phase === "playing" && (
-          <div className="flex justify-center mt-2 mb-6">
+          <div className="flex justify-center mt-1 mb-2">
             <div ref={pointsPillRef} className="flex items-baseline gap-1.5 px-4 py-1 rounded-full bg-[#2a1208]/85 border border-[#d4a96a]/50 shadow-lg">
               <span className="text-[#d4a96a] text-[0.65rem] font-semibold uppercase tracking-wider">Answer now for</span>
               <span className="text-[#f5e6c8] text-base font-black tabular-nums">
@@ -624,7 +624,7 @@ export default function PlayPage() {
         )}
 
         {/* The 5 clue cards + hearts (vertical) + the "Answer" button */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-end gap-3">
           <HeartsBar heartsLeft={heartsLeft} vertical />
           <CardGrid
             slots={slots}
@@ -671,10 +671,10 @@ export default function PlayPage() {
       </div>
 
       {/* ── Parchment area (bottom zone: filters + microbe answer panel) ── */}
-      <div className="flex flex-col bg-[#f0d9a8]">
+      <div className="flex flex-col bg-[#f0d9a8] flex-1 overflow-y-auto">
 
         {/* Filter bar — gram type checkboxes, search, and biological tag checkboxes */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3 border-b border-[#c4a870] flex-shrink-0">
+        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3 border-b border-[#c4a870] bg-[#f0d9a8] flex-shrink-0">
 
           {/* GRAM-TYPE FILTERS — rendered from a tuple array using .map() */}
           {/* `as const` → tells TypeScript these are literal types, not generic strings */}
@@ -693,7 +693,7 @@ export default function PlayPage() {
                 onChange={() => toggleGram(value)}        // run our toggle function when user clicks
                 className="accent-[#5c2a0e] h-3.5 w-3.5"  // accent-* colors the checkbox itself
               />
-              <span className="text-[#3a2010] text-sm font-medium">{label}</span>
+              <span className="text-[#3a2010] text-base font-semibold">{label}</span>
             </label>
           ))}
 
@@ -742,7 +742,7 @@ export default function PlayPage() {
                 onChange={() => toggleTag(value)}
                 className="accent-[#5c2a0e] h-3.5 w-3.5"
               />
-              <span className="text-[#3a2010] text-sm font-medium">{label}</span>
+              <span className="text-[#3a2010] text-base font-semibold">{label}</span>
             </label>
           ))}
         </div>
@@ -796,7 +796,7 @@ export default function PlayPage() {
                 Cancel
               </button>
               <Link
-                href="/select"
+                href="/"
                 className="balatro-btn flex-1 rounded-lg bg-[#8b2020] py-2.5 text-sm font-semibold text-white hover:bg-[#a02828] text-center"
               >
                 Exit

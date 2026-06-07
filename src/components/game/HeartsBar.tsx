@@ -87,8 +87,8 @@ function PixelHeart({ filled, flashing }: { filled: boolean; flashing: boolean }
     <img
       src={filled ? "/assets/ui/heart-alive.png" : "/assets/ui/heart-dead.png"}
       alt=""
-      width={56}
-      height={48}
+      width={72}
+      height={62}
       style={{ imageRendering: "pixelated" }}
       className={flashing ? "heart-flash" : undefined}
       aria-hidden="true"
