@@ -3,45 +3,43 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { type LeaderboardPlayer } from "@/components/leaderboard/LeaderboardTable";
 
-// TODO: REMOVE — temporary mock data for layout preview
-const MOCK_PLAYERS: LeaderboardPlayer[] = [
-  { username: "GermKiller99",   totalScore: 9850, gamesPlayed: 14 },
-  { username: "VaccineHero",    totalScore: 8200, gamesPlayed: 12 },
-  { username: "Dr.Pathogen",    totalScore: 7320, gamesPlayed: 9  },
-  { username: "MicrobeSlayer",  totalScore: 5100, gamesPlayed: 7  },
-  { username: "VirusHunter42",  totalScore: 3660, gamesPlayed: 5  },
-  { username: "BioShieldX",     totalScore: 2940, gamesPlayed: 4  },
-  { username: "NanoMedic",      totalScore: 1870, gamesPlayed: 3  },
-];
+type RankedPlayer = {
+  rank: number;
+  username: string;
+  totalScore: number;
+  gamesPlayed: number;
+};
+
+type LeaderboardData = {
+  top5: RankedPlayer[];
+  currentPlayer: RankedPlayer | null;
+};
 
 type FetchStatus = "loading" | "ready" | "error";
-const TOP_N = 7;
+
 const FONT = "'Impact','Arial Black',sans-serif";
 
-type BarVariant = "gold" | "silver" | "bronze" | "green";
+type BarVariant = "gold" | "silver" | "bronze" | "green" | "you";
 
 const TEXT_COLOR: Record<BarVariant, string> = {
   gold:   "#3a2000",
   silver: "#1a3060",
   bronze: "#fff0ec",
   green:  "#0a3010",
+  you:    "#1a0060",
 };
 
 // Positions (%) relative to the 16:9 leaderboard_ui.png canvas
 const BARS: Record<string, React.CSSProperties> = {
   gold:   { top: "45%",   left: "33%",  width: "32%",  height: "11%"  },
-  silver: { top: "58%",   left: "17%", width: "32%",  height: "9.5%" },
+  silver: { top: "58%",   left: "17%",  width: "32%",  height: "9.5%" },
   bronze: { top: "58%",   left: "50%",  width: "32%",  height: "9.5%" },
-  green1: { top: "70%", left: "20%",   width: "60%",  height: "8%"   },
-  green2: {  top: "79%", left: "20%",   width: "60%",  height: "8%"    },
-  green3: { top: "88%", left: "20%",   width: "60%",  height: "8%"   },
-  green4: {  top: "97%", left: "20%",   width: "60%",  height: "8%"    },
+  green1: { top: "70%",   left: "20%",  width: "60%",  height: "8%"   },
+  green2: { top: "78.75%",   left: "20%",  width: "60%",  height: "8%"   },
+  you:    { top: "87%",   left: "20%",  width: "60%",  height: "8%"   },
 };
 
-// Positions of each text element within its bar container.
-// Each slot has rank, username, and score as independent entries — adjust freely.
 type TextSlot = {
   rank:     React.CSSProperties;
   username: React.CSSProperties;
@@ -74,17 +72,21 @@ const BAR_TEXT: Record<string, TextSlot> = {
     username: { left: "50%", top: "50%", transform: "translate(-50%, -50%)" },
     score:    { right: "2%", top: "50%", transform: "translateY(-50%)" },
   },
-  green3: {
-    rank:     { left: "2%",  top: "50%", transform: "translateY(-50%)" },
-    username: { left: "50%", top: "50%", transform: "translate(-50%, -50%)" },
-    score:    { right: "2%", top: "50%", transform: "translateY(-50%)" },
-  },
-  green4: {
+  you: {
     rank:     { left: "2%",  top: "50%", transform: "translateY(-50%)" },
     username: { left: "50%", top: "50%", transform: "translate(-50%, -50%)" },
     score:    { right: "2%", top: "50%", transform: "translateY(-50%)" },
   },
 };
+
+const BAR_KEYS = ["gold", "silver", "bronze", "green1", "green2"] as const;
+
+function variantForIndex(i: number): BarVariant {
+  if (i === 0) return "gold";
+  if (i === 1) return "silver";
+  if (i === 2) return "bronze";
+  return "green";
+}
 
 function BarRow({
   rank,
@@ -92,12 +94,14 @@ function BarRow({
   totalScore,
   barKey,
   variant,
+  isYou,
 }: {
   rank: number;
   username: string;
   totalScore: number;
   barKey: string;
   variant: BarVariant;
+  isYou?: boolean;
 }) {
   const color = TEXT_COLOR[variant];
   const pos = BAR_TEXT[barKey];
@@ -117,7 +121,7 @@ function BarRow({
         #{rank}
       </span>
       <span style={{ ...textBase, ...pos.username, overflow: "hidden", textOverflow: "ellipsis", maxWidth: "45%" }}>
-        {username}
+        {isYou ? `▶ ${username}` : username}
       </span>
       <span style={{ ...textBase, ...pos.score }}>
         {totalScore.toLocaleString()}
@@ -127,24 +131,24 @@ function BarRow({
 }
 
 export default function LeaderboardPage() {
-  // TODO: REMOVE — replace with real fetch block once API is ready
-  const [players, setPlayers] = useState<LeaderboardPlayer[]>(MOCK_PLAYERS);
-  const [status, setStatus] = useState<FetchStatus>("ready");
+  const [data, setData] = useState<LeaderboardData | null>(null);
+  const [status, setStatus] = useState<FetchStatus>("loading");
 
   useEffect(() => {
-    // TODO: RESTORE — uncomment to fetch real data and remove mock state above
-    // fetch("/api/leaderboard")
-    //   .then((res) => {
-    //     if (!res.ok) throw new Error("fetch failed");
-    //     return res.json() as Promise<LeaderboardPlayer[]>;
-    //   })
-    //   .then((data) => {
-    //     setPlayers(data.slice(0, TOP_N));
-    //     setStatus("ready");
-    //   })
-    //   .catch(() => setStatus("error"));
-    void TOP_N;
+    fetch("/api/leaderboard")
+      .then((res) => {
+        if (!res.ok) throw new Error("fetch failed");
+        return res.json() as Promise<LeaderboardData>;
+      })
+      .then((d) => {
+        setData(d);
+        setStatus("ready");
+      })
+      .catch(() => setStatus("error"));
   }, []);
+
+  const top5 = data?.top5 ?? [];
+  const currentPlayer = data?.currentPlayer ?? null;
 
   return (
     <div
@@ -155,7 +159,6 @@ export default function LeaderboardPage() {
         backgroundPosition: "center",
       }}
     >
-      {/* Leaderboard bg overlay on top of the wooden base */}
       <div
         className="absolute inset-0"
         style={{
@@ -165,7 +168,6 @@ export default function LeaderboardPage() {
           backgroundPosition: "center",
         }}
       />
-      {/* Back button */}
       <Link
         href="/home"
         className="absolute top-4 left-4 z-20 rounded-lg border px-4 py-2 text-sm font-medium"
@@ -179,7 +181,6 @@ export default function LeaderboardPage() {
         ← Back
       </Link>
 
-      {/* 16:9 stage — scales to fill the screen while preserving aspect ratio */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div
           className="relative"
@@ -188,7 +189,6 @@ export default function LeaderboardPage() {
             aspectRatio: "16 / 9",
           }}
         >
-          {/* UI bars template image */}
           <Image
             src="/assets/leaderboard/leaderboard_ui.png"
             alt=""
@@ -199,7 +199,6 @@ export default function LeaderboardPage() {
             draggable={false}
           />
 
-          {/* Loading state */}
           {status === "loading" && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
               <div
@@ -209,7 +208,6 @@ export default function LeaderboardPage() {
             </div>
           )}
 
-          {/* Error state */}
           {status === "error" && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
               <p style={{ color: "#9a3030", fontFamily: FONT }}>
@@ -218,42 +216,34 @@ export default function LeaderboardPage() {
             </div>
           )}
 
-          {/* Player text overlays */}
           {status === "ready" && (
             <>
-              {players[0] && (
-                <div style={{ position: "absolute", zIndex: 10, ...BARS.gold }}>
-                  <BarRow rank={1} username={players[0].username} totalScore={players[0].totalScore} barKey="gold" variant="gold" />
-                </div>
-              )}
-              {players[1] && (
-                <div style={{ position: "absolute", zIndex: 10, ...BARS.silver }}>
-                  <BarRow rank={2} username={players[1].username} totalScore={players[1].totalScore} barKey="silver" variant="silver" />
-                </div>
-              )}
-              {players[2] && (
-                <div style={{ position: "absolute", zIndex: 10, ...BARS.bronze }}>
-                  <BarRow rank={3} username={players[2].username} totalScore={players[2].totalScore} barKey="bronze" variant="bronze" />
-                </div>
-              )}
-              {players[3] && (
-                <div style={{ position: "absolute", zIndex: 10, ...BARS.green1 }}>
-                  <BarRow rank={4} username={players[3].username} totalScore={players[3].totalScore} barKey="green1" variant="green" />
-                </div>
-              )}
-              {players[4] && (
-                <div style={{ position: "absolute", zIndex: 10, ...BARS.green2 }}>
-                  <BarRow rank={5} username={players[4].username} totalScore={players[4].totalScore} barKey="green2" variant="green" />
-                </div>
-              )}
-              {players[5] && (
-                <div style={{ position: "absolute", zIndex: 10, ...BARS.green3 }}>
-                  <BarRow rank={6} username={players[5].username} totalScore={players[5].totalScore} barKey="green3" variant="green" />
-                </div>
-              )}
-              {players[6] && (
-                <div style={{ position: "absolute", zIndex: 10, ...BARS.green4 }}>
-                  <BarRow rank={7} username={players[6].username} totalScore={players[6].totalScore} barKey="green4" variant="green" />
+              {top5.map((player, i) => {
+                const barKey = BAR_KEYS[i];
+                const variant = variantForIndex(i);
+                return (
+                  <div key={player.username} style={{ position: "absolute", zIndex: 10, ...BARS[barKey] }}>
+                    <BarRow
+                      rank={player.rank}
+                      username={player.username}
+                      totalScore={player.totalScore}
+                      barKey={barKey}
+                      variant={variant}
+                    />
+                  </div>
+                );
+              })}
+
+              {currentPlayer && (
+                <div style={{ position: "absolute", zIndex: 10, ...BARS.you }}>
+                  <BarRow
+                    rank={currentPlayer.rank}
+                    username={currentPlayer.username}
+                    totalScore={currentPlayer.totalScore}
+                    barKey="you"
+                    variant="you"
+                    isYou
+                  />
                 </div>
               )}
             </>

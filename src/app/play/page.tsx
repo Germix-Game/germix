@@ -78,9 +78,9 @@ const DEMO_MICROBES: Microbe[] = [
 
 // Game phases — like a tiny state machine. Only one phase is active at a time.
 // "loading" → fetching session     "error" → no session found
-// "playing" → user is playing      "wrong" → just got wrong answer (showing feedback)
+// "playing" → user is playing (stays here on wrong answer — player retries same question)
 // "end"     → game over screen
-type Phase = "loading" | "error" | "playing" | "wrong" | "end";
+type Phase = "loading" | "error" | "playing" | "end";
 
 // ─── page ────────────────────────────────────────────────────────────────────
 
@@ -118,8 +118,13 @@ export default function PlayPage() {
   const [scorePop, setScorePop] = useState<{ points: number; startX: number; startY: number } | null>(null);
   const [scoreFlashKey, setScoreFlashKey] = useState(0);
 
-  // ─── STATE: Wrong-answer feedback ───────────────────────────────
-  // After a wrong answer, we display the correct microbe here.
+  // ─── STATE: Wrong-answer retry tracking ─────────────────────────
+  // Set of microbe IDs the player has guessed wrong for the current question.
+  // These cards are marked red + disabled so the player can't re-pick them.
+  const [wrongMicrobeIds, setWrongMicrobeIds] = useState<Set<string>>(new Set());
+  // Once any wrong attempt happens on a question, score is 0 even if correct later.
+  const [questionHasWrong, setQuestionHasWrong] = useState(false);
+  // The correct microbe (only used in end-screen results when game ends mid-question).
   const [correctMicrobe, setCorrectMicrobe] = useState<AnswerResponse["correctMicrobe"] | null>(null);
 
   // ─── STATE: End-screen history ──────────────────────────────────
@@ -328,43 +333,44 @@ export default function PlayPage() {
       if (isDemo) {
         // Hardcoded: "Staphylococcus aureus" (id "1") is the right answer
         const correct = answerId === "1";
-
-        // Scoring: start at 100, lose 20 per extra revealed card (more clues = lower score)
-        // Math.max(0, ...) → never go below 0
-        const roundScore = correct ? Math.max(0, 100 - (revealedCount - 1) * 20) : 0;
         const demoCorrect = { id: "1", name: "Staphylococcus aureus", shortName: "S. aureus", imageUrl: "" };
 
-        // Build a result object and append to history (for end-screen recap)
-        const result: RoundResult = { roundNumber: round, correct, roundScore, correctMicrobe: demoCorrect, openedSlots: slots };
-        // `[...prev, result]` → new array with all old items plus the new one (immutable append)
-        setRoundResults((prev) => [...prev, result]);
-        setCorrectMicrobe(demoCorrect);
-
         if (correct) {
+          // Score is 0 if the player had any wrong attempt on this question
+          const roundScore = questionHasWrong ? 0 : Math.max(0, 100 - (revealedCount - 1) * 20);
+          const result: RoundResult = { roundNumber: round, correct: true, roundScore, correctMicrobe: demoCorrect, openedSlots: slots };
+          setRoundResults((prev) => [...prev, result]);
+          setCorrectMicrobe(demoCorrect);
           if (roundScore > 0) {
             const r = pointsPillRef.current?.getBoundingClientRect();
             setScorePop({ points: roundScore, startX: r ? r.left + r.width / 2 : window.innerWidth / 2, startY: r ? r.top + r.height / 2 : window.innerHeight * 0.4 });
           }
-          setScore((s) => s + roundScore);  // functional update — based on previous score
+          setScore((s) => s + roundScore);
           if (round >= 5) {
-            // Won the game (5 rounds completed)
             setWon(true);
             setPhase("end");
           } else {
-            // Move to next round
             setRound((r) => r + 1);
             resetRound();
-            setCardsReady(true); // demo has no pre-fetch — unlock immediately
+            setCardsReady(true);
             setPhase("playing");
           }
         } else {
-          // Wrong answer: lose a heart
+          // Wrong answer: mark this microbe as tried, lose a heart, stay on same question
           const nextHearts = heartsLeft - 1;
           setHeartsLeft(nextHearts);
-          // Reveal all remaining cards with their data
-          setSlots((prev) => prev.map((s) => ({ ...s, revealed: true, card: s.card ?? DEMO_CARDS[s.index] })));
-          if (nextHearts <= 0) { setWon(false); setPhase("end"); }  // out of lives → game over
-          else setPhase("wrong");                                     // show wrong-answer feedback
+          setWrongMicrobeIds((prev) => new Set([...prev, answerId]));
+          setQuestionHasWrong(true);
+          setCorrectMicrobe(demoCorrect);
+          setDropBlockedMsg("Wrong answer! Keep trying.");
+          setTimeout(() => setDropBlockedMsg(null), 1800);
+          if (nextHearts <= 0) {
+            const result: RoundResult = { roundNumber: round, correct: false, roundScore: 0, correctMicrobe: demoCorrect, openedSlots: slots };
+            setRoundResults((prev) => [...prev, result]);
+            setWon(false);
+            setPhase("end");
+          }
+          // else: stay in "playing" — player retries
         }
         return; // demo branch done
       }
@@ -377,27 +383,24 @@ export default function PlayPage() {
         body: JSON.stringify({ answeredMicrobeId: answerId }),
       });
       if (!res.ok) return;
-      // Server tells us if the answer was correct, the score, etc.
       const data: AnswerResponse = await res.json();
 
-      // Record this round in history
-      const result: RoundResult = {
-        roundNumber: round,
-        correct: data.correct,
-        roundScore: data.roundScore,
-        correctMicrobe: data.correctMicrobe,
-        openedSlots: slots,
-      };
-      setRoundResults((prev) => [...prev, result]);
-      setCorrectMicrobe(data.correctMicrobe);
-      setHeartsLeft(data.session.heartsLeft);                          // server is source of truth for hearts
-      setScore(data.session.totalScore);
-      if (data.correct && data.roundScore > 0) {
-        const r = pointsPillRef.current?.getBoundingClientRect();
-        setScorePop({ points: data.roundScore, startX: r ? r.left + r.width / 2 : window.innerWidth / 2, startY: r ? r.top + r.height / 2 : window.innerHeight * 0.4 });
-      }
-
       if (data.correct) {
+        const result: RoundResult = {
+          roundNumber: round,
+          correct: true,
+          roundScore: data.roundScore,
+          correctMicrobe: data.correctMicrobe,
+          openedSlots: slots,
+        };
+        setRoundResults((prev) => [...prev, result]);
+        setCorrectMicrobe(data.correctMicrobe);
+        setHeartsLeft(data.session.heartsLeft);
+        setScore(data.session.totalScore);
+        if (data.roundScore > 0) {
+          const r = pointsPillRef.current?.getBoundingClientRect();
+          setScorePop({ points: data.roundScore, startX: r ? r.left + r.width / 2 : window.innerWidth / 2, startY: r ? r.top + r.height / 2 : window.innerHeight * 0.4 });
+        }
         if (data.session.completed) { setWon(true); setPhase("end"); }
         else {
           setRound(data.session.currentRound);
@@ -406,15 +409,26 @@ export default function PlayPage() {
           setPhase("playing");
         }
       } else {
-        setRound(data.session.currentRound);
-        // Reveal all cards using pre-fetched data so they appear instantly
-        setSlots((prev) => prev.map((s) => ({
-          ...s,
-          revealed: true,
-          card: s.card ?? prefetchedCardsRef.current[s.index] ?? null,
-        })));
-        if (data.session.heartsLeft <= 0) { setWon(false); setPhase("end"); }
-        else setPhase("wrong");
+        // Wrong answer: mark microbe as tried, lose a heart, stay on same question
+        setHeartsLeft(data.session.heartsLeft);
+        setWrongMicrobeIds((prev) => new Set([...prev, answerId!]));
+        setQuestionHasWrong(true);
+        setCorrectMicrobe(data.correctMicrobe);
+        setDropBlockedMsg("Wrong answer! Keep trying.");
+        setTimeout(() => setDropBlockedMsg(null), 1800);
+        if (data.session.heartsLeft <= 0) {
+          const result: RoundResult = {
+            roundNumber: round,
+            correct: false,
+            roundScore: 0,
+            correctMicrobe: data.correctMicrobe,
+            openedSlots: slots,
+          };
+          setRoundResults((prev) => [...prev, result]);
+          setWon(false);
+          setPhase("end");
+        }
+        // else: stay in "playing" — player retries same question
       }
     } catch {
       // Leave phase so player can retry
@@ -422,22 +436,17 @@ export default function PlayPage() {
       // `finally` runs whether the try succeeded OR threw — perfect for cleanup
       setIsSubmitting(false);
     }
-  }, [sessionId, selectedMicrobeId, isSubmitting, isDemo, round, slots, heartsLeft, revealedCount]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sessionId, selectedMicrobeId, isSubmitting, isDemo, round, slots, heartsLeft, revealedCount, questionHasWrong]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset round-specific state (called when starting a new round)
+  // Reset round-specific state (called when starting a new question)
   function resetRound() {
     setSlots([...EMPTY_SLOTS]);
     setSelectedMicrobeId(null);
     setCorrectMicrobe(null);
     setPendingMicrobeId(null);
+    setWrongMicrobeIds(new Set());
+    setQuestionHasWrong(false);
     prefetchedCardsRef.current = [null, null, null, null, null];
-  }
-
-  // Called when player clicks "Next Microbe" after a wrong answer
-  function handleNext() {
-    resetRound();
-    if (sessionId) void fetchCards(sessionId);
-    setPhase("playing");
   }
 
   const handleDrop = useCallback((id: string) => { setPendingMicrobeId(id); }, []);
@@ -616,7 +625,7 @@ export default function PlayPage() {
             <div ref={pointsPillRef} className="flex items-baseline gap-1.5 px-4 py-1 rounded-full bg-[#2a1208]/85 border border-[#d4a96a]/50 shadow-lg">
               <span className="text-[#d4a96a] text-[0.65rem] font-semibold uppercase tracking-wider">Answer now for</span>
               <span className="text-[#f5e6c8] text-base font-black tabular-nums">
-                {Math.max(0, 100 - Math.max(0, revealedCount - 1) * 20)}
+                {questionHasWrong ? 0 : Math.max(0, 100 - Math.max(0, revealedCount - 1) * 20)}
               </span>
               <span className="text-[#d4a96a] text-[0.65rem] font-semibold">pts</span>
             </div>
@@ -648,24 +657,13 @@ export default function PlayPage() {
           />
         </div>
 
-        {/* Wrong-answer feedback bar — only shows during "wrong" phase */}
-        {/* `{condition && <JSX>}` → conditional rendering (shorthand for "render JSX if condition is truthy") */}
-        {phase === "wrong" && correctMicrobe && (
-          <div className="popup-bar mt-4 flex items-center gap-4 rounded-xl border border-[#6b3520] bg-[#3d1a0a]/70 p-3">
-            {/* /70 in bg-[#3d1a0a]/70 → 70% opacity */}
-            <MicrobeThumb microbe={correctMicrobe} size="lg" />
-            {/* min-w-0 → required for text-truncate to work inside flex children */}
-            <div className="flex-1 min-w-0">
-              <p className="text-[#d4a96a] text-xs mb-0.5">Correct answer:</p>
-              <p className="text-[#f5e6c8] italic font-medium truncate">{correctMicrobe.name}</p>
-            </div>
-            {/* flex-shrink-0 → button stays full size even if text gets long */}
-            <button
-              onClick={handleNext}
-              className="flex-shrink-0 rounded-lg bg-[#d4a96a] px-5 py-2 font-semibold text-[#2a1208] hover:bg-[#e0b87a] transition-colors focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e]"
-            >
-              Next Microbe →
-            </button>
+        {/* Wrong-attempt indicator — shows when any wrong answer was given this question */}
+        {questionHasWrong && phase === "playing" && (
+          <div className="popup-bar mt-4 flex items-center gap-3 rounded-xl border border-[#6b3520] bg-[#3d1a0a]/70 px-4 py-2.5">
+            <span className="text-red-400 font-black text-lg leading-none">✕</span>
+            <p className="text-[#f5e6c8] text-sm font-medium">
+              Wrong attempt — 0 pts for this microbe. Keep trying!
+            </p>
           </div>
         )}
       </div>
@@ -773,6 +771,7 @@ export default function PlayPage() {
                   onDrop={handleDrop}
                   onDropRejected={handleDropRejected}
                   onDragStateChange={setIsDraggingOver}
+                  isWrong={wrongMicrobeIds.has(microbe.id)}
                 />
               ))}
             </div>
@@ -838,6 +837,7 @@ function DraggableMicrobeCard({
   onDropRejected,
   onDragStateChange,
   index,
+  isWrong,
 }: {
   microbe: Microbe;
   selected: boolean;
@@ -847,6 +847,7 @@ function DraggableMicrobeCard({
   onDropRejected: () => void;
   onDragStateChange: (isOver: boolean) => void;
   index: number;
+  isWrong: boolean;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const tiltRef = useRef<HTMLDivElement>(null);
@@ -892,10 +893,12 @@ function DraggableMicrobeCard({
   const onDropRef = useRef(onDrop);
   const onDropRejectedRef = useRef(onDropRejected);
   const onDragStateChangeRef = useRef(onDragStateChange);
+  const isWrongRef = useRef(isWrong);
   canDropRef.current = canDrop;
   onDropRef.current = onDrop;
   onDropRejectedRef.current = onDropRejected;
   onDragStateChangeRef.current = onDragStateChange;
+  isWrongRef.current = isWrong;
 
   useEffect(() => {
     const el = cardRef.current;
@@ -959,6 +962,7 @@ function DraggableMicrobeCard({
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
+      if (isWrongRef.current) return; // wrong answers are disabled
       e.preventDefault();
 
       const rect = el.getBoundingClientRect();
@@ -1024,13 +1028,19 @@ function DraggableMicrobeCard({
       ref={cardRef}
       role="option"
       aria-selected={selected}
+      aria-disabled={isWrong}
       style={{ touchAction: "none", width: "100%", height: "100%" }}
-      className={`cursor-grab relative overflow-hidden rounded-xl border-2 transition-colors ${
-        selected
-          ? "border-[#5c2a0e] shadow-sm"
-          : "border-transparent hover:border-[#c4a870]"
+      className={`relative overflow-hidden rounded-xl border-2 transition-colors ${
+        isWrong
+          ? "border-red-500 opacity-50 cursor-not-allowed"
+          : selected
+          ? "cursor-grab border-[#5c2a0e] shadow-sm"
+          : "cursor-grab border-transparent hover:border-[#c4a870]"
       }`}
-      onDoubleClick={() => { if (canDrop) onDrop(microbe.id); else onDropRejected(); }}
+      onDoubleClick={() => {
+        if (isWrong) return;
+        if (canDrop) onDrop(microbe.id); else onDropRejected();
+      }}
     >
       {/* Card face — image fills the whole card */}
       <div className="absolute inset-0 bg-[#e0c890] flex items-center justify-center">
@@ -1056,8 +1066,14 @@ function DraggableMicrobeCard({
         </span>
       </div>
 
+      {/* Wrong-answer overlay — red tint + ✕ icon */}
+      {isWrong && (
+        <div className="absolute inset-0 rounded-xl bg-red-600/30 flex items-center justify-center">
+          <span className="text-red-400 font-black text-xl drop-shadow">✕</span>
+        </div>
+      )}
       {/* Selection highlight overlay */}
-      {selected && (
+      {selected && !isWrong && (
         <div className="absolute inset-0 rounded-xl ring-2 ring-inset ring-[#5c2a0e] bg-[#5c2a0e]/10" />
       )}
     </div>
