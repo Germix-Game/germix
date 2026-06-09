@@ -2,8 +2,14 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    player: { findMany: vi.fn() },
+    player: { findMany: vi.fn(), findUnique: vi.fn(), count: vi.fn() },
   },
+}))
+
+vi.mock('@/lib/supabase', () => ({
+  createSupabaseServerClient: vi.fn().mockResolvedValue({
+    auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
+  }),
 }))
 
 import { GET } from './route'
@@ -28,17 +34,23 @@ describe('GET /api/leaderboard', () => {
     expect(res.status).toBe(200)
   })
 
-  it('returns an array of up to 5 entries', async () => {
+  it('returns top5 array of up to 5 entries', async () => {
     const res = await GET()
     const body = await res.json()
-    expect(Array.isArray(body)).toBe(true)
-    expect(body.length).toBeLessThanOrEqual(5)
+    expect(Array.isArray(body.top5)).toBe(true)
+    expect(body.top5.length).toBeLessThanOrEqual(5)
+  })
+
+  it('returns null currentPlayer when unauthenticated', async () => {
+    const res = await GET()
+    const body = await res.json()
+    expect(body.currentPlayer).toBeNull()
   })
 
   it('returns entries with the correct shape', async () => {
     const res = await GET()
     const body = await res.json()
-    for (const entry of body) {
+    for (const entry of body.top5) {
       expect(entry).toMatchObject({
         rank: expect.any(Number),
         username: expect.any(String),
@@ -51,11 +63,11 @@ describe('GET /api/leaderboard', () => {
   it('assigns sequential ranks for players with distinct scores', async () => {
     const res = await GET()
     const body = await res.json()
-    expect(body[0].rank).toBe(1)
-    expect(body[1].rank).toBe(2)
-    expect(body[2].rank).toBe(3)
-    expect(body[3].rank).toBe(4)
-    expect(body[4].rank).toBe(5)
+    expect(body.top5[0].rank).toBe(1)
+    expect(body.top5[1].rank).toBe(2)
+    expect(body.top5[2].rank).toBe(3)
+    expect(body.top5[3].rank).toBe(4)
+    expect(body.top5[4].rank).toBe(5)
   })
 
   it('assigns the same dense rank to players with equal totalScore', async () => {
@@ -70,11 +82,11 @@ describe('GET /api/leaderboard', () => {
     const res = await GET()
     const body = await res.json()
 
-    expect(body[0].rank).toBe(1)
-    expect(body[1].rank).toBe(1) // tied with alice
-    expect(body[2].rank).toBe(2) // dense: next rank is 2, not 3
-    expect(body[3].rank).toBe(3)
-    expect(body[4].rank).toBe(4)
+    expect(body.top5[0].rank).toBe(1)
+    expect(body.top5[1].rank).toBe(1) // tied with alice
+    expect(body.top5[2].rank).toBe(2) // dense: next rank is 2, not 3
+    expect(body.top5[3].rank).toBe(3)
+    expect(body.top5[4].rank).toBe(4)
   })
 
   it('handles three-way tie at the top with correct dense ranks', async () => {
@@ -89,18 +101,18 @@ describe('GET /api/leaderboard', () => {
     const res = await GET()
     const body = await res.json()
 
-    expect(body[0].rank).toBe(1)
-    expect(body[1].rank).toBe(1)
-    expect(body[2].rank).toBe(1)
-    expect(body[3].rank).toBe(2) // dense rank: 2 not 4
-    expect(body[4].rank).toBe(3)
+    expect(body.top5[0].rank).toBe(1)
+    expect(body.top5[1].rank).toBe(1)
+    expect(body.top5[2].rank).toBe(1)
+    expect(body.top5[3].rank).toBe(2) // dense rank: 2 not 4
+    expect(body.top5[4].rank).toBe(3)
   })
 
-  it('returns empty array when no players exist', async () => {
+  it('returns empty top5 when no players exist', async () => {
     vi.mocked(prisma.player.findMany).mockResolvedValue([] as never)
     const res = await GET()
     const body = await res.json()
-    expect(body).toEqual([])
+    expect(body.top5).toEqual([])
   })
 
   it('queries prisma with correct ordering and limit', async () => {

@@ -221,6 +221,7 @@ export default function LeaderboardPage() {
               {top5.map((player, i) => {
                 const barKey = BAR_KEYS[i];
                 const variant = variantForIndex(i);
+                const isYou = currentPlayer?.username === player.username;
                 return (
                   <div key={player.username} style={{ position: "absolute", zIndex: 10, ...BARS[barKey] }}>
                     <BarRow
@@ -229,12 +230,13 @@ export default function LeaderboardPage() {
                       totalScore={player.totalScore}
                       barKey={barKey}
                       variant={variant}
+                      isYou={isYou}
                     />
                   </div>
                 );
               })}
 
-              {currentPlayer && (
+              {currentPlayer && !top5.some((p) => p.username === currentPlayer.username) && (
                 <div style={{ position: "absolute", zIndex: 10, ...BARS.you }}>
                   <BarRow
                     rank={currentPlayer.rank}
