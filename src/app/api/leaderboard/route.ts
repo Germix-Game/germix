@@ -10,7 +10,7 @@ export async function GET() {
 
   let rank = 1
   const top5 = top5Raw.map((player, i) => {
-    if (i > 0 && player.totalScore < top5Raw[i - 1].totalScore) rank = i + 1
+    if (i > 0 && player.totalScore < top5Raw[i - 1].totalScore) rank++
     return { rank, ...player }
   })
 
