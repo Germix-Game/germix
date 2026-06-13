@@ -812,7 +812,7 @@ export default function PlayPage() {
                 Cancel
               </button>
               <Link
-                href="/"
+                href="/home"
                 className="balatro-btn flex-1 rounded-lg bg-[#8b2020] py-2.5 text-sm font-semibold text-white hover:bg-[#a02828] text-center"
               >
                 Exit
@@ -827,7 +827,7 @@ export default function PlayPage() {
           won={won}
           results={roundResults}
           score={score}
-          onExit={() => { window.location.href = "/"; }}
+          onExit={() => { window.location.href = "/home"; }}
         />
       )}
     </div>
