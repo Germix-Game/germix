@@ -28,7 +28,7 @@ type ClueCardEntry = {
   sortOrder: number;
 };
 
-type GameMode = "BACTERIA" | "FUNGI" | "PARASITE" | "VIRUS";
+type GameMode = "BACTERIA" | "FUNGI" | "PARASITES" | "VIRUS";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -44,7 +44,7 @@ function resolveImageSrc(url: string): string {
 
 const TABS: { mode: GameMode; href: string; label: string }[] = [
   { mode: "BACTERIA", href: "/pathogen-book/bacteria", label: "Bacteria" },
-  { mode: "PARASITE", href: "/pathogen-book/parasite", label: "Parasite" },
+  { mode: "PARASITES", href: "/pathogen-book/parasite", label: "Parasite" },
   { mode: "FUNGI",    href: "/pathogen-book/fungi",    label: "Fungi"    },
   { mode: "VIRUS",    href: "/pathogen-book/virus",    label: "Virus"    },
 ];
@@ -72,7 +72,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function starSrc(rating: number): string {
-  const n = Math.min(5, Math.max(1, Math.round(rating)));
+  const n = Math.min(5, Math.max(1, Math.round(rating * 2) / 2));
   return `/assets/pathogen-book/star-${n}.png`;
 }
 
@@ -206,7 +206,10 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
 
   useEffect(() => {
     fetch(`/api/pathogen-book?gameMode=${gameMode}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status}`);
+        return r.json();
+      })
       .then((data: MicrobeEntry[]) => {
         setMicrobes(data);
         const first = data.find((m) => m.unlocked);
@@ -219,7 +222,8 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
             .catch(() => setClues([]))
             .finally(() => setCluesLoading(false));
         }
-      });
+      })
+      .catch(() => setMicrobes([]));
   }, [gameMode]);
 
   function handleSelect(microbeId: string) {
@@ -250,7 +254,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
     >
       {/* ── Back button ── */}
       <Link
-        href="/"
+        href="/home"
         className="absolute left-4 top-4 z-30 flex items-center gap-1.5 rounded-full bg-[#3a1f08]/70 px-3 py-1.5 text-xs font-semibold text-[#f5e6c8] shadow backdrop-blur-sm transition-all hover:bg-[#3a1f08]/90"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
