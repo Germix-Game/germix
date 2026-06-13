@@ -55,6 +55,8 @@ const CATEGORY_ORDER = [
   "LAB_CHARACTERISTIC",
   "VIRULENCE_FACTOR",
   "SPECIAL_TRAIT",
+  "TRANSMISSION",
+  "MORPHOLOGY",
 ];
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -63,6 +65,8 @@ const CATEGORY_LABEL: Record<string, string> = {
   LAB_CHARACTERISTIC: "Lab Characteristic",
   VIRULENCE_FACTOR: "Virulence Factor",
   SPECIAL_TRAIT: "Special Trait",
+  TRANSMISSION: "Transmission",
+  MORPHOLOGY: "Morphology",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -153,45 +157,35 @@ function MicrobeCard({
 }
 
 function ClueSection({ cards }: { cards: ClueCardEntry[] }) {
-  const grouped: Record<string, ClueCardEntry[]> = {};
-  for (const cat of CATEGORY_ORDER) grouped[cat] = [];
-  for (const card of cards) {
-    if (!grouped[card.category]) grouped[card.category] = [];
-    grouped[card.category].push(card);
-  }
+  const sorted = [...cards].sort((a, b) => {
+    const catA = CATEGORY_ORDER.indexOf(a.category);
+    const catB = CATEGORY_ORDER.indexOf(b.category);
+    if (catA !== catB) return catA - catB;
+    return a.sortOrder - b.sortOrder;
+  });
 
   return (
-    <div className="flex flex-col gap-2">
-      {CATEGORY_ORDER.map((cat) => {
-        const items = grouped[cat];
-        if (!items || items.length === 0) return null;
-        return (
-          <div key={cat}>
-            <p className="mb-1 text-[9px] font-semibold uppercase tracking-wider text-[#7a5a30]">
-              {CATEGORY_LABEL[cat]}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {items.map((card) => (
-                <div key={card.id} className="w-16 flex-shrink-0">
-                  {card.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={resolveImageSrc(card.imageUrl)}
-                      alt={card.label}
-                      className="w-full rounded shadow"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="flex w-full items-center justify-center rounded bg-[#f5e6c8] p-1 text-[8px] italic text-[#7a5a30] shadow" style={{ aspectRatio: "1429/2000" }}>
-                      {card.label}
-                    </div>
-                  )}
-                </div>
-              ))}
+    <div className="grid grid-cols-4 gap-2">
+      {sorted.map((card) => (
+        <div key={card.id} className="flex-shrink-0">
+          {card.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={resolveImageSrc(card.imageUrl)}
+              alt={card.label}
+              className="w-full rounded shadow"
+              draggable={false}
+            />
+          ) : (
+            <div
+              className="flex w-full items-center justify-center rounded bg-[#f5e6c8] p-1 text-[8px] italic text-[#7a5a30] shadow"
+              style={{ aspectRatio: "1429/2000" }}
+            >
+              {card.label}
             </div>
-          </div>
-        );
-      })}
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -207,18 +201,39 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
   const [microbes, setMicrobes] = useState<MicrobeEntry[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  const [clues, setClues] = useState<ClueCardEntry[] | null>(null);
+  const [cluesLoading, setCluesLoading] = useState(false);
+
   useEffect(() => {
     fetch(`/api/pathogen-book?gameMode=${gameMode}`)
       .then((r) => r.json())
       .then((data: MicrobeEntry[]) => {
         setMicrobes(data);
         const first = data.find((m) => m.unlocked);
-        if (first) setSelectedId(first.id);
+        if (first) {
+          setSelectedId(first.id);
+          setCluesLoading(true);
+          fetch(`/api/pathogen-book/${first.id}/clues`)
+            .then((r) => r.ok ? r.json() : [])
+            .then((data: ClueCardEntry[]) => setClues(data))
+            .catch(() => setClues([]))
+            .finally(() => setCluesLoading(false));
+        }
       });
   }, [gameMode]);
 
   function handleSelect(microbeId: string) {
     setSelectedId(microbeId);
+    setClues(null);
+    setCluesLoading(true);
+    fetch(`/api/pathogen-book/${microbeId}/clues`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch clues");
+        return r.json();
+      })
+      .then((data: ClueCardEntry[]) => setClues(data))
+      .catch(() => setClues([]))
+      .finally(() => setCluesLoading(false));
   }
 
   const selectedMicrobe = microbes?.find((m) => m.id === selectedId) ?? null;
@@ -310,7 +325,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
 
       {/* ── Right page — microbe detail ── */}
       <div
-        className="absolute overflow-y-auto"
+        className="absolute flex flex-col"
         style={{ left: "55%", top: "15%", width: "40%", height: "82%" }}
       >
         {!selectedMicrobe ? (
@@ -318,11 +333,9 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
             <span className="text-xs italic text-[#9a7850]">Select a microbe to view details</span>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            {/* Detail card + text header */}
-            <div className="flex items-start gap-4">
-              {/* Card — intentionally larger than grid cards (no zoom) */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+          <>
+            {/* Fixed header — microbe card + name + rating */}
+            <div className="flex items-start gap-4 pr-12 pb-3 shrink-0">
               <img
                 src={resolveImageSrc(selectedMicrobe.answerImageUrl)}
                 alt={selectedMicrobe.name}
@@ -330,8 +343,6 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
                 style={{ aspectRatio: "1 / 1" }}
                 draggable={false}
               />
-
-              {/* Name + rating */}
               <div className="flex flex-col gap-2 pt-1">
                 <h2 className="text-2xl font-semibold italic leading-snug text-[#2a1208]">
                   {selectedMicrobe.name}
@@ -339,7 +350,6 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
                 <p className="text-[12px] uppercase tracking-wider text-[#7a5a30]">
                   Clinical Relevance Rating
                 </p>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={starSrc(selectedMicrobe.starRating)}
                   alt={`${Math.round(selectedMicrobe.starRating)} stars`}
@@ -349,8 +359,25 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
               </div>
             </div>
 
-            {/* TODO: Characteristic cards — not yet implemented. See §9.3 in docs. */}
-          </div>
+            {/* Scrollable clue section */}
+            <div className="overflow-y-auto pr-12">
+              {cluesLoading ? (
+                <div className="flex items-center gap-2 pt-1">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="h-2.5 w-2.5 rounded-full bg-[#c8873a]"
+                      style={{ animation: `pbBounce 1s ease-in-out ${i * 0.2}s infinite` }}
+                    />
+                  ))}
+                </div>
+              ) : clues && clues.length > 0 ? (
+                <ClueSection cards={clues} />
+              ) : clues !== null ? (
+                <p className="text-[11px] italic text-[#9a7850]">No characteristic cards available.</p>
+              ) : null}
+            </div>
+          </>
         )}
       </div>
     </div>
