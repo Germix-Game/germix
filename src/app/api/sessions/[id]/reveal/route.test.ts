@@ -6,6 +6,7 @@ vi.mock('@/lib/prisma', () => ({
     score: { count: vi.fn() },
     sessionMicrobe: { findUnique: vi.fn(), update: vi.fn() },
     microbeClue: { findMany: vi.fn() },
+    $queryRaw: vi.fn(),
   },
 }))
 
@@ -62,7 +63,7 @@ describe('POST /api/sessions/:id/reveal', () => {
     vi.mocked(prisma.score.count).mockResolvedValue(0)
     vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue(mockSessionMicrobe as never)
     vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(mockClueCards as never)
-    vi.mocked(prisma.sessionMicrobe.update).mockResolvedValue({ ...mockSessionMicrobe, revealedSlots: [0] } as never)
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([{ revealedSlots: [0] }] as never)
   })
 
   describe('input validation', () => {
@@ -155,26 +156,34 @@ describe('POST /api/sessions/:id/reveal', () => {
       expect(body.session.heartsLeft).toBe(3)
     })
 
-    it('persists the revealed slot index', async () => {
+    it('persists the revealed slot via an atomic append', async () => {
       await POST(makeRequest({ slotIndex: 1 }), ctx)
-      expect(vi.mocked(prisma.sessionMicrobe.update)).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ revealedSlots: [1] }),
-        })
-      )
+      expect(vi.mocked(prisma.$queryRaw)).toHaveBeenCalledTimes(1)
+      // Tagged-template call: [strings, ...values]. The slotIndex is interpolated
+      // into both array_append(...) and the ANY(...) guard, so it appears twice.
+      const values = vi.mocked(prisma.$queryRaw).mock.calls[0].slice(1)
+      expect(values).toContain(1)
     })
 
-    it('appends to existing revealed slots', async () => {
-      vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
-        ...mockSessionMicrobe,
-        revealedSlots: [0],
-      } as never)
-      await POST(makeRequest({ slotIndex: 1 }), ctx)
-      expect(vi.mocked(prisma.sessionMicrobe.update)).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ revealedSlots: [0, 1] }),
-        })
-      )
+    // Regression: the scoring bug. Concurrent reveals used to clobber each other
+    // via a read-modify-write, persisting fewer slots than opened (e.g. 5 cards
+    // recorded as 2 → 80 pts instead of 20). The atomic append is the source of
+    // truth, so cardsOpened must reflect the full DB array, not a stale snapshot.
+    it('reports the full revealed-slot count returned by the database', async () => {
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([
+        { revealedSlots: [0, 1, 2, 3, 4] },
+      ] as never)
+      const res = await POST(makeRequest({ slotIndex: 1 }), ctx)
+      const body = await res.json()
+      expect(body.session.cardsOpened).toBe(5)
+    })
+
+    it('returns 409 when the atomic append finds the slot already revealed', async () => {
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([] as never)
+      const res = await POST(makeRequest({ slotIndex: 1 }), ctx)
+      expect(res.status).toBe(409)
+      const body = await res.json()
+      expect(body.error).toMatch(/already revealed/i)
     })
   })
 })
