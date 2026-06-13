@@ -3,7 +3,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     gameSession: { findUnique: vi.fn() },
-    score: { count: vi.fn(), findUnique: vi.fn() },
+    score: { count: vi.fn(), findUnique: vi.fn(), findFirst: vi.fn() },
     sessionMicrobe: { findUnique: vi.fn() },
     $transaction: vi.fn(),
   },
@@ -86,6 +86,7 @@ describe('POST /api/sessions/:id/answer', () => {
     vi.mocked(prisma.gameSession.findUnique).mockResolvedValue(mockSession as never)
     vi.mocked(prisma.score.count).mockResolvedValue(0)
     vi.mocked(prisma.score.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.score.findFirst).mockResolvedValue(null)
     vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue(mockSessionMicrobe as never)
     setupTransactionMock()
   })
@@ -134,7 +135,7 @@ describe('POST /api/sessions/:id/answer', () => {
     })
 
     it('returns 409 for duplicate answer submission (idempotency)', async () => {
-      vi.mocked(prisma.score.findUnique).mockResolvedValue({ id: 'score-existing' } as never)
+      vi.mocked(prisma.score.findFirst).mockResolvedValue({ id: 'score-existing' } as never)
       const res = await POST(makeRequest({ answeredMicrobeId: MICROBE_ID }), ctx)
       expect(res.status).toBe(409)
       const body = await res.json()
@@ -262,8 +263,8 @@ describe('POST /api/sessions/:id/answer', () => {
     })
 
     it('does not update Player stats when game is not yet complete', async () => {
-      // Only 5 of 15 rounds done
-      vi.mocked(prisma.score.count).mockResolvedValue(5)
+      // Only 2 of 5 microbes done (TOTAL_MICROBES = 5)
+      vi.mocked(prisma.score.count).mockResolvedValue(2)
       await POST(makeRequest({ answeredMicrobeId: MICROBE_ID }), ctx)
       expect(capturedTx.player.update).not.toHaveBeenCalled()
     })

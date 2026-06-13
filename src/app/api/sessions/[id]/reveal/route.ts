@@ -63,12 +63,30 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
     }
 
     const { clueCard } = microbeClues[slotIndex]
-    const newRevealedSlots = [...sessionMicrobe.revealedSlots, slotIndex]
 
-    await prisma.sessionMicrobe.update({
-      where: { sessionId_roundNumber: { sessionId: id, roundNumber: currentPosition } },
-      data: { revealedSlots: newRevealedSlots },
-    })
+    // Atomic append — guards against a lost-update race. The client fires reveal
+    // requests fire-and-forget (see play page handleReveal), so flipping several
+    // cards quickly sends concurrent POSTs. A read-modify-write here (read
+    // revealedSlots, spread + index in JS, then update) lets each request read the
+    // same stale array and overwrite the others, so fewer slots persist than were
+    // opened — and the answer route then scores e.g. 2 cards (80 pts) instead of 5
+    // (20 pts). `array_append` runs in a single statement that locks the row, and
+    // the `NOT (... = ANY ...)` guard makes a duplicate reveal a safe no-op.
+    const rows = await prisma.$queryRaw<{ revealedSlots: number[] }[]>`
+      UPDATE "SessionMicrobe"
+      SET "revealedSlots" = array_append("revealedSlots", ${slotIndex})
+      WHERE "sessionId" = ${id}
+        AND "roundNumber" = ${currentPosition}
+        AND NOT (${slotIndex} = ANY("revealedSlots"))
+      RETURNING "revealedSlots"
+    `
+
+    // No row updated → another concurrent request already revealed this slot.
+    if (rows.length === 0) {
+      return Response.json({ error: 'Slot already revealed' }, { status: 409 })
+    }
+
+    const newRevealedSlots = rows[0].revealedSlots
 
     return Response.json({
       card: {
