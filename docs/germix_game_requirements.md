@@ -476,13 +476,15 @@ Shows the full detail for the currently selected microbe.
     | Category | Folder | `CardCategory` enum |
     |---|---|---|
     | Gram Stain | `gram-stain/` | `GRAM_STAIN` |
-    | Clinical Manifestation | `clinical-manifistation/` | `CLINICAL_MANIFESTATION` | <!-- folder name has a typo — matches actual directory name on disk -->
+    | Clinical Manifestation | `clinical-manifistation/` | `CLINICAL_MANIFESTATION` | 
     | Lab Characteristic | `lab-characteristic/` | `LAB_CHARACTERISTIC` |
     | Virulence Factor | `virulence-factor/` | `VIRULENCE_FACTOR` |
     | Special Trait | `special-trait/` | `SPECIAL_TRAIT` |
-  - Each microbe may have **one or many** cards per category (e.g. 3 Virulence Factor cards shown side-by-side)
-  - Each card is a PNG (`ClueCard.imageUrl`) with a category label above it
-  - Layout order: Gram Stain → Clinical Manifestation → Lab Characteristic → Virulence Factor → Special Trait
+    | Transmission | `transmission/` | `TRANSMISSION` |
+    | Morphology | `morphology/` | `MORPHOLOGY` |
+  - Each microbe may have **zero, one, or many** cards per category (e.g. 3 Virulence Factor cards shown side-by-side)
+  - Each card is a PNG (`ClueCard.imageUrl`)
+  - Layout order: Gram Stain → Clinical Manifestation → Lab Characteristic → Virulence Factor → Special Trait -> Transmission -> Morphology
   - Data source: `GET /api/pathogen-book/{microbeId}/clues` → array of `{ id, category, label, imageUrl, sortOrder }`
   - **Implementation note:** The API endpoint already exists. UI display in `PathogenBookLayout.tsx` right panel is pending — see `ClueSection` component and `ClueCardEntry` type already scaffolded in that file.
 - When no microbe is selected (page first load), the right page shows the book background only
