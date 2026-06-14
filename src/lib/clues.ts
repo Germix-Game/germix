@@ -9,7 +9,10 @@ const SLOT_CATEGORIES: CardCategory[][] = [
   ['CLINICAL_MANIFESTATION'],   // slot 4 — Diseases + key clinical clues
 ]
 
-// One clue card per group, in slot order (length 5). null if microbe lacks a group.
+// One clue card per group, in FIXED slot order (length 5) — each category always
+// sits in the same slot (e.g. special trait is always slot 3). Within a group,
+// which specific clue shows is still picked at random per round.
+// null if microbe lacks a group.
 export async function getRoundClues(microbeId: string) {
   const all = await prisma.microbeClue.findMany({
     where: { microbeId },
@@ -17,17 +20,9 @@ export async function getRoundClues(microbeId: string) {
     include: { clueCard: true },
   })
 
-  const chosen = SLOT_CATEGORIES.map((group) => {
+  return SLOT_CATEGORIES.map((group) => {
     const candidates = all.filter((mc) => group.includes(mc.clueCard.category))
     if (candidates.length === 0) return null
-    return candidates[Math.floor(Math.random() * candidates.length)] // random 
+    return candidates[Math.floor(Math.random() * candidates.length)]
   })
-
-  // Shuffle slot positions so the category order is hidden (Fisher–Yates)
-  for (let i = chosen.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[chosen[i], chosen[j]] = [chosen[j], chosen[i]]
-  }
-
-  return chosen
 }
