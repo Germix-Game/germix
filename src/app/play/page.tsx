@@ -29,6 +29,15 @@ import type {
   RoundResult,        // shape of one round's outcome (for end-screen recap)
 } from "@/types/game";
 
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+// DB stores paths without the /assets/ prefix (e.g. "cards/answers/bacteria/foo.png").
+function resolveImageSrc(url: string | null | undefined): string {
+  if (!url) return "";
+  if (url.startsWith("http") || url.startsWith("/")) return url;
+  return `/assets/${url}`;
+}
+
 // ─── constants ────────────────────────────────────────────────────────────────
 
 // Pre-built empty slots array — 5 unrevealed card slots indexed 0–4.
@@ -1007,7 +1016,7 @@ function DraggableMicrobeCard({
     };
   }, [microbe.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const src = microbe.answerImageUrl ?? "";
+  const src = resolveImageSrc(microbe.answerImageUrl);
   const label = microbe.shortName ?? microbe.name ?? "";
 
   return (
@@ -1104,8 +1113,7 @@ function MicrobeThumb({
   microbe: { name?: string; shortName?: string; imageUrl?: string; answerImageUrl?: string };
   size: "sm" | "lg";  // union type — only these two strings allowed
 }) {
-  // Pick whichever URL is set first
-  const src = microbe.imageUrl ?? microbe.answerImageUrl ?? "";
+  const src = resolveImageSrc(microbe.imageUrl ?? microbe.answerImageUrl);
   const label = microbe.shortName ?? microbe.name ?? "";
   // Different sizing for small (grid) vs large (feedback bar) variants
   const dim = size === "sm" ? "w-full aspect-square" : "h-14 w-14 flex-shrink-0";
@@ -1265,7 +1273,7 @@ function ClueCardThumb({ card }: { card: ClueCard }) {
       {card.imageUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={card.imageUrl}
+          src={resolveImageSrc(card.imageUrl)}
           alt={card.label}
           className="absolute inset-0 h-full w-full object-cover rounded"
           onError={(e) => { e.currentTarget.style.display = "none"; }}

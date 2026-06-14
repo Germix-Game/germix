@@ -3,6 +3,12 @@
 import { useRef, useState, useEffect } from "react";
 import type { ClueCard } from "@/types/game";
 
+function resolveImageSrc(url: string | null | undefined): string {
+  if (!url) return "";
+  if (url.startsWith("http") || url.startsWith("/")) return url;
+  return `/assets/${url}`;
+}
+
 interface CardSlotProps {
   index: number;
   revealed: boolean;
@@ -140,7 +146,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
               {card.imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={card.imageUrl}
+                  src={resolveImageSrc(card.imageUrl)}
                   alt={card.label}
                   className="absolute inset-0 w-full h-full object-cover rounded-xl"
                   onError={(e) => { e.currentTarget.style.display = "none"; }}
