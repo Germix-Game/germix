@@ -237,8 +237,8 @@ export default function HomePage() {
               animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
             }}
           >
-            <div className="flex h-8 items-center gap-1.5 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-3 text-xs font-semibold tracking-wide text-[#f5e6c8] shadow select-none">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a96a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <div className="flex h-11 items-center gap-2 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#f5e6c8] shadow select-none">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a96a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="12" cy="8" r="4" />
                 <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
               </svg>
@@ -258,10 +258,10 @@ export default function HomePage() {
             <button
               onClick={handleLogout}
               disabled={loggingOut}
-              className="flex h-8 items-center gap-1.5 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-3 text-xs font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex h-11 items-center gap-2 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:opacity-50 disabled:cursor-not-allowed"
               title="Log out"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />

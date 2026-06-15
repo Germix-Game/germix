@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Alice } from "next/font/google";
+
+const alice = Alice({ weight: "400", subsets: ["latin"] });
 
 type RankedPlayer = {
   rank: number;
@@ -18,7 +21,7 @@ type LeaderboardData = {
 
 type FetchStatus = "loading" | "ready" | "error";
 
-const FONT = "'Impact','Arial Black',sans-serif";
+const FONT = "var(--font-alice), serif";
 
 type BarVariant = "gold" | "silver" | "bronze" | "green" | "you";
 
@@ -152,7 +155,7 @@ export default function LeaderboardPage() {
 
   return (
     <div
-      className="fixed inset-0"
+      className={`${alice.className} fixed inset-0`}
       style={{
         backgroundImage: "url('/assets/backgrounds/main_page_background.png')",
         backgroundSize: "cover",

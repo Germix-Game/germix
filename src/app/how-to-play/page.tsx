@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { Alice } from "next/font/google";
+
+const alice = Alice({ weight: "400", subsets: ["latin"] });
 
 const YOUTUBE_VIDEO_ID = "dQw4w9WgXcQ";
 
@@ -15,7 +18,7 @@ export default function HowToPlayPage() {
 
   return (
     <div
-      className="min-h-screen w-full bg-cover bg-center px-4 py-8"
+      className={`${alice.className} min-h-screen w-full bg-cover bg-center px-4 py-8`}
       style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
     >
       <div className="mx-auto max-w-2xl">

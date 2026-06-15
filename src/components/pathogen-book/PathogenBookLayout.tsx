@@ -156,6 +156,53 @@ function MicrobeCard({
   );
 }
 
+const SHIMMER_CSS = `
+  @keyframes shimmer {
+    0%   { background-position: -400% center; }
+    100% { background-position:  400% center; }
+  }
+`;
+
+function ShimmerCard({ base, sheen }: { base: string; sheen: string }) {
+  return (
+    <div
+      className="w-full rounded-sm"
+      style={{
+        aspectRatio: "1429 / 2000",
+        background: `linear-gradient(105deg, ${base} 42%, ${sheen} 50%, ${base} 58%)`,
+        backgroundSize: "300% 100%",
+        animation: "shimmer 3s linear infinite",
+      }}
+    />
+  );
+}
+
+function MicrobeGridSkeleton() {
+  return (
+    <>
+      <style>{SHIMMER_CSS}</style>
+      <div className="grid grid-cols-4 gap-2" style={{ zoom: 0.38 }}>
+        {Array.from({ length: 16 }).map((_, i) => (
+          <ShimmerCard key={i} base="rgba(30,18,10,0.55)" sheen="rgba(60,38,20,0.55)" />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function ClueSectionSkeleton() {
+  return (
+    <>
+      <style>{SHIMMER_CSS}</style>
+      <div className="grid grid-cols-4 gap-2">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <ShimmerCard key={i} base="rgba(160,130,90,0.22)" sheen="rgba(185,155,110,0.32)" />
+        ))}
+      </div>
+    </>
+  );
+}
+
 function ClueSection({ cards }: { cards: ClueCardEntry[] }) {
   const sorted = [...cards].sort((a, b) => {
     const catA = CATEGORY_ORDER.indexOf(a.category);
@@ -205,22 +252,16 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
   const [cluesLoading, setCluesLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/pathogen-book?gameMode=${gameMode}`)
+    fetch(`/api/pathogen-book?gameMode=${gameMode}&withFirstClues=true`)
       .then((r) => {
         if (!r.ok) throw new Error(`${r.status}`);
         return r.json();
       })
-      .then((data: MicrobeEntry[]) => {
-        setMicrobes(data);
-        const first = data.find((m) => m.unlocked);
-        if (first) {
-          setSelectedId(first.id);
-          setCluesLoading(true);
-          fetch(`/api/pathogen-book/${first.id}/clues`)
-            .then((r) => r.ok ? r.json() : [])
-            .then((data: ClueCardEntry[]) => setClues(data))
-            .catch(() => setClues([]))
-            .finally(() => setCluesLoading(false));
+      .then((data: { microbes: MicrobeEntry[]; firstMicrobeId: string | null; firstMicrobeClues: ClueCardEntry[] | null }) => {
+        setMicrobes(data.microbes);
+        if (data.firstMicrobeId) {
+          setSelectedId(data.firstMicrobeId);
+          setClues(data.firstMicrobeClues ?? []);
         }
       })
       .catch(() => setMicrobes([]));
@@ -294,25 +335,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
         style={{ left: "22%", top: "25%", width: "30%", height: "75%" }}
       >
         {microbes === null ? (
-          <div className="flex h-full items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex gap-2">
-                {[0, 1, 2].map((i) => (
-                  <span
-                    key={i}
-                    className="h-3 w-3 rounded-full bg-[#c8873a]"
-                    style={{ animation: `pbBounce 1s ease-in-out ${i * 0.2}s infinite` }}
-                  />
-                ))}
-              </div>
-              <style>{`
-                @keyframes pbBounce {
-                  0%, 100% { transform: translateY(0); opacity: 0.4; }
-                  50% { transform: translateY(-8px); opacity: 1; }
-                }
-              `}</style>
-            </div>
-          </div>
+          <MicrobeGridSkeleton />
         ) : (
           <div className="grid grid-cols-4 gap-2" style={{ zoom: 0.38 }}>
             {microbes.map((microbe) => (
@@ -334,7 +357,11 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
       >
         {!selectedMicrobe ? (
           <div className="flex h-full items-center justify-center">
-            <span className="text-xs italic text-[#9a7850]">Select a microbe to view details</span>
+            <span className="text-xs italic text-[#9a7850]">
+              {microbes && microbes.every((m) => !m.unlocked)
+                ? "Play the game to discover microbes!"
+                : "Select a microbe to view details"}
+            </span>
           </div>
         ) : (
           <>
@@ -366,15 +393,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
             {/* Scrollable clue section */}
             <div className="overflow-y-auto pr-12">
               {cluesLoading ? (
-                <div className="flex items-center gap-2 pt-1">
-                  {[0, 1, 2].map((i) => (
-                    <span
-                      key={i}
-                      className="h-2.5 w-2.5 rounded-full bg-[#c8873a]"
-                      style={{ animation: `pbBounce 1s ease-in-out ${i * 0.2}s infinite` }}
-                    />
-                  ))}
-                </div>
+                <ClueSectionSkeleton />
               ) : clues && clues.length > 0 ? (
                 <ClueSection cards={clues} />
               ) : clues !== null ? (

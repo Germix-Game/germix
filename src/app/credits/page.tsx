@@ -4,7 +4,10 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { Alice } from "next/font/google";
 import { createClient } from "@/utils/supabase/client";
+
+const alice = Alice({ weight: "400", subsets: ["latin"] });
 
 const RESEARCHERS = [
   "Chonticha Nopmaneejumruslers",
@@ -75,7 +78,7 @@ export default function CreditsPage() {
 
   return (
     <div
-      className="relative min-h-screen w-full bg-cover bg-center"
+      className={`${alice.className} relative min-h-screen w-full bg-cover bg-center`}
       style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
     >
       {/* Game graphic — 80% wide, centered, behind text */}
