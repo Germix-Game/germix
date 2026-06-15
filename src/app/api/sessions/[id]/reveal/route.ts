@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, requireOwner } from '@/lib/auth'
+import { getRoundClues } from '@/lib/clues'
 
 const revealSchema = z.object({
   slotIndex: z.number().int().min(0).max(4),
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
     if (sessionMicrobe.revealedSlots.includes(slotIndex)) {
       return Response.json({ error: 'Slot already revealed' }, { status: 409 })
     }
-
+    /*
     const microbeClues = await prisma.microbeClue.findMany({
       where: { microbeId: sessionMicrobe.microbeId },
       orderBy: { sortOrder: 'asc' },
@@ -63,7 +64,15 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
     }
 
     const { clueCard } = microbeClues[slotIndex]
+    */
+    const roundClues = await getRoundClues(sessionMicrobe.microbeId)
+    const entry = roundClues[slotIndex]
 
+    if (!entry) {
+      return Response.json({ error: 'No clue for this slot' }, { status: 422 })
+    }
+
+    const { clueCard } = entry
     // Atomic append — guards against a lost-update race. The client fires reveal
     // requests fire-and-forget (see play page handleReveal), so flipping several
     // cards quickly sends concurrent POSTs. A read-modify-write here (read
