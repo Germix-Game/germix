@@ -1,5 +1,10 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
 
 const RESEARCHERS = [
   "Chonticha Nopmaneejumruslers",
@@ -59,6 +64,15 @@ function EntryList({ entries }: { entries: readonly string[] }) {
 }
 
 export default function CreditsPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) router.replace("/");
+    });
+  }, [router]);
+
   return (
     <div
       className="relative min-h-screen w-full bg-cover bg-center"
@@ -115,7 +129,7 @@ export default function CreditsPage() {
       {/* Back button */}
       <div className="fixed top-4 left-4 z-20">
         <Link
-          href="/"
+          href="/home"
           className="flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 py-2 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
         >
           ← Back
