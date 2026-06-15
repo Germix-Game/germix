@@ -112,39 +112,7 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Loading screen — fades out once all assets are ready */}
-      <div
-        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0d0500]"
-        style={{
-          opacity: loaded ? 0 : 1,
-          pointerEvents: loaded ? "none" : "all",
-          transition: "opacity 700ms ease",
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/assets/ui/game-logo.png"
-          alt="Germix"
-          draggable={false}
-          style={{ width: "260px", marginBottom: "2rem", opacity: 0.9 }}
-        />
-        <div style={{ display: "flex", gap: "8px" }}>
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              style={{
-                width: "12px",
-                height: "12px",
-                borderRadius: "50%",
-                background: "#c8873a",
-                animation: `loading-bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Main content — rendered immediately so images load in the background */}
+      {/* Main content */}
       <div
         className="relative h-screen w-screen overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
