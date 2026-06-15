@@ -49,7 +49,28 @@ export async function GET(request: NextRequest) {
       unlocked: Array.isArray(unlockedBy) && unlockedBy.length > 0,
     }))
 
-    return Response.json(result)
+    // Optionally include clues for the first unlocked microbe to avoid a waterfall fetch
+    const withFirstClues = request.nextUrl.searchParams.get('withFirstClues') === 'true'
+    if (withFirstClues && playerId) {
+      const firstUnlocked = result.find((m) => m.unlocked)
+      if (firstUnlocked) {
+        const clues = await prisma.microbeClue.findMany({
+          where: { microbeId: firstUnlocked.id },
+          select: {
+            sortOrder: true,
+            clueCard: { select: { id: true, category: true, label: true, imageUrl: true } },
+          },
+          orderBy: [{ sortOrder: 'asc' }],
+        })
+        return Response.json({
+          microbes: result,
+          firstMicrobeId: firstUnlocked.id,
+          firstMicrobeClues: clues.map(({ sortOrder, clueCard }) => ({ ...clueCard, sortOrder })),
+        })
+      }
+    }
+
+    return Response.json({ microbes: result, firstMicrobeId: null, firstMicrobeClues: null })
   } catch (err) {
     console.error('[pathogen-book] DB error:', err)
     return Response.json({ error: 'Internal server error' }, { status: 500 })

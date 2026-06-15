@@ -112,39 +112,7 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Loading screen — fades out once all assets are ready */}
-      <div
-        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0d0500]"
-        style={{
-          opacity: loaded ? 0 : 1,
-          pointerEvents: loaded ? "none" : "all",
-          transition: "opacity 700ms ease",
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/assets/ui/game-logo.png"
-          alt="Germix"
-          draggable={false}
-          style={{ width: "260px", marginBottom: "2rem", opacity: 0.9 }}
-        />
-        <div style={{ display: "flex", gap: "8px" }}>
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              style={{
-                width: "12px",
-                height: "12px",
-                borderRadius: "50%",
-                background: "#c8873a",
-                animation: `loading-bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Main content — rendered immediately so images load in the background */}
+      {/* Main content */}
       <div
         className="relative h-screen w-screen overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
@@ -237,8 +205,8 @@ export default function HomePage() {
               animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
             }}
           >
-            <div className="flex h-8 items-center gap-1.5 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-3 text-xs font-semibold tracking-wide text-[#f5e6c8] shadow select-none">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d4a96a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <div className="flex h-11 items-center gap-2 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#f5e6c8] shadow select-none">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a96a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="12" cy="8" r="4" />
                 <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
               </svg>
@@ -258,10 +226,10 @@ export default function HomePage() {
             <button
               onClick={handleLogout}
               disabled={loggingOut}
-              className="flex h-8 items-center gap-1.5 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-3 text-xs font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex h-11 items-center gap-2 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:opacity-50 disabled:cursor-not-allowed"
               title="Log out"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />

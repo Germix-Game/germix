@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Alice } from "next/font/google";
+
+const alice = Alice({ weight: "400", subsets: ["latin"] });
 
 type RankedPlayer = {
   rank: number;
@@ -18,14 +21,14 @@ type LeaderboardData = {
 
 type FetchStatus = "loading" | "ready" | "error";
 
-const FONT = "'Impact','Arial Black',sans-serif";
+const FONT = "var(--font-alice), serif";
 
 type BarVariant = "gold" | "silver" | "bronze" | "green" | "you";
 
 const TEXT_COLOR: Record<BarVariant, string> = {
-  gold:   "#3a2000",
+  gold:   "#7a4500",
   silver: "#1a3060",
-  bronze: "#fff0ec",
+  bronze: "#000000",
   green:  "#0a3010",
   you:    "#1a0060",
 };
@@ -35,8 +38,8 @@ const BARS: Record<string, React.CSSProperties> = {
   gold:   { top: "45%",   left: "33%",  width: "32%",  height: "11%"  },
   silver: { top: "58%",   left: "17%",  width: "32%",  height: "9.5%" },
   bronze: { top: "58%",   left: "50%",  width: "32%",  height: "9.5%" },
-  green1: { top: "70%",   left: "20%",  width: "60%",  height: "8%"   },
-  green2: { top: "78.75%",   left: "20%",  width: "60%",  height: "8%"   },
+  green1: { top: "69.75%",   left: "20%",  width: "60%",  height: "8%"   },
+  green2: { top: "78.25%",   left: "20%",  width: "60%",  height: "8%"   },
   you:    { top: "87%",   left: "20%",  width: "60%",  height: "8%"   },
 };
 
@@ -95,6 +98,7 @@ function BarRow({
   barKey,
   variant,
   isYou,
+  fontSize,
 }: {
   rank: number;
   username: string;
@@ -102,17 +106,20 @@ function BarRow({
   barKey: string;
   variant: BarVariant;
   isYou?: boolean;
+  fontSize?: string;
 }) {
   const color = TEXT_COLOR[variant];
   const pos = BAR_TEXT[barKey];
+  const isGold = variant === "gold";
   const textBase: React.CSSProperties = {
     position: "absolute",
     fontFamily: FONT,
     color,
-    fontSize: "clamp(8px, 1.4vw, 18px)",
+    fontSize: fontSize ?? "clamp(10px, 1.8vw, 24px)",
     userSelect: "none",
     pointerEvents: "none",
     whiteSpace: "nowrap",
+    ...(isGold && { textShadow: "0 1px 6px rgba(255,200,60,0.7), 0 0px 2px rgba(255,220,80,0.5)" }),
   };
 
   return (
@@ -152,7 +159,7 @@ export default function LeaderboardPage() {
 
   return (
     <div
-      className="fixed inset-0"
+      className={`${alice.className} fixed inset-0 font-bold`}
       style={{
         backgroundImage: "url('/assets/backgrounds/main_page_background.png')",
         backgroundSize: "cover",
@@ -199,15 +206,6 @@ export default function LeaderboardPage() {
             draggable={false}
           />
 
-          {status === "loading" && (
-            <div className="absolute inset-0 flex items-center justify-center z-10">
-              <div
-                className="h-8 w-8 rounded-full border-4 animate-spin"
-                style={{ borderColor: "#c8a060 transparent #c8a060 #c8a060" }}
-              />
-            </div>
-          )}
-
           {status === "error" && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
               <p style={{ color: "#9a3030", fontFamily: FONT }}>
@@ -231,6 +229,7 @@ export default function LeaderboardPage() {
                       barKey={barKey}
                       variant={variant}
                       isYou={isYou}
+                      fontSize={variant === "gold" ? "clamp(13px, 2.4vw, 32px)" : undefined}
                     />
                   </div>
                 );
