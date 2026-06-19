@@ -14,6 +14,7 @@ interface CardGridProps {
   dropTargetRef: RefObject<HTMLDivElement | null>;
   isDraggingOver: boolean;
   pendingMicrobeName: string | null;
+  pendingMicrobeImage: string | null;
   onConfirm: () => void;
   onCancelPending: () => void;
 }
@@ -28,6 +29,7 @@ export function CardGrid({
   dropTargetRef,
   isDraggingOver,
   pendingMicrobeName,
+  pendingMicrobeImage,
   onConfirm,
   onCancelPending,
 }: CardGridProps) {
@@ -52,16 +54,28 @@ export function CardGrid({
         {pendingMicrobeName ? (
           /* Confirmation state — shown after a microbe is dropped */
           <div
-            className={`w-full h-full flex flex-col rounded-xl overflow-hidden border-2 transition-all ${
+            className={`w-full h-full flex flex-col overflow-hidden border-2 transition-all ${
               isDraggingOver
                 ? "border-[#d4a96a] scale-105"
                 : "border-[#d4a96a]"
             }`}
           >
-            <div className="flex-1 flex items-center justify-center bg-[#f5e6c8] px-2 py-1">
-              <span className="text-[0.65rem] italic text-[#3a2010] text-center leading-tight line-clamp-4">
+            {/* Dropped microbe card — image fills the area; name as fallback / bottom strip */}
+            <div className="relative flex-1 flex items-center justify-center bg-[#f5e6c8] overflow-hidden">
+              {/* Text fallback (visible until/if image fails) */}
+              <span className="px-2 text-center text-[0.65rem] italic text-[#3a2010] leading-tight line-clamp-4">
                 {pendingMicrobeName}
               </span>
+              {/* Microbe image — square corners (no rounding) */}
+              {pendingMicrobeImage && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={pendingMicrobeImage}
+                  alt={pendingMicrobeName ?? ""}
+                  className="absolute inset-0 h-full w-full object-contain"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+              )}
             </div>
             <div className="flex flex-shrink-0">
               <button

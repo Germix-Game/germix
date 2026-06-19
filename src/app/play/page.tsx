@@ -604,16 +604,16 @@ export default function PlayPage() {
       {/* ── Wood area (top zone: cards + score/hearts) ───────────────── */}
       {/* flex-shrink-0 → don't let this zone shrink when parchment grows */}
       {/* Arbitrary background image (Tailwind bg-[url-syntax]), bg-cover scales to fill, bg-center centers it */}
-      <div className="flex flex-col px-6 pt-2 pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-shrink-0">
+      <div className="relative flex flex-col px-6 pt-1 pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-shrink-0">
 
         {/* Top bar: Score on left, Exit on right */}
         <div className="relative z-10 flex items-center justify-between">
           <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
           <button
             onClick={() => setShowExitConfirm(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-[#6b3520] bg-[#2a1208]/80 px-3 py-1 text-xs font-semibold text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
+            className="flex items-center gap-2 rounded-lg border border-[#6b3520] bg-[#2a1208]/80 px-4 py-1.5 text-xl font-bold text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
           >
-            <span className="text-sm leading-none">✕</span>
+            <span className="text-xl leading-none">✕</span>
             Exit
           </button>
         </div>
@@ -627,7 +627,10 @@ export default function PlayPage() {
          * `-mt-8` pulls the image upward so it sits closer to the very top of the wood area
          * (overlapping vertically with the score/hearts row, but centered horizontally between them).
          */}
-        <div className="flex justify-center -mt-4">
+        {/* Round bar — absolutely positioned so it pokes through the top WITHOUT pushing the
+            score/exit bar down (those stay pinned at the very top). The root has overflow-hidden,
+            so the part translated above the screen is clipped. Tune -translate-y-[..] to show more/less. */}
+        <div className="pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 -translate-y-[42%]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/assets/ui/round-${round}.png`}
@@ -637,7 +640,7 @@ export default function PlayPage() {
           />
         </div>
         {phase === "playing" && (
-          <div className="flex justify-center mt-1 mb-2">
+          <div className="flex justify-center mt-6 mb-4">
             <div ref={pointsPillRef} className="flex items-baseline gap-1.5 px-4 py-1 rounded-full bg-[#2a1208]/85 border border-[#d4a96a]/50 shadow-lg">
               <span className="text-[#d4a96a] text-[0.65rem] font-semibold uppercase tracking-wider">Answer now for</span>
               <span className="text-[#f5e6c8] text-base font-black tabular-nums">
@@ -649,7 +652,7 @@ export default function PlayPage() {
         )}
 
         {/* The 5 clue cards + hearts (vertical) + the "Answer" button */}
-        <div className="flex items-end gap-3">
+        <div className="flex items-center gap-3">
           <HeartsBar heartsLeft={heartsLeft} vertical />
           <CardGrid
             slots={slots}
@@ -663,6 +666,13 @@ export default function PlayPage() {
             pendingMicrobeName={
               pendingMicrobeId
                 ? (microbes.find((m) => m.id === pendingMicrobeId)?.shortName ?? null)
+                : null
+            }
+            pendingMicrobeImage={
+              pendingMicrobeId
+                ? (resolveImageSrc(
+                    microbes.find((m) => m.id === pendingMicrobeId)?.answerImageUrl,
+                  ) || null)
                 : null
             }
             onConfirm={() => {

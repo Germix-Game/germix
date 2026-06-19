@@ -102,7 +102,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
          * To swap: drop a new file at the same path. No code change needed.
          */}
         <button
-          className="card-face w-full h-full rounded-xl bg-[url('/assets/ui/Backcard.png')] bg-cover bg-center shadow-lg hover:brightness-125 focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] disabled:cursor-default disabled:hover:brightness-100 transition-[filter]"
+          className="card-face w-full h-full rounded-3xl bg-[url('/assets/ui/Backcard.png')] bg-cover bg-center shadow-lg hover:brightness-125 focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] disabled:cursor-default disabled:hover:brightness-100 transition-[filter]"
           onClick={() => onReveal(index)}
           disabled={revealed || disabled}
           aria-label={`Reveal clue card ${index + 1}`}
@@ -111,7 +111,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
 
         {/* Revealed front face */}
         <div
-          className="card-face card-face-front w-full h-full rounded-xl overflow-hidden shadow-lg bg-[#f5e6c8] relative flex flex-col items-center justify-center gap-1.5 p-2"
+          className="card-face card-face-front w-full h-full rounded-3xl overflow-hidden shadow-lg bg-[#f5e6c8] relative flex flex-col items-center justify-center gap-1.5 p-2"
           aria-hidden={!revealed}
         >
           {revealed && !card && (
@@ -148,7 +148,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
                 <img
                   src={resolveImageSrc(card.imageUrl)}
                   alt={card.label}
-                  className="absolute inset-0 w-full h-full object-cover rounded-xl"
+                  className="absolute inset-0 w-full h-full object-cover"
                   onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
               )}
