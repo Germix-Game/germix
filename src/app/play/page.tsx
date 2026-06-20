@@ -113,12 +113,14 @@ export default function PlayPage() {
 
   // ─── STATE: Answer panel (the microbe selection grid) ───────────
   const [microbes, setMicrobes] = useState<Microbe[]>([]);
+  const [microbesLoading, setMicrobesLoading] = useState(true);   // true until the microbe list has loaded — shows skeleton cards
   const [selectedMicrobeId, setSelectedMicrobeId] = useState<string | null>(null);
   const [gramFilter, setGramFilter] = useState<GramType | null>(null);
   const [tagFilters, setTagFilters] = useState<Set<MicrobeTag>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const dropTargetRef = useRef<HTMLDivElement>(null);
   const prefetchedCardsRef = useRef<(ClueCard | null)[]>([null, null, null, null, null]);
+  const cardsFetchRef = useRef<Promise<{ cards?: unknown } | null> | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [pendingMicrobeId, setPendingMicrobeId] = useState<string | null>(null);
   const [dropBlockedMsg, setDropBlockedMsg] = useState<string | null>(null);
@@ -127,7 +129,6 @@ export default function PlayPage() {
   const pointsPillRef = useRef<HTMLDivElement>(null);
   const [scorePop, setScorePop] = useState<{ points: number; startX: number; startY: number } | null>(null);
   const [scoreFlashKey, setScoreFlashKey] = useState(0);
-  const [pendingRevealCount, setPendingRevealCount] = useState(0);
 
   // ─── STATE: Wrong-answer retry tracking ─────────────────────────
   // Set of microbe IDs the player has guessed wrong for the current question.
@@ -157,6 +158,7 @@ export default function PlayPage() {
       // DEMO MODE branch — skip backend, use hardcoded data
       setIsDemo(true);
       setMicrobes(DEMO_MICROBES);
+      setMicrobesLoading(false);
       setCardsReady(true);
       setPhase("playing");
       return; // exit early — don't try to load a real session
@@ -167,6 +169,7 @@ export default function PlayPage() {
     const id = localStorage.getItem("currentSessionId");
     if (!id) { setPhase("error"); return; }   // no session → show error
     setSessionId(id);
+    void startCardsFetch(id);                   // fire the cards request now (in parallel with the session fetch) — it only needs the id
     void fetchSession(id);                     // `void` says "I'm intentionally not awaiting this Promise"
     // eslint-disable-next-line react-hooks/exhaustive-deps
     // ↑ The lint rule wants `fetchSession` in deps, but we only want this to run once on mount, so we silence it.
@@ -206,7 +209,21 @@ export default function PlayPage() {
       setMicrobes(Array.isArray(data) ? data : []);
     } catch {
       // Non-fatal: panel will just be empty
+    } finally {
+      setMicrobesLoading(false);
     }
+  }
+
+  // Network request for the cards endpoint, shared between the eager bootstrap
+  // call and fetchCards() below so the two never issue duplicate requests —
+  // whichever call happens first kicks it off, the other just awaits it.
+  async function startCardsFetch(id: string): Promise<{ cards?: unknown } | null> {
+    if (!cardsFetchRef.current) {
+      cardsFetchRef.current = fetch(`/api/sessions/${id}/cards`)
+        .then((res) => (res.ok ? res.json() : null))
+        .catch(() => null);
+    }
+    return cardsFetchRef.current;
   }
 
   // Pre-fetch all 5 clue cards for the current round into a ref.
@@ -216,9 +233,8 @@ export default function PlayPage() {
     setCardsReady(false);
     const unlockTimer = setTimeout(() => setCardsReady(true), 3000); // safety: unlock after 3 s max
     try {
-      const res = await fetch(`/api/sessions/${id}/cards`);
-      if (!res.ok) return;
-      const data = await res.json();
+      const data = await startCardsFetch(id);
+      if (!data) return;
       if (Array.isArray(data.cards)) {
         const cards = data.cards as ClueCard[];
         prefetchedCardsRef.current = cards;
@@ -271,14 +287,13 @@ export default function PlayPage() {
         setSlots((prev) =>
           prev.map((s) => (s.index === index ? { ...s, revealed: true, card: preCard } : s)),
         );
-        // Track this reveal so answer submission waits for the server to record it
-        setPendingRevealCount((n) => n + 1);
+        // Persist in the background. The answer submission no longer waits on
+        // this — it sends its own locally-tracked revealed slots and the server
+        // merges them in, so there's nothing here for the UI to block on.
         void fetch(`/api/sessions/${sessionId}/reveal`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ slotIndex: index }),
-        }).finally(() => {
-          setPendingRevealCount((n) => n - 1);
         });
         return;
       }
@@ -331,14 +346,12 @@ export default function PlayPage() {
     phase === "playing" &&
     revealedCount > 0 &&
     selectedMicrobeId !== null &&
-    !isSubmitting &&
-    pendingRevealCount === 0;
+    !isSubmitting;
 
   const canDropAnswer =
     phase === "playing" &&
     revealedCount > 0 &&
-    !isSubmitting &&
-    pendingRevealCount === 0;
+    !isSubmitting;
 
   // The big handler for submitting an answer
   const handleSubmitAnswer = useCallback(async (overrideMicrobeId?: string) => {
@@ -356,7 +369,7 @@ export default function PlayPage() {
         if (correct) {
           // Score is 0 if the player had any wrong attempt on this question
           const roundScore = questionHasWrong ? 0 : Math.max(0, 100 - (revealedCount - 1) * 20);
-          const result: RoundResult = { roundNumber: round, correct: true, roundScore, correctMicrobe: demoCorrect, openedSlots: slots };
+          const result: RoundResult = { roundNumber: round, correct: true, roundScore, correctMicrobe: demoCorrect, openedSlots: buildFullSlots() };
           setRoundResults((prev) => [...prev, result]);
           setCorrectMicrobe(demoCorrect);
           if (roundScore > 0) {
@@ -383,7 +396,7 @@ export default function PlayPage() {
           setDropBlockedMsg("Wrong answer! Keep trying.");
           setTimeout(() => setDropBlockedMsg(null), 1800);
           if (nextHearts <= 0) {
-            const result: RoundResult = { roundNumber: round, correct: false, roundScore: 0, correctMicrobe: demoCorrect, openedSlots: slots };
+            const result: RoundResult = { roundNumber: round, correct: false, roundScore: 0, correctMicrobe: demoCorrect, openedSlots: buildFullSlots() };
             setRoundResults((prev) => [...prev, result]);
             setWon(false);
             setPhase("end");
@@ -395,10 +408,13 @@ export default function PlayPage() {
 
       // ─── REAL MODE answer logic ───────────────────────────────────
       if (!sessionId) return;
+      // Send our own locally-tracked revealed slots — the server merges these
+      // in, so this request never has to wait on the /reveal calls landing first.
+      const revealedSlotIndexes = slots.filter((s) => s.revealed).map((s) => s.index);
       const res = await fetch(`/api/sessions/${sessionId}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answeredMicrobeId: answerId }),
+        body: JSON.stringify({ answeredMicrobeId: answerId, revealedSlotIndexes }),
       });
       if (!res.ok) return;
       const data: AnswerResponse = await res.json();
@@ -409,7 +425,7 @@ export default function PlayPage() {
           correct: true,
           roundScore: data.roundScore,
           correctMicrobe: data.correctMicrobe,
-          openedSlots: slots,
+          openedSlots: buildFullSlots(),
         };
         setRoundResults((prev) => [...prev, result]);
         setCorrectMicrobe(data.correctMicrobe);
@@ -440,7 +456,7 @@ export default function PlayPage() {
             correct: false,
             roundScore: 0,
             correctMicrobe: data.correctMicrobe,
-            openedSlots: slots,
+            openedSlots: buildFullSlots(),
           };
           setRoundResults((prev) => [...prev, result]);
           setWon(false);
@@ -464,16 +480,32 @@ export default function PlayPage() {
     setPendingMicrobeId(null);
     setWrongMicrobeIds(new Set());
     setQuestionHasWrong(false);
-    setPendingRevealCount(0);
     prefetchedCardsRef.current = [null, null, null, null, null];
+    cardsFetchRef.current = null; // next fetchCards() call should hit the network for the new round, not reuse the last round's resolved promise
+  }
+
+  // End-screen recap should show all 5 clue cards fully revealed, even ones the
+  // player never flipped during play, so they can review the full answer.
+  function buildFullSlots(): CardSlotState[] {
+    if (isDemo) {
+      return DEMO_CARDS.map((card, i) => ({ index: i, revealed: true, card }));
+    }
+    return slots.map((s, i) => ({
+      ...s,
+      revealed: true,
+      card: s.card ?? prefetchedCardsRef.current[i],
+    }));
   }
 
   const handleDrop = useCallback((id: string) => { setPendingMicrobeId(id); }, []);
 
   const handleDropRejected = useCallback(() => {
-    setDropBlockedMsg("Flip open a clue card first!");
+    const msg = revealedCount === 0
+      ? "Flip open a clue card first!"
+      : "Hold on, submitting your answer...";
+    setDropBlockedMsg(msg);
     setTimeout(() => setDropBlockedMsg(null), 2500);
-  }, []);
+  }, [revealedCount]);
 
   // ── filters ──────────────────────────────────────────────────────────────
 
@@ -771,7 +803,14 @@ export default function PlayPage() {
           role="listbox"
           aria-label="Select a microbe to answer"
         >
-          {filteredMicrobes.length === 0 ? (
+          {microbesLoading ? (
+            // Loading state — microbe list hasn't arrived from the server yet
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
+              {Array.from({ length: 16 }, (_, i) => (
+                <MicrobeCardSkeleton key={i} index={i} />
+              ))}
+            </div>
+          ) : filteredMicrobes.length === 0 ? (
             // Empty state — no microbes match the active filters
             <p className="pt-8 text-center text-sm text-[#9a7850]">
               No microbes match your filters.
@@ -814,7 +853,7 @@ export default function PlayPage() {
                 Cancel
               </button>
               <Link
-                href="/"
+                href="/home"
                 className="balatro-btn flex-1 rounded-lg bg-[#8b2020] py-2.5 text-sm font-semibold text-white hover:bg-[#a02828] text-center"
               >
                 Exit
@@ -829,7 +868,7 @@ export default function PlayPage() {
           won={won}
           results={roundResults}
           score={score}
-          onExit={() => { window.location.href = "/"; }}
+          onExit={() => { window.location.href = "/home"; }}
         />
       )}
     </div>
@@ -1089,6 +1128,25 @@ function DraggableMicrobeCard({
   );
 }
 
+// ─── microbe card skeleton (loading placeholder) ──────────────────────────────
+
+// Light-grey placeholder shown in the answer grid while the microbe list is loading.
+// Same aspect ratio + rounded shape as DraggableMicrobeCard so the grid doesn't jump on load.
+function MicrobeCardSkeleton({ index }: { index: number }) {
+  return (
+    <div
+      className="w-full animate-pulse rounded-xl bg-[#d8d8d8] overflow-hidden relative"
+      style={{
+        aspectRatio: "3/4",
+        animationDelay: `${(index % 9) * 0.07}s`,
+      }}
+    >
+      <div className="absolute inset-0 bg-[#c8c8c8]" />
+      <div className="absolute bottom-0 inset-x-0 h-3 bg-[#bcbcbc]" />
+    </div>
+  );
+}
+
 // ─── shared image component with text fallback ────────────────────────────────
 
 /*
@@ -1117,13 +1175,14 @@ function MicrobeThumb({
   const src = resolveImageSrc(microbe.imageUrl ?? microbe.answerImageUrl);
   const label = microbe.shortName ?? microbe.name ?? "";
   // Different sizing for small (grid) vs large (feedback bar / end-screen) variants.
-  // lg uses a card aspect (3/4, h-16 w-12) so card-shaped microbe images aren't squished/cropped.
-  const dim = size === "sm" ? "w-full aspect-square" : "h-[11.25rem] w-[8.75rem] flex-shrink-0";
+  // lg matches the real answer-card art ratio (1428x2000 PNGs) so the image isn't squished/cropped.
+  const dim = size === "sm" ? "w-full aspect-square" : "w-[8.75rem] flex-shrink-0";
 
   return (
     // Template literal merges static + dynamic classes
     <div
       className={`${dim} relative rounded-lg overflow-hidden bg-[#e0c890] flex items-center justify-center`}
+      style={size === "lg" ? { aspectRatio: "1428 / 2000" } : undefined}
     >
       {/* Text fallback — sits behind the <img>; visible until image loads (or if it fails) */}
       <span className="px-1 text-center text-[0.5rem] font-medium italic leading-tight text-[#5c2a0e]">
@@ -1234,7 +1293,11 @@ function RoundReviewRow({ result, attemptNumber }: { result: RoundResult; attemp
       <div className="flex items-start gap-4 flex-wrap">
         <div className="flex gap-2">
           {result.openedSlots.map((slot) => (
-            <div key={slot.index} className="h-[11.25rem] w-[8.75rem] flex-shrink-0 rounded-lg overflow-hidden">
+            <div
+              key={slot.index}
+              className="w-[8.75rem] flex-shrink-0 rounded-lg overflow-hidden"
+              style={{ aspectRatio: "1429 / 2000" }}
+            >
               {slot.revealed && slot.card ? (
                 <ClueCardThumb card={slot.card} />
               ) : (

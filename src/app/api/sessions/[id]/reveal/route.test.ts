@@ -3,9 +3,8 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     gameSession: { findUnique: vi.fn() },
-    score: { count: vi.fn() },
-    sessionMicrobe: { findUnique: vi.fn(), update: vi.fn() },
-    microbeClue: { findMany: vi.fn() },
+    sessionMicrobe: { findUnique: vi.fn() },
+    $queryRaw: vi.fn(),
   },
 }))
 
@@ -34,12 +33,18 @@ const ctx = { params: Promise.resolve({ id: SESSION_ID }) }
 
 const mockPlayer = { id: PLAYER_ID }
 
+const mockClueCards = [
+  { sortOrder: 0, clueCard: { category: 'Shape', label: 'Round', imageUrl: '/images/round.png' } },
+  { sortOrder: 1, clueCard: { category: 'Color', label: 'Purple', imageUrl: '/images/purple.png' } },
+]
+
 const mockSession = {
   id: SESSION_ID,
   playerId: PLAYER_ID,
   completed: false,
   abandoned: false,
   heartsLeft: 3,
+  _count: { scores: 0 },
 }
 
 const mockSessionMicrobe = {
@@ -47,22 +52,16 @@ const mockSessionMicrobe = {
   roundNumber: 1,
   microbeId: 'microbe-1',
   revealedSlots: [] as number[],
+  microbe: { clues: mockClueCards },
 }
-
-const mockClueCards = [
-  { sortOrder: 0, clueCard: { category: 'Shape', label: 'Round', imageUrl: '/images/round.png' } },
-  { sortOrder: 1, clueCard: { category: 'Color', label: 'Purple', imageUrl: '/images/purple.png' } },
-]
 
 describe('POST /api/sessions/:id/reveal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(requireAuth).mockResolvedValue(mockPlayer as never)
     vi.mocked(prisma.gameSession.findUnique).mockResolvedValue(mockSession as never)
-    vi.mocked(prisma.score.count).mockResolvedValue(0)
     vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue(mockSessionMicrobe as never)
-    vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(mockClueCards as never)
-    vi.mocked(prisma.sessionMicrobe.update).mockResolvedValue({ ...mockSessionMicrobe, revealedSlots: [0] } as never)
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([{ revealedSlots: [0] }] as never)
   })
 
   describe('input validation', () => {
@@ -155,26 +154,26 @@ describe('POST /api/sessions/:id/reveal', () => {
       expect(body.session.heartsLeft).toBe(3)
     })
 
-    it('persists the revealed slot index', async () => {
+    it('persists the revealed slot index via an atomic conditional update', async () => {
       await POST(makeRequest({ slotIndex: 1 }), ctx)
-      expect(vi.mocked(prisma.sessionMicrobe.update)).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ revealedSlots: [1] }),
-        })
-      )
+      // Tagged-template call: [strings, slotIndex, sessionId, roundNumber, slotIndex]
+      const [, slotArg, sessionArg, roundArg] = vi.mocked(prisma.$queryRaw).mock.calls[0]
+      expect(slotArg).toBe(1)
+      expect(sessionArg).toBe(SESSION_ID)
+      expect(roundArg).toBe(1)
     })
 
-    it('appends to existing revealed slots', async () => {
-      vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
-        ...mockSessionMicrobe,
-        revealedSlots: [0],
-      } as never)
-      await POST(makeRequest({ slotIndex: 1 }), ctx)
-      expect(vi.mocked(prisma.sessionMicrobe.update)).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ revealedSlots: [0, 1] }),
-        })
-      )
+    it('returns 409 when the atomic update finds the slot already revealed (race)', async () => {
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([] as never)
+      const res = await POST(makeRequest({ slotIndex: 1 }), ctx)
+      expect(res.status).toBe(409)
+    })
+
+    it('reflects the cards-opened count returned by the database', async () => {
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([{ revealedSlots: [0, 1] }] as never)
+      const res = await POST(makeRequest({ slotIndex: 1 }), ctx)
+      const body = await res.json()
+      expect(body.session.cardsOpened).toBe(2)
     })
   })
 })

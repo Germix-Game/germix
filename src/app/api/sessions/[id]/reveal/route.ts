@@ -26,7 +26,12 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
 
     const { slotIndex } = parsed.data
 
-    const session = await prisma.gameSession.findUnique({ where: { id } })
+    // Single round trip: the session row plus its correct-answer count, via a
+    // filtered relation count, instead of two separate queries run in parallel.
+    const session = await prisma.gameSession.findUnique({
+      where: { id },
+      include: { _count: { select: { scores: { where: { correct: true } } } } },
+    })
     if (!session) {
       return Response.json({ error: 'Session not found' }, { status: 404 })
     }
@@ -37,11 +42,17 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
       return Response.json({ error: 'Session is no longer active' }, { status: 409 })
     }
 
-    const correctCount = await prisma.score.count({ where: { sessionId: id, correct: true } })
-    const currentPosition = correctCount + 1
+    const currentPosition = session._count.scores + 1
 
+    // Single round trip: sessionMicrobe plus its clue cards, joined, instead of
+    // a separate microbeClue.findMany after this.
     const sessionMicrobe = await prisma.sessionMicrobe.findUnique({
       where: { sessionId_roundNumber: { sessionId: id, roundNumber: currentPosition } },
+      include: {
+        microbe: {
+          include: { clues: { orderBy: { sortOrder: 'asc' }, include: { clueCard: true } } },
+        },
+      },
     })
 
     if (!sessionMicrobe) {
@@ -52,23 +63,28 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
       return Response.json({ error: 'Slot already revealed' }, { status: 409 })
     }
 
-    const microbeClues = await prisma.microbeClue.findMany({
-      where: { microbeId: sessionMicrobe.microbeId },
-      orderBy: { sortOrder: 'asc' },
-      include: { clueCard: true },
-    })
+    const microbeClues = sessionMicrobe.microbe.clues
 
     if (slotIndex >= microbeClues.length) {
       return Response.json({ error: 'Slot index out of range' }, { status: 422 })
     }
 
     const { clueCard } = microbeClues[slotIndex]
-    const newRevealedSlots = [...sessionMicrobe.revealedSlots, slotIndex]
 
-    await prisma.sessionMicrobe.update({
-      where: { sessionId_roundNumber: { sessionId: id, roundNumber: currentPosition } },
-      data: { revealedSlots: newRevealedSlots },
-    })
+    // Single round trip: atomic conditional append (with RETURNING) instead of
+    // a separate read-then-write. The NOT (... = ANY(...)) guard makes this safe
+    // against a concurrent duplicate reveal request for the same slot.
+    const updated = await prisma.$queryRaw<{ revealedSlots: number[] }[]>`
+      UPDATE "SessionMicrobe"
+      SET "revealedSlots" = array_append("revealedSlots", ${slotIndex})
+      WHERE "sessionId" = ${id} AND "roundNumber" = ${currentPosition}
+        AND NOT (${slotIndex} = ANY("revealedSlots"))
+      RETURNING "revealedSlots"
+    `
+
+    if (updated.length === 0) {
+      return Response.json({ error: 'Slot already revealed' }, { status: 409 })
+    }
 
     return Response.json({
       card: {
@@ -77,7 +93,7 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
         imageUrl: clueCard.imageUrl,
       },
       session: {
-        cardsOpened: newRevealedSlots.length,
+        cardsOpened: updated[0].revealedSlots.length,
         heartsLeft: session.heartsLeft,
       },
     })
