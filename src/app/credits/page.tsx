@@ -1,5 +1,13 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { Alice } from "next/font/google";
+import { createClient } from "@/utils/supabase/client";
+
+const alice = Alice({ weight: "400", subsets: ["latin"] });
 
 const RESEARCHERS = [
   "Chonticha Nopmaneejumruslers",
@@ -59,9 +67,18 @@ function EntryList({ entries }: { entries: readonly string[] }) {
 }
 
 export default function CreditsPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) router.replace("/");
+    });
+  }, [router]);
+
   return (
     <div
-      className="relative min-h-screen w-full bg-cover bg-center"
+      className={`${alice.className} relative min-h-screen w-full bg-cover bg-center`}
       style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
     >
       {/* Game graphic — 80% wide, centered, behind text */}

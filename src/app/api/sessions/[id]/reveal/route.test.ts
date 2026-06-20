@@ -55,6 +55,14 @@ const mockSessionMicrobe = {
   microbe: { clues: mockClueCards },
 }
 
+const mockClueCards = [
+  { sortOrder: 0, clueCard: { category: 'GRAM_STAIN',            label: 'Gram +',  imageUrl: '/g.png' } },
+  { sortOrder: 1, clueCard: { category: 'VIRULENCE_FACTOR',      label: 'Capsule', imageUrl: '/v.png' } },
+  { sortOrder: 2, clueCard: { category: 'LAB_CHARACTERISTIC',    label: 'Catalase+', imageUrl: '/l.png' } },
+  { sortOrder: 3, clueCard: { category: 'SPECIAL_TRAIT',         label: 'Tumbling', imageUrl: '/s.png' } },
+  { sortOrder: 4, clueCard: { category: 'CLINICAL_MANIFESTATION',label: 'Abscess', imageUrl: '/c.png' } },
+]
+
 describe('POST /api/sessions/:id/reveal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -130,12 +138,13 @@ describe('POST /api/sessions/:id/reveal', () => {
       expect(body.error).toMatch(/already revealed/i)
     })
 
-    it('returns 422 when slotIndex exceeds actual clue card count', async () => {
-      // mockClueCards only has indices 0 and 1; requesting slot 2 is out of range
-      const res = await POST(makeRequest({ slotIndex: 2 }), ctx)
+    it('returns 422 when the slot has no clue', async () => {
+      // Microbe with no clues → every slot is null regardless of shuffle
+      vi.mocked(prisma.microbeClue.findMany).mockResolvedValue([] as never)
+      const res = await POST(makeRequest({ slotIndex: 0 }), ctx)
       expect(res.status).toBe(422)
       const body = await res.json()
-      expect(body.error).toMatch(/out of range/i)
+      expect(body.error).toMatch(/no clue/i)
     })
   })
 
@@ -145,11 +154,9 @@ describe('POST /api/sessions/:id/reveal', () => {
       expect(res.status).toBe(200)
 
       const body = await res.json()
-      expect(body.card).toEqual({
-        category: 'Shape',
-        label: 'Round',
-        imageUrl: '/images/round.png',
-      })
+      // Slot positions are shuffled, so assert the card is one of the microbe's clues.
+      const validCards = mockClueCards.map((c) => c.clueCard)
+      expect(validCards).toContainEqual(body.card)
       expect(body.session.cardsOpened).toBe(1)
       expect(body.session.heartsLeft).toBe(3)
     })

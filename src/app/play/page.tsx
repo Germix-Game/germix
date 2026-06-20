@@ -524,6 +524,11 @@ export default function PlayPage() {
     });
   }
 
+  // Split the search box into lowercased tokens (whitespace-separated).
+  // Tokens may appear in any order, so "staph aureus" and "aureus staph" both
+  // match "Staphylococcus aureus" — no need to type the exact name letter-by-letter.
+  const searchTokens = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+
   // Apply all active filters to the microbe list — chained .filter() conditions
   const filteredMicrobes = microbes.filter((m) => {
     // Filter 1: gram type
@@ -531,8 +536,13 @@ export default function PlayPage() {
     // Filter 2: all selected tags must be present on the microbe
     // [...tagFilters] → spread Set into array so we can use .every()
     if (tagFilters.size > 0 && ![...tagFilters].every((t) => m.tags.includes(t))) return false;
-    // Filter 3: name search (case-insensitive)
-    if (searchQuery && !m.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    // Filter 3: name search (case-insensitive). Match across both the full name
+    // and the short name, and require every typed token to appear somewhere in
+    // that combined text so partial / out-of-order queries still match.
+    if (searchTokens.length > 0) {
+      const haystack = `${m.name} ${m.shortName}`.toLowerCase();
+      if (!searchTokens.every((t) => haystack.includes(t))) return false;
+    }
     return true; // passed all filters
   });
 

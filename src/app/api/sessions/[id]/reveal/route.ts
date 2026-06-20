@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, requireOwner } from '@/lib/auth'
+import { getRoundClues } from '@/lib/clues'
 
 const revealSchema = z.object({
   slotIndex: z.number().int().min(0).max(4),

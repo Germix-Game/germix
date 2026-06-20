@@ -28,7 +28,7 @@ type ClueCardEntry = {
   sortOrder: number;
 };
 
-type GameMode = "BACTERIA" | "FUNGI" | "PARASITE" | "VIRUS";
+type GameMode = "BACTERIA" | "FUNGI" | "PARASITES" | "VIRUS";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -44,7 +44,7 @@ function resolveImageSrc(url: string): string {
 
 const TABS: { mode: GameMode; href: string; label: string }[] = [
   { mode: "BACTERIA", href: "/pathogen-book/bacteria", label: "Bacteria" },
-  { mode: "PARASITE", href: "/pathogen-book/parasite", label: "Parasite" },
+  { mode: "PARASITES", href: "/pathogen-book/parasite", label: "Parasite" },
   { mode: "FUNGI",    href: "/pathogen-book/fungi",    label: "Fungi"    },
   { mode: "VIRUS",    href: "/pathogen-book/virus",    label: "Virus"    },
 ];
@@ -55,6 +55,8 @@ const CATEGORY_ORDER = [
   "LAB_CHARACTERISTIC",
   "VIRULENCE_FACTOR",
   "SPECIAL_TRAIT",
+  "TRANSMISSION",
+  "MORPHOLOGY",
 ];
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -63,12 +65,14 @@ const CATEGORY_LABEL: Record<string, string> = {
   LAB_CHARACTERISTIC: "Lab Characteristic",
   VIRULENCE_FACTOR: "Virulence Factor",
   SPECIAL_TRAIT: "Special Trait",
+  TRANSMISSION: "Transmission",
+  MORPHOLOGY: "Morphology",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function starSrc(rating: number): string {
-  const n = Math.min(5, Math.max(1, Math.round(rating)));
+  const n = Math.min(5, Math.max(1, Math.round(rating * 2) / 2));
   return `/assets/pathogen-book/star-${n}.png`;
 }
 
@@ -152,46 +156,83 @@ function MicrobeCard({
   );
 }
 
-function ClueSection({ cards }: { cards: ClueCardEntry[] }) {
-  const grouped: Record<string, ClueCardEntry[]> = {};
-  for (const cat of CATEGORY_ORDER) grouped[cat] = [];
-  for (const card of cards) {
-    if (!grouped[card.category]) grouped[card.category] = [];
-    grouped[card.category].push(card);
+const SHIMMER_CSS = `
+  @keyframes shimmer {
+    0%   { background-position: -400% center; }
+    100% { background-position:  400% center; }
   }
+`;
+
+function ShimmerCard({ base, sheen }: { base: string; sheen: string }) {
+  return (
+    <div
+      className="w-full rounded-sm"
+      style={{
+        aspectRatio: "1429 / 2000",
+        background: `linear-gradient(105deg, ${base} 42%, ${sheen} 50%, ${base} 58%)`,
+        backgroundSize: "300% 100%",
+        animation: "shimmer 3s linear infinite",
+      }}
+    />
+  );
+}
+
+function MicrobeGridSkeleton() {
+  return (
+    <>
+      <style>{SHIMMER_CSS}</style>
+      <div className="grid grid-cols-4 gap-2" style={{ zoom: 0.38 }}>
+        {Array.from({ length: 16 }).map((_, i) => (
+          <ShimmerCard key={i} base="rgba(30,18,10,0.55)" sheen="rgba(60,38,20,0.55)" />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function ClueSectionSkeleton() {
+  return (
+    <>
+      <style>{SHIMMER_CSS}</style>
+      <div className="grid grid-cols-4 gap-2">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <ShimmerCard key={i} base="rgba(160,130,90,0.22)" sheen="rgba(185,155,110,0.32)" />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function ClueSection({ cards }: { cards: ClueCardEntry[] }) {
+  const sorted = [...cards].sort((a, b) => {
+    const catA = CATEGORY_ORDER.indexOf(a.category);
+    const catB = CATEGORY_ORDER.indexOf(b.category);
+    if (catA !== catB) return catA - catB;
+    return a.sortOrder - b.sortOrder;
+  });
 
   return (
-    <div className="flex flex-col gap-2">
-      {CATEGORY_ORDER.map((cat) => {
-        const items = grouped[cat];
-        if (!items || items.length === 0) return null;
-        return (
-          <div key={cat}>
-            <p className="mb-1 text-[9px] font-semibold uppercase tracking-wider text-[#7a5a30]">
-              {CATEGORY_LABEL[cat]}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {items.map((card) => (
-                <div key={card.id} className="w-16 flex-shrink-0">
-                  {card.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={resolveImageSrc(card.imageUrl)}
-                      alt={card.label}
-                      className="w-full rounded shadow"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="flex w-full items-center justify-center rounded bg-[#f5e6c8] p-1 text-[8px] italic text-[#7a5a30] shadow" style={{ aspectRatio: "1429/2000" }}>
-                      {card.label}
-                    </div>
-                  )}
-                </div>
-              ))}
+    <div className="grid grid-cols-4 gap-2">
+      {sorted.map((card) => (
+        <div key={card.id} className="flex-shrink-0">
+          {card.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={resolveImageSrc(card.imageUrl)}
+              alt={card.label}
+              className="w-full rounded shadow"
+              draggable={false}
+            />
+          ) : (
+            <div
+              className="flex w-full items-center justify-center rounded bg-[#f5e6c8] p-1 text-[8px] italic text-[#7a5a30] shadow"
+              style={{ aspectRatio: "1429/2000" }}
+            >
+              {card.label}
             </div>
-          </div>
-        );
-      })}
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -207,18 +248,37 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
   const [microbes, setMicrobes] = useState<MicrobeEntry[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  const [clues, setClues] = useState<ClueCardEntry[] | null>(null);
+  const [cluesLoading, setCluesLoading] = useState(false);
+
   useEffect(() => {
-    fetch(`/api/pathogen-book?gameMode=${gameMode}`)
-      .then((r) => r.json())
-      .then((data: MicrobeEntry[]) => {
-        setMicrobes(data);
-        const first = data.find((m) => m.unlocked);
-        if (first) setSelectedId(first.id);
-      });
+    fetch(`/api/pathogen-book?gameMode=${gameMode}&withFirstClues=true`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status}`);
+        return r.json();
+      })
+      .then((data: { microbes: MicrobeEntry[]; firstMicrobeId: string | null; firstMicrobeClues: ClueCardEntry[] | null }) => {
+        setMicrobes(data.microbes);
+        if (data.firstMicrobeId) {
+          setSelectedId(data.firstMicrobeId);
+          setClues(data.firstMicrobeClues ?? []);
+        }
+      })
+      .catch(() => setMicrobes([]));
   }, [gameMode]);
 
   function handleSelect(microbeId: string) {
     setSelectedId(microbeId);
+    setClues(null);
+    setCluesLoading(true);
+    fetch(`/api/pathogen-book/${microbeId}/clues`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch clues");
+        return r.json();
+      })
+      .then((data: ClueCardEntry[]) => setClues(data))
+      .catch(() => setClues([]))
+      .finally(() => setCluesLoading(false));
   }
 
   const selectedMicrobe = microbes?.find((m) => m.id === selectedId) ?? null;
@@ -275,25 +335,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
         style={{ left: "22%", top: "25%", width: "30%", height: "75%" }}
       >
         {microbes === null ? (
-          <div className="flex h-full items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex gap-2">
-                {[0, 1, 2].map((i) => (
-                  <span
-                    key={i}
-                    className="h-3 w-3 rounded-full bg-[#c8873a]"
-                    style={{ animation: `pbBounce 1s ease-in-out ${i * 0.2}s infinite` }}
-                  />
-                ))}
-              </div>
-              <style>{`
-                @keyframes pbBounce {
-                  0%, 100% { transform: translateY(0); opacity: 0.4; }
-                  50% { transform: translateY(-8px); opacity: 1; }
-                }
-              `}</style>
-            </div>
-          </div>
+          <MicrobeGridSkeleton />
         ) : (
           <div className="grid grid-cols-4 gap-2" style={{ zoom: 0.38 }}>
             {microbes.map((microbe) => (
@@ -310,19 +352,21 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
 
       {/* ── Right page — microbe detail ── */}
       <div
-        className="absolute overflow-y-auto"
+        className="absolute flex flex-col"
         style={{ left: "55%", top: "15%", width: "40%", height: "82%" }}
       >
         {!selectedMicrobe ? (
           <div className="flex h-full items-center justify-center">
-            <span className="text-xs italic text-[#9a7850]">Select a microbe to view details</span>
+            <span className="text-xs italic text-[#9a7850]">
+              {microbes && microbes.every((m) => !m.unlocked)
+                ? "Play the game to discover microbes!"
+                : "Select a microbe to view details"}
+            </span>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            {/* Detail card + text header */}
-            <div className="flex items-start gap-4">
-              {/* Card — intentionally larger than grid cards (no zoom) */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+          <>
+            {/* Fixed header — microbe card + name + rating */}
+            <div className="flex items-start gap-4 pr-12 pb-3 shrink-0">
               <img
                 src={resolveImageSrc(selectedMicrobe.answerImageUrl)}
                 alt={selectedMicrobe.name}
@@ -330,8 +374,6 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
                 style={{ aspectRatio: "1 / 1" }}
                 draggable={false}
               />
-
-              {/* Name + rating */}
               <div className="flex flex-col gap-2 pt-1">
                 <h2 className="text-2xl font-semibold italic leading-snug text-[#2a1208]">
                   {selectedMicrobe.name}
@@ -339,7 +381,6 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
                 <p className="text-[12px] uppercase tracking-wider text-[#7a5a30]">
                   Clinical Relevance Rating
                 </p>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={starSrc(selectedMicrobe.starRating)}
                   alt={`${Math.round(selectedMicrobe.starRating)} stars`}
@@ -349,8 +390,17 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
               </div>
             </div>
 
-            {/* TODO: Characteristic cards — not yet implemented. See §9.3 in docs. */}
-          </div>
+            {/* Scrollable clue section */}
+            <div className="overflow-y-auto pr-12">
+              {cluesLoading ? (
+                <ClueSectionSkeleton />
+              ) : clues && clues.length > 0 ? (
+                <ClueSection cards={clues} />
+              ) : clues !== null ? (
+                <p className="text-[11px] italic text-[#9a7850]">No characteristic cards available.</p>
+              ) : null}
+            </div>
+          </>
         )}
       </div>
     </div>
