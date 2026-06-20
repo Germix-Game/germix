@@ -16,6 +16,7 @@ import { createAnimatable, spring } from "animejs";
 import { CardGrid } from "@/components/game/CardGrid";
 import { HeartsBar } from "@/components/game/HeartsBar";
 import { ScoreBar } from "@/components/game/ScoreBar";
+import { useScaleToFit } from "@/hooks/useScaleToFit";
 
 // `import type` → imports ONLY TypeScript types (erased at build time, zero runtime cost)
 // These types describe the shape of game data — defined in src/types/game.ts
@@ -28,6 +29,15 @@ import type {
   GramType,           // enum: "POSITIVE" | "NEGATIVE" | "ACID_FAST"
   RoundResult,        // shape of one round's outcome (for end-screen recap)
 } from "@/types/game";
+
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+// DB stores paths without the /assets/ prefix (e.g. "cards/answers/bacteria/foo.png").
+function resolveImageSrc(url: string | null | undefined): string {
+  if (!url) return "";
+  if (url.startsWith("http") || url.startsWith("/")) return url;
+  return `/assets/${url}`;
+}
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -103,12 +113,14 @@ export default function PlayPage() {
 
   // ─── STATE: Answer panel (the microbe selection grid) ───────────
   const [microbes, setMicrobes] = useState<Microbe[]>([]);
+  const [microbesLoading, setMicrobesLoading] = useState(true);   // true until the microbe list has loaded — shows skeleton cards
   const [selectedMicrobeId, setSelectedMicrobeId] = useState<string | null>(null);
   const [gramFilter, setGramFilter] = useState<GramType | null>(null);
   const [tagFilters, setTagFilters] = useState<Set<MicrobeTag>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const dropTargetRef = useRef<HTMLDivElement>(null);
   const prefetchedCardsRef = useRef<(ClueCard | null)[]>([null, null, null, null, null]);
+  const cardsFetchRef = useRef<Promise<{ cards?: unknown } | null> | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [pendingMicrobeId, setPendingMicrobeId] = useState<string | null>(null);
   const [dropBlockedMsg, setDropBlockedMsg] = useState<string | null>(null);
@@ -117,7 +129,6 @@ export default function PlayPage() {
   const pointsPillRef = useRef<HTMLDivElement>(null);
   const [scorePop, setScorePop] = useState<{ points: number; startX: number; startY: number } | null>(null);
   const [scoreFlashKey, setScoreFlashKey] = useState(0);
-  const [pendingRevealCount, setPendingRevealCount] = useState(0);
 
   // ─── STATE: Wrong-answer retry tracking ─────────────────────────
   // Set of microbe IDs the player has guessed wrong for the current question.
@@ -132,6 +143,8 @@ export default function PlayPage() {
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]); // recap of every round played
   const [won, setWon] = useState(false);                               // did the player win or lose?
 
+  const { containerRef, contentRef, scale } = useScaleToFit();
+
   // ── bootstrap ────────────────────────────────────────────────────────────
   // useEffect runs AFTER the component renders. With `[]` deps, it runs ONCE on mount.
   // This is the "did the component just appear?" hook — perfect for initial data loading.
@@ -145,6 +158,7 @@ export default function PlayPage() {
       // DEMO MODE branch — skip backend, use hardcoded data
       setIsDemo(true);
       setMicrobes(DEMO_MICROBES);
+      setMicrobesLoading(false);
       setCardsReady(true);
       setPhase("playing");
       return; // exit early — don't try to load a real session
@@ -155,6 +169,7 @@ export default function PlayPage() {
     const id = localStorage.getItem("currentSessionId");
     if (!id) { setPhase("error"); return; }   // no session → show error
     setSessionId(id);
+    void startCardsFetch(id);                   // fire the cards request now (in parallel with the session fetch) — it only needs the id
     void fetchSession(id);                     // `void` says "I'm intentionally not awaiting this Promise"
     // eslint-disable-next-line react-hooks/exhaustive-deps
     // ↑ The lint rule wants `fetchSession` in deps, but we only want this to run once on mount, so we silence it.
@@ -194,7 +209,21 @@ export default function PlayPage() {
       setMicrobes(Array.isArray(data) ? data : []);
     } catch {
       // Non-fatal: panel will just be empty
+    } finally {
+      setMicrobesLoading(false);
     }
+  }
+
+  // Network request for the cards endpoint, shared between the eager bootstrap
+  // call and fetchCards() below so the two never issue duplicate requests —
+  // whichever call happens first kicks it off, the other just awaits it.
+  async function startCardsFetch(id: string): Promise<{ cards?: unknown } | null> {
+    if (!cardsFetchRef.current) {
+      cardsFetchRef.current = fetch(`/api/sessions/${id}/cards`)
+        .then((res) => (res.ok ? res.json() : null))
+        .catch(() => null);
+    }
+    return cardsFetchRef.current;
   }
 
   // Pre-fetch all 5 clue cards for the current round into a ref.
@@ -204,9 +233,8 @@ export default function PlayPage() {
     setCardsReady(false);
     const unlockTimer = setTimeout(() => setCardsReady(true), 3000); // safety: unlock after 3 s max
     try {
-      const res = await fetch(`/api/sessions/${id}/cards`);
-      if (!res.ok) return;
-      const data = await res.json();
+      const data = await startCardsFetch(id);
+      if (!data) return;
       if (Array.isArray(data.cards)) {
         const cards = data.cards as ClueCard[];
         prefetchedCardsRef.current = cards;
@@ -259,14 +287,13 @@ export default function PlayPage() {
         setSlots((prev) =>
           prev.map((s) => (s.index === index ? { ...s, revealed: true, card: preCard } : s)),
         );
-        // Track this reveal so answer submission waits for the server to record it
-        setPendingRevealCount((n) => n + 1);
+        // Persist in the background. The answer submission no longer waits on
+        // this — it sends its own locally-tracked revealed slots and the server
+        // merges them in, so there's nothing here for the UI to block on.
         void fetch(`/api/sessions/${sessionId}/reveal`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ slotIndex: index }),
-        }).finally(() => {
-          setPendingRevealCount((n) => n - 1);
         });
         return;
       }
@@ -319,14 +346,12 @@ export default function PlayPage() {
     phase === "playing" &&
     revealedCount > 0 &&
     selectedMicrobeId !== null &&
-    !isSubmitting &&
-    pendingRevealCount === 0;
+    !isSubmitting;
 
   const canDropAnswer =
     phase === "playing" &&
     revealedCount > 0 &&
-    !isSubmitting &&
-    pendingRevealCount === 0;
+    !isSubmitting;
 
   // The big handler for submitting an answer
   const handleSubmitAnswer = useCallback(async (overrideMicrobeId?: string) => {
@@ -344,7 +369,7 @@ export default function PlayPage() {
         if (correct) {
           // Score is 0 if the player had any wrong attempt on this question
           const roundScore = questionHasWrong ? 0 : Math.max(0, 100 - (revealedCount - 1) * 20);
-          const result: RoundResult = { roundNumber: round, correct: true, roundScore, correctMicrobe: demoCorrect, openedSlots: slots };
+          const result: RoundResult = { roundNumber: round, correct: true, roundScore, correctMicrobe: demoCorrect, openedSlots: buildFullSlots() };
           setRoundResults((prev) => [...prev, result]);
           setCorrectMicrobe(demoCorrect);
           if (roundScore > 0) {
@@ -371,7 +396,7 @@ export default function PlayPage() {
           setDropBlockedMsg("Wrong answer! Keep trying.");
           setTimeout(() => setDropBlockedMsg(null), 1800);
           if (nextHearts <= 0) {
-            const result: RoundResult = { roundNumber: round, correct: false, roundScore: 0, correctMicrobe: demoCorrect, openedSlots: slots };
+            const result: RoundResult = { roundNumber: round, correct: false, roundScore: 0, correctMicrobe: demoCorrect, openedSlots: buildFullSlots() };
             setRoundResults((prev) => [...prev, result]);
             setWon(false);
             setPhase("end");
@@ -383,10 +408,13 @@ export default function PlayPage() {
 
       // ─── REAL MODE answer logic ───────────────────────────────────
       if (!sessionId) return;
+      // Send our own locally-tracked revealed slots — the server merges these
+      // in, so this request never has to wait on the /reveal calls landing first.
+      const revealedSlotIndexes = slots.filter((s) => s.revealed).map((s) => s.index);
       const res = await fetch(`/api/sessions/${sessionId}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answeredMicrobeId: answerId }),
+        body: JSON.stringify({ answeredMicrobeId: answerId, revealedSlotIndexes }),
       });
       if (!res.ok) return;
       const data: AnswerResponse = await res.json();
@@ -397,7 +425,7 @@ export default function PlayPage() {
           correct: true,
           roundScore: data.roundScore,
           correctMicrobe: data.correctMicrobe,
-          openedSlots: slots,
+          openedSlots: buildFullSlots(),
         };
         setRoundResults((prev) => [...prev, result]);
         setCorrectMicrobe(data.correctMicrobe);
@@ -428,7 +456,7 @@ export default function PlayPage() {
             correct: false,
             roundScore: 0,
             correctMicrobe: data.correctMicrobe,
-            openedSlots: slots,
+            openedSlots: buildFullSlots(),
           };
           setRoundResults((prev) => [...prev, result]);
           setWon(false);
@@ -452,16 +480,32 @@ export default function PlayPage() {
     setPendingMicrobeId(null);
     setWrongMicrobeIds(new Set());
     setQuestionHasWrong(false);
-    setPendingRevealCount(0);
     prefetchedCardsRef.current = [null, null, null, null, null];
+    cardsFetchRef.current = null; // next fetchCards() call should hit the network for the new round, not reuse the last round's resolved promise
+  }
+
+  // End-screen recap should show all 5 clue cards fully revealed, even ones the
+  // player never flipped during play, so they can review the full answer.
+  function buildFullSlots(): CardSlotState[] {
+    if (isDemo) {
+      return DEMO_CARDS.map((card, i) => ({ index: i, revealed: true, card }));
+    }
+    return slots.map((s, i) => ({
+      ...s,
+      revealed: true,
+      card: s.card ?? prefetchedCardsRef.current[i],
+    }));
   }
 
   const handleDrop = useCallback((id: string) => { setPendingMicrobeId(id); }, []);
 
   const handleDropRejected = useCallback(() => {
-    setDropBlockedMsg("Flip open a clue card first!");
+    const msg = revealedCount === 0
+      ? "Flip open a clue card first!"
+      : "Hold on, submitting your answer...";
+    setDropBlockedMsg(msg);
     setTimeout(() => setDropBlockedMsg(null), 2500);
-  }, []);
+  }, [revealedCount]);
 
   // ── filters ──────────────────────────────────────────────────────────────
 
@@ -605,40 +649,33 @@ export default function PlayPage() {
       {/* ── Wood area (top zone: cards + score/hearts) ───────────────── */}
       {/* flex-shrink-0 → don't let this zone shrink when parchment grows */}
       {/* Arbitrary background image (Tailwind bg-[url-syntax]), bg-cover scales to fill, bg-center centers it */}
-      <div className="flex flex-col px-6 pt-2 pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-shrink-0">
-
+      <div
+        ref={containerRef}
+        className="relative flex flex-col px-6 pt-1 pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
+      >
         {/* Top bar: Score on left, Exit on right */}
-        <div className="relative z-10 flex items-center justify-between">
+        <div className="relative z-10 flex items-center justify-between w-full">
           <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
           <button
             onClick={() => setShowExitConfirm(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-[#6b3520] bg-[#2a1208]/80 px-3 py-1 text-xs font-semibold text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
+            className="flex items-center gap-2 rounded-lg border border-[#6b3520] bg-[#2a1208]/80 px-4 py-1.5 text-xl font-bold text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
           >
-            <span className="text-sm leading-none">✕</span>
+            <span className="text-xl leading-none">✕</span>
             Exit
           </button>
         </div>
 
-        {/*
-         * ROUND COUNTER IMAGE — centered above the card slots.
-         * Source: /public/assets/ui/round-${round}.png (one per round: round-1.png … round-5.png)
-         * `round` is 1-indexed (1, 2, 3, 4, 5).
-         * If a file for the current round is missing, the alt text + broken-image icon will show
-         * — that's intentional so missing assets are obvious during dev.
-         * `-mt-8` pulls the image upward so it sits closer to the very top of the wood area
-         * (overlapping vertically with the score/hearts row, but centered horizontally between them).
-         */}
-        <div className="flex justify-center -mt-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+        <div className="pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 -translate-y-[42%]">
           <img
             src={`/assets/ui/round-${round}.png`}
             alt={`Round ${round} of 5`}
-            className="h-[10.5rem] w-[40rem] object-contain select-none pointer-events-none"
+            className="h-[15vh] w-auto max-w-[85vw] object-contain select-none pointer-events-none"
             draggable={false}
           />
         </div>
+
         {phase === "playing" && (
-          <div className="flex justify-center mt-1 mb-2">
+          <div className="flex justify-center mt-6 mb-4">
             <div ref={pointsPillRef} className="flex items-baseline gap-1.5 px-4 py-1 rounded-full bg-[#2a1208]/85 border border-[#d4a96a]/50 shadow-lg">
               <span className="text-[#d4a96a] text-[0.65rem] font-semibold uppercase tracking-wider">Answer now for</span>
               <span className="text-[#f5e6c8] text-base font-black tabular-nums">
@@ -649,9 +686,10 @@ export default function PlayPage() {
           </div>
         )}
 
-        {/* The 5 clue cards + hearts (vertical) + the "Answer" button */}
-        <div className="flex items-end gap-3">
-          <HeartsBar heartsLeft={heartsLeft} vertical />
+        <div className="flex items-center justify-center gap-3 w-full">
+          <div className="flex-shrink-0">
+            <HeartsBar heartsLeft={heartsLeft} vertical />
+          </div>
           <CardGrid
             slots={slots}
             onReveal={handleReveal}
@@ -666,6 +704,13 @@ export default function PlayPage() {
                 ? (microbes.find((m) => m.id === pendingMicrobeId)?.shortName ?? null)
                 : null
             }
+            pendingMicrobeImage={
+              pendingMicrobeId
+                ? (resolveImageSrc(
+                    microbes.find((m) => m.id === pendingMicrobeId)?.answerImageUrl,
+                  ) || null)
+                : null
+            }
             onConfirm={() => {
               if (pendingMicrobeId) void handleSubmitAnswer(pendingMicrobeId);
               setPendingMicrobeId(null);
@@ -674,7 +719,6 @@ export default function PlayPage() {
           />
         </div>
 
-        {/* Wrong-attempt indicator — shows when any wrong answer was given this question */}
         {questionHasWrong && phase === "playing" && (
           <div className="popup-bar mt-4 flex items-center gap-3 rounded-xl border border-[#6b3520] bg-[#3d1a0a]/70 px-4 py-2.5">
             <span className="text-red-400 font-black text-lg leading-none">✕</span>
@@ -686,7 +730,7 @@ export default function PlayPage() {
       </div>
 
       {/* ── Parchment area (bottom zone: filters + microbe answer panel) ── */}
-      <div className="flex flex-col bg-[#f0d9a8] flex-1 overflow-y-auto">
+      <div className="flex flex-col bg-[#f0d9a8] flex-1 basis-1/2 min-h-0 overflow-y-auto">
 
         {/* Filter bar — gram type checkboxes, search, and biological tag checkboxes */}
         <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3 border-b border-[#c4a870] bg-[#f0d9a8] flex-shrink-0">
@@ -769,7 +813,14 @@ export default function PlayPage() {
           role="listbox"
           aria-label="Select a microbe to answer"
         >
-          {filteredMicrobes.length === 0 ? (
+          {microbesLoading ? (
+            // Loading state — microbe list hasn't arrived from the server yet
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
+              {Array.from({ length: 16 }, (_, i) => (
+                <MicrobeCardSkeleton key={i} index={i} />
+              ))}
+            </div>
+          ) : filteredMicrobes.length === 0 ? (
             // Empty state — no microbes match the active filters
             <p className="pt-8 text-center text-sm text-[#9a7850]">
               No microbes match your filters.
@@ -1017,7 +1068,7 @@ function DraggableMicrobeCard({
     };
   }, [microbe.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const src = microbe.answerImageUrl ?? "";
+  const src = resolveImageSrc(microbe.answerImageUrl);
   const label = microbe.shortName ?? microbe.name ?? "";
 
   return (
@@ -1038,7 +1089,7 @@ function DraggableMicrobeCard({
       aria-selected={selected}
       aria-disabled={isWrong}
       style={{ touchAction: "none", width: "100%", height: "100%" }}
-      className={`relative overflow-hidden rounded-xl border-2 transition-colors ${
+      className={`relative overflow-hidden rounded-xl transition-colors ${
         isWrong
           ? "border-red-500 opacity-50 cursor-not-allowed"
           : selected
@@ -1056,23 +1107,21 @@ function DraggableMicrobeCard({
           {label}
         </span>
         {src && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={src}
             alt={label}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-contain"
             loading="lazy"
-            onError={(e) => { e.currentTarget.style.display = "none"; }}
           />
         )}
       </div>
 
       {/* Name strip at the bottom */}
-      <div className="absolute bottom-0 inset-x-0 bg-[#2a1208]/70 px-1 py-0.5">
+      {/* <div className="absolute bottom-0 inset-x-0 bg-[#2a1208]/70 px-1 py-0.5">
         <span className="block w-full text-center text-[0.5rem] leading-tight italic text-[#f5e6c8] line-clamp-2">
           {label}
         </span>
-      </div>
+      </div> */}
 
       {/* Wrong-answer overlay — red tint + ✕ icon */}
       {isWrong && (
@@ -1085,6 +1134,25 @@ function DraggableMicrobeCard({
         <div className="absolute inset-0 rounded-xl ring-2 ring-inset ring-[#5c2a0e] bg-[#5c2a0e]/10" />
       )}
     </div>
+    </div>
+  );
+}
+
+// ─── microbe card skeleton (loading placeholder) ──────────────────────────────
+
+// Light-grey placeholder shown in the answer grid while the microbe list is loading.
+// Same aspect ratio + rounded shape as DraggableMicrobeCard so the grid doesn't jump on load.
+function MicrobeCardSkeleton({ index }: { index: number }) {
+  return (
+    <div
+      className="w-full animate-pulse rounded-xl bg-[#d8d8d8] overflow-hidden relative"
+      style={{
+        aspectRatio: "3/4",
+        animationDelay: `${(index % 9) * 0.07}s`,
+      }}
+    >
+      <div className="absolute inset-0 bg-[#c8c8c8]" />
+      <div className="absolute bottom-0 inset-x-0 h-3 bg-[#bcbcbc]" />
     </div>
   );
 }
@@ -1114,16 +1182,17 @@ function MicrobeThumb({
   microbe: { name?: string; shortName?: string; imageUrl?: string; answerImageUrl?: string };
   size: "sm" | "lg";  // union type — only these two strings allowed
 }) {
-  // Pick whichever URL is set first
-  const src = microbe.imageUrl ?? microbe.answerImageUrl ?? "";
+  const src = resolveImageSrc(microbe.imageUrl ?? microbe.answerImageUrl);
   const label = microbe.shortName ?? microbe.name ?? "";
-  // Different sizing for small (grid) vs large (feedback bar) variants
-  const dim = size === "sm" ? "w-full aspect-square" : "h-14 w-14 flex-shrink-0";
+  // Different sizing for small (grid) vs large (feedback bar / end-screen) variants.
+  // lg matches the real answer-card art ratio (1428x2000 PNGs) so the image isn't squished/cropped.
+  const dim = size === "sm" ? "w-full aspect-square" : "w-[8.75rem] flex-shrink-0";
 
   return (
     // Template literal merges static + dynamic classes
     <div
       className={`${dim} relative rounded-lg overflow-hidden bg-[#e0c890] flex items-center justify-center`}
+      style={size === "lg" ? { aspectRatio: "1428 / 2000" } : undefined}
     >
       {/* Text fallback — sits behind the <img>; visible until image loads (or if it fails) */}
       <span className="px-1 text-center text-[0.5rem] font-medium italic leading-tight text-[#5c2a0e]">
@@ -1136,7 +1205,7 @@ function MicrobeThumb({
         <img
           src={src}
           alt={label}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain"
           loading="lazy"                                            // don't load until scrolled near
           onError={(e) => { e.currentTarget.style.display = "none"; }} // hide if broken (text fallback shows through)
         />
@@ -1180,7 +1249,7 @@ function EndScreen({
 
   return (
     <div className="end-screen-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="end-screen-panel flex flex-col w-full max-w-2xl max-h-[85vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
+      <div className="end-screen-panel flex flex-col w-full max-w-7xl max-h-[85vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
 
         {/* ── Title + score ─────────────────────────────────────── */}
         <div className="relative flex items-center justify-between px-8 py-5 flex-shrink-0 border-b border-[#c4a870]">
@@ -1231,21 +1300,25 @@ function RoundReviewRow({ result, attemptNumber }: { result: RoundResult; attemp
         </span>
       </div>
 
-      <div className="flex items-start gap-3">
-        <div className="flex gap-1.5">
+      <div className="flex items-start gap-4 flex-wrap">
+        <div className="flex gap-2">
           {result.openedSlots.map((slot) => (
-            <div key={slot.index} className="h-14 w-10 flex-shrink-0 rounded overflow-hidden">
+            <div
+              key={slot.index}
+              className="w-[8.75rem] flex-shrink-0 rounded-lg overflow-hidden"
+              style={{ aspectRatio: "1429 / 2000" }}
+            >
               {slot.revealed && slot.card ? (
                 <ClueCardThumb card={slot.card} />
               ) : (
-                <div className="h-full w-full rounded bg-[#c4a870] border border-[#b09060]" />
+                <div className="h-full w-full rounded-lg bg-[#c4a870] border border-[#b09060]" />
               )}
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-2.5 ml-2">
+        <div className="flex items-center gap-3 ml-2">
           <MicrobeThumb microbe={result.correctMicrobe} size="lg" />
-          <span className="italic text-sm text-[#3a2010]">{result.correctMicrobe.name}</span>
+          <span className="italic text-base font-medium text-[#3a2010]">{result.correctMicrobe.name}</span>
         </div>
       </div>
 
@@ -1264,20 +1337,20 @@ function RoundReviewRow({ result, attemptNumber }: { result: RoundResult; attemp
 // SUB-COMPONENT: thumbnail version of a clue card (used in end-screen)
 function ClueCardThumb({ card }: { card: ClueCard }) {
   return (
-    <div className="h-full w-full relative rounded bg-[#f5e6c8] flex flex-col items-center justify-center gap-0.5 p-1">
-      <span className="text-[0.38rem] uppercase tracking-wide text-[#9a7850] text-center leading-tight truncate w-full">
+    <div className="h-full w-full relative rounded-lg bg-[#f5e6c8] flex flex-col items-center justify-center gap-1 p-1.5">
+      <span className="text-[0.7rem] uppercase tracking-wide text-[#9a7850] text-center leading-tight w-full">
         {card.category.replace(/_/g, " ")}
       </span>
-      <span className="text-[0.45rem] text-[#3a2010] text-center leading-tight italic line-clamp-2">
+      <span className="text-[0.85rem] text-[#3a2010] text-center leading-snug italic line-clamp-5">
         {card.label}
       </span>
       {/* Real image overlay if URL is provided */}
       {card.imageUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={card.imageUrl}
+          src={resolveImageSrc(card.imageUrl)}
           alt={card.label}
-          className="absolute inset-0 h-full w-full object-cover rounded"
+          className="absolute inset-0 h-full w-full object-contain rounded-lg"
           onError={(e) => { e.currentTarget.style.display = "none"; }}
         />
       )}

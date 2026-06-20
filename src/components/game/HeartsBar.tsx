@@ -81,16 +81,28 @@ export function HeartsBar({ heartsLeft, vertical }: HeartsBarProps) {
   );
 }
 
+// function PixelHeart({ filled, flashing }: { filled: boolean; flashing: boolean }) {
+//   return (
+//     // eslint-disable-next-line @next/next/no-img-element
+//     <img
+//       src={filled ? "/assets/ui/heart-alive.png" : "/assets/ui/heart-dead.png"}
+//       alt=""
+//       width={72}
+//       height={62}
+//       style={{ imageRendering: "pixelated" }}
+//       className={flashing ? "heart-flash" : undefined}
+//       aria-hidden="true"
+//     />
+//   );
+// }
+
 function PixelHeart({ filled, flashing }: { filled: boolean; flashing: boolean }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={filled ? "/assets/ui/heart-alive.png" : "/assets/ui/heart-dead.png"}
       alt=""
-      width={72}
-      height={62}
       style={{ imageRendering: "pixelated" }}
-      className={flashing ? "heart-flash" : undefined}
+      className={`h-[6vh] w-auto ${flashing ? "heart-flash" : ""}`}
       aria-hidden="true"
     />
   );

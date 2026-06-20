@@ -3,6 +3,12 @@
 import { useRef, useState, useEffect } from "react";
 import type { ClueCard } from "@/types/game";
 
+function resolveImageSrc(url: string | null | undefined): string {
+  if (!url) return "";
+  if (url.startsWith("http") || url.startsWith("/")) return url;
+  return `/assets/${url}`;
+}
+
 interface CardSlotProps {
   index: number;
   revealed: boolean;
@@ -73,7 +79,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
   return (
     <div
       ref={tiltRef}
-      className={`card-tilt w-full min-h-[17rem]${!revealed && !disabled ? " card-idle" : ""}`}
+      className={`card-tilt h-[32vh]${!revealed && !disabled ? " card-idle" : ""}`}
       data-revealed={revealed ? "true" : "false"}
       style={{
         aspectRatio: "1429 / 2000",
@@ -95,8 +101,15 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
          * The hover:brightness-125 stays — gives visual feedback when the card is hoverable.
          * To swap: drop a new file at the same path. No code change needed.
          */}
+        {/* <button
+          className="card-face w-full h-full rounded-3xl bg-[url('/assets/ui/Backcard.png')] bg-cover bg-center shadow-lg hover:brightness-125 focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] disabled:cursor-default disabled:hover:brightness-100 transition-[filter]"
+          onClick={() => onReveal(index)}
+          disabled={revealed || disabled}
+          aria-label={`Reveal clue card ${index + 1}`}
+          tabIndex={revealed ? -1 : 0}
+        /> */}
         <button
-          className="card-face w-full h-full rounded-xl bg-[url('/assets/ui/Backcard.png')] bg-cover bg-center shadow-lg hover:brightness-125 focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] disabled:cursor-default disabled:hover:brightness-100 transition-[filter]"
+          className="card-face w-full h-full rounded-3xl overflow-hidden bg-[url('/assets/ui/Backcard.png')] bg-cover bg-center shadow-lg hover:brightness-125 focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] disabled:cursor-default disabled:hover:brightness-100 transition-[filter]"
           onClick={() => onReveal(index)}
           disabled={revealed || disabled}
           aria-label={`Reveal clue card ${index + 1}`}
@@ -105,7 +118,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
 
         {/* Revealed front face */}
         <div
-          className="card-face card-face-front w-full h-full rounded-xl overflow-hidden shadow-lg bg-[#f5e6c8] relative flex flex-col items-center justify-center gap-1.5 p-2"
+          className="card-face card-face-front w-full h-full rounded-3xl shadow-lg bg-[#f5e6c8] relative flex flex-col items-center justify-center gap-1.5 p-2"
           aria-hidden={!revealed}
         >
           {revealed && !card && (
@@ -140,9 +153,9 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
               {card.imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={card.imageUrl}
+                  src={resolveImageSrc(card.imageUrl)}
                   alt={card.label}
-                  className="absolute inset-0 w-full h-full object-cover rounded-xl"
+                  className="absolute inset-0 w-full h-full object-contain"
                   onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
               )}

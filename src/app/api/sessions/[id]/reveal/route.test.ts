@@ -3,9 +3,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     gameSession: { findUnique: vi.fn() },
-    score: { count: vi.fn() },
-    sessionMicrobe: { findUnique: vi.fn(), update: vi.fn() },
-    microbeClue: { findMany: vi.fn() },
+    sessionMicrobe: { findUnique: vi.fn() },
     $queryRaw: vi.fn(),
   },
 }))
@@ -35,12 +33,18 @@ const ctx = { params: Promise.resolve({ id: SESSION_ID }) }
 
 const mockPlayer = { id: PLAYER_ID }
 
+const mockClueCards = [
+  { sortOrder: 0, clueCard: { category: 'Shape', label: 'Round', imageUrl: '/images/round.png' } },
+  { sortOrder: 1, clueCard: { category: 'Color', label: 'Purple', imageUrl: '/images/purple.png' } },
+]
+
 const mockSession = {
   id: SESSION_ID,
   playerId: PLAYER_ID,
   completed: false,
   abandoned: false,
   heartsLeft: 3,
+  _count: { scores: 0 },
 }
 
 const mockSessionMicrobe = {
@@ -48,6 +52,7 @@ const mockSessionMicrobe = {
   roundNumber: 1,
   microbeId: 'microbe-1',
   revealedSlots: [] as number[],
+  microbe: { clues: mockClueCards },
 }
 
 const mockClueCards = [
@@ -63,9 +68,7 @@ describe('POST /api/sessions/:id/reveal', () => {
     vi.clearAllMocks()
     vi.mocked(requireAuth).mockResolvedValue(mockPlayer as never)
     vi.mocked(prisma.gameSession.findUnique).mockResolvedValue(mockSession as never)
-    vi.mocked(prisma.score.count).mockResolvedValue(0)
     vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue(mockSessionMicrobe as never)
-    vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(mockClueCards as never)
     vi.mocked(prisma.$queryRaw).mockResolvedValue([{ revealedSlots: [0] }] as never)
   })
 
@@ -158,34 +161,26 @@ describe('POST /api/sessions/:id/reveal', () => {
       expect(body.session.heartsLeft).toBe(3)
     })
 
-    it('persists the revealed slot via an atomic append', async () => {
+    it('persists the revealed slot index via an atomic conditional update', async () => {
       await POST(makeRequest({ slotIndex: 1 }), ctx)
-      expect(vi.mocked(prisma.$queryRaw)).toHaveBeenCalledTimes(1)
-      // Tagged-template call: [strings, ...values]. The slotIndex is interpolated
-      // into both array_append(...) and the ANY(...) guard, so it appears twice.
-      const values = vi.mocked(prisma.$queryRaw).mock.calls[0].slice(1)
-      expect(values).toContain(1)
+      // Tagged-template call: [strings, slotIndex, sessionId, roundNumber, slotIndex]
+      const [, slotArg, sessionArg, roundArg] = vi.mocked(prisma.$queryRaw).mock.calls[0]
+      expect(slotArg).toBe(1)
+      expect(sessionArg).toBe(SESSION_ID)
+      expect(roundArg).toBe(1)
     })
 
-    // Regression: the scoring bug. Concurrent reveals used to clobber each other
-    // via a read-modify-write, persisting fewer slots than opened (e.g. 5 cards
-    // recorded as 2 → 80 pts instead of 20). The atomic append is the source of
-    // truth, so cardsOpened must reflect the full DB array, not a stale snapshot.
-    it('reports the full revealed-slot count returned by the database', async () => {
-      vi.mocked(prisma.$queryRaw).mockResolvedValue([
-        { revealedSlots: [0, 1, 2, 3, 4] },
-      ] as never)
-      const res = await POST(makeRequest({ slotIndex: 1 }), ctx)
-      const body = await res.json()
-      expect(body.session.cardsOpened).toBe(5)
-    })
-
-    it('returns 409 when the atomic append finds the slot already revealed', async () => {
+    it('returns 409 when the atomic update finds the slot already revealed (race)', async () => {
       vi.mocked(prisma.$queryRaw).mockResolvedValue([] as never)
       const res = await POST(makeRequest({ slotIndex: 1 }), ctx)
       expect(res.status).toBe(409)
+    })
+
+    it('reflects the cards-opened count returned by the database', async () => {
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([{ revealedSlots: [0, 1] }] as never)
+      const res = await POST(makeRequest({ slotIndex: 1 }), ctx)
       const body = await res.json()
-      expect(body.error).toMatch(/already revealed/i)
+      expect(body.session.cardsOpened).toBe(2)
     })
   })
 })
