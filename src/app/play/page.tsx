@@ -16,6 +16,7 @@ import { createAnimatable, spring } from "animejs";
 import { CardGrid } from "@/components/game/CardGrid";
 import { HeartsBar } from "@/components/game/HeartsBar";
 import { ScoreBar } from "@/components/game/ScoreBar";
+import { useScaleToFit } from "@/hooks/useScaleToFit";
 
 // `import type` → imports ONLY TypeScript types (erased at build time, zero runtime cost)
 // These types describe the shape of game data — defined in src/types/game.ts
@@ -140,6 +141,8 @@ export default function PlayPage() {
   // ─── STATE: End-screen history ──────────────────────────────────
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]); // recap of every round played
   const [won, setWon] = useState(false);                               // did the player win or lose?
+
+  const { containerRef, contentRef, scale } = useScaleToFit();
 
   // ── bootstrap ────────────────────────────────────────────────────────────
   // useEffect runs AFTER the component renders. With `[]` deps, it runs ONCE on mount.
@@ -604,10 +607,12 @@ export default function PlayPage() {
       {/* ── Wood area (top zone: cards + score/hearts) ───────────────── */}
       {/* flex-shrink-0 → don't let this zone shrink when parchment grows */}
       {/* Arbitrary background image (Tailwind bg-[url-syntax]), bg-cover scales to fill, bg-center centers it */}
-      <div className="relative flex flex-col px-6 pt-1 pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-shrink-0">
-
+      <div
+        ref={containerRef}
+        className="relative flex flex-col px-6 pt-1 pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
+      >
         {/* Top bar: Score on left, Exit on right */}
-        <div className="relative z-10 flex items-center justify-between">
+        <div className="relative z-10 flex items-center justify-between w-full">
           <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
           <button
             onClick={() => setShowExitConfirm(true)}
@@ -618,27 +623,15 @@ export default function PlayPage() {
           </button>
         </div>
 
-        {/*
-         * ROUND COUNTER IMAGE — centered above the card slots.
-         * Source: /public/assets/ui/round-${round}.png (one per round: round-1.png … round-5.png)
-         * `round` is 1-indexed (1, 2, 3, 4, 5).
-         * If a file for the current round is missing, the alt text + broken-image icon will show
-         * — that's intentional so missing assets are obvious during dev.
-         * `-mt-8` pulls the image upward so it sits closer to the very top of the wood area
-         * (overlapping vertically with the score/hearts row, but centered horizontally between them).
-         */}
-        {/* Round bar — absolutely positioned so it pokes through the top WITHOUT pushing the
-            score/exit bar down (those stay pinned at the very top). The root has overflow-hidden,
-            so the part translated above the screen is clipped. Tune -translate-y-[..] to show more/less. */}
         <div className="pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 -translate-y-[42%]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/assets/ui/round-${round}.png`}
             alt={`Round ${round} of 5`}
-            className="h-[10.5rem] w-[40rem] object-contain select-none pointer-events-none"
+            className="h-[15vh] w-auto max-w-[85vw] object-contain select-none pointer-events-none"
             draggable={false}
           />
         </div>
+
         {phase === "playing" && (
           <div className="flex justify-center mt-6 mb-4">
             <div ref={pointsPillRef} className="flex items-baseline gap-1.5 px-4 py-1 rounded-full bg-[#2a1208]/85 border border-[#d4a96a]/50 shadow-lg">
@@ -651,9 +644,10 @@ export default function PlayPage() {
           </div>
         )}
 
-        {/* The 5 clue cards + hearts (vertical) + the "Answer" button */}
-        <div className="flex items-center gap-3">
-          <HeartsBar heartsLeft={heartsLeft} vertical />
+        <div className="flex items-center justify-center gap-3 w-full">
+          <div className="flex-shrink-0">
+            <HeartsBar heartsLeft={heartsLeft} vertical />
+          </div>
           <CardGrid
             slots={slots}
             onReveal={handleReveal}
@@ -683,7 +677,6 @@ export default function PlayPage() {
           />
         </div>
 
-        {/* Wrong-attempt indicator — shows when any wrong answer was given this question */}
         {questionHasWrong && phase === "playing" && (
           <div className="popup-bar mt-4 flex items-center gap-3 rounded-xl border border-[#6b3520] bg-[#3d1a0a]/70 px-4 py-2.5">
             <span className="text-red-400 font-black text-lg leading-none">✕</span>
@@ -695,7 +688,7 @@ export default function PlayPage() {
       </div>
 
       {/* ── Parchment area (bottom zone: filters + microbe answer panel) ── */}
-      <div className="flex flex-col bg-[#f0d9a8] flex-1 overflow-y-auto">
+      <div className="flex flex-col bg-[#f0d9a8] flex-1 basis-1/2 min-h-0 overflow-y-auto">
 
         {/* Filter bar — gram type checkboxes, search, and biological tag checkboxes */}
         <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3 border-b border-[#c4a870] bg-[#f0d9a8] flex-shrink-0">
@@ -1047,7 +1040,7 @@ function DraggableMicrobeCard({
       aria-selected={selected}
       aria-disabled={isWrong}
       style={{ touchAction: "none", width: "100%", height: "100%" }}
-      className={`relative overflow-hidden rounded-xl border-2 transition-colors ${
+      className={`relative overflow-hidden rounded-xl transition-colors ${
         isWrong
           ? "border-red-500 opacity-50 cursor-not-allowed"
           : selected
@@ -1065,23 +1058,21 @@ function DraggableMicrobeCard({
           {label}
         </span>
         {src && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={src}
             alt={label}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-contain"
             loading="lazy"
-            onError={(e) => { e.currentTarget.style.display = "none"; }}
           />
         )}
       </div>
 
       {/* Name strip at the bottom */}
-      <div className="absolute bottom-0 inset-x-0 bg-[#2a1208]/70 px-1 py-0.5">
+      {/* <div className="absolute bottom-0 inset-x-0 bg-[#2a1208]/70 px-1 py-0.5">
         <span className="block w-full text-center text-[0.5rem] leading-tight italic text-[#f5e6c8] line-clamp-2">
           {label}
         </span>
-      </div>
+      </div> */}
 
       {/* Wrong-answer overlay — red tint + ✕ icon */}
       {isWrong && (
@@ -1145,7 +1136,7 @@ function MicrobeThumb({
         <img
           src={src}
           alt={label}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain"
           loading="lazy"                                            // don't load until scrolled near
           onError={(e) => { e.currentTarget.style.display = "none"; }} // hide if broken (text fallback shows through)
         />
@@ -1286,7 +1277,7 @@ function ClueCardThumb({ card }: { card: ClueCard }) {
         <img
           src={resolveImageSrc(card.imageUrl)}
           alt={card.label}
-          className="absolute inset-0 h-full w-full object-cover rounded-lg"
+          className="absolute inset-0 h-full w-full object-contain rounded-lg"
           onError={(e) => { e.currentTarget.style.display = "none"; }}
         />
       )}

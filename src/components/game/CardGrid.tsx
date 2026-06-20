@@ -36,7 +36,7 @@ export function CardGrid({
   const revealedCount = slots.filter((s) => s.revealed).length;
 
   return (
-    <div className="grid grid-cols-6 gap-3 w-full">
+    <div className="flex items-stretch justify-center gap-3 w-full">
       {slots.map((slot) => (
         <CardSlot
           key={slot.index}
@@ -49,8 +49,11 @@ export function CardGrid({
         />
       ))}
 
-      {/* Answer drop zone — same size as a card slot (6th column) */}
-      <div ref={dropTargetRef} className="min-h-[17rem]" style={{ aspectRatio: "1429 / 2000" }}>
+      <div
+        ref={dropTargetRef}
+        className="h-[32vh]"
+        style={{ aspectRatio: "1429 / 2000" }}
+      >
         {pendingMicrobeName ? (
           /* Confirmation state — shown after a microbe is dropped.
              The image fills the WHOLE slot (same 1429/2000 aspect as the card slots, so it aligns),
@@ -68,7 +71,7 @@ export function CardGrid({
               <img
                 src={pendingMicrobeImage}
                 alt={pendingMicrobeName ?? ""}
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-contain"
                 onError={(e) => { e.currentTarget.style.display = "none"; }}
               />
             ) : (
