@@ -206,7 +206,7 @@ export default function PlayPage() {
       if (!res.ok) return;
       const data = await res.json();
       // Defensive: only set if it's actually an array (avoids breaking the .filter() later)
-      setMicrobes(Array.isArray(data) ? data : []);
+      setMicrobes(Array.isArray(data.microbes) ? data.microbes : []);
     } catch {
       // Non-fatal: panel will just be empty
     } finally {

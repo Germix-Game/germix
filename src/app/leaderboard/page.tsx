@@ -177,13 +177,7 @@ export default function LeaderboardPage() {
       />
       <Link
         href="/home"
-        className="absolute top-4 left-4 z-20 rounded-lg border px-4 py-2 text-sm font-medium"
-        style={{
-          background: "rgba(42,20,0,0.9)",
-          borderColor: "rgba(122,64,16,0.8)",
-          color: "#c8a060",
-          fontFamily: "Arial, sans-serif",
-        }}
+        className="absolute left-4 top-4 z-20 flex h-9 items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
       >
         ← Back
       </Link>
