@@ -52,35 +52,37 @@ export function CardGrid({
       {/* Answer drop zone — same size as a card slot (6th column) */}
       <div ref={dropTargetRef} className="min-h-[17rem]" style={{ aspectRatio: "1429 / 2000" }}>
         {pendingMicrobeName ? (
-          /* Confirmation state — shown after a microbe is dropped */
+          /* Confirmation state — shown after a microbe is dropped.
+             The image fills the WHOLE slot (same 1429/2000 aspect as the card slots, so it aligns),
+             and the cancel/confirm buttons are overlaid at the bottom. */
           <div
-            className={`w-full h-full flex flex-col overflow-hidden border-2 transition-all ${
+            className={`relative w-full h-full overflow-hidden rounded-3xl bg-[#f5e6c8] border-2 transition-all ${
               isDraggingOver
                 ? "border-[#d4a96a] scale-105"
                 : "border-[#d4a96a]"
             }`}
           >
-            {/* Dropped microbe card — image fills the area; name as fallback / bottom strip */}
-            <div className="relative flex-1 flex items-center justify-center bg-[#f5e6c8] overflow-hidden">
-              {/* Text fallback (visible until/if image fails) */}
-              <span className="px-2 text-center text-[0.65rem] italic text-[#3a2010] leading-tight line-clamp-4">
+            {/* Microbe image fills the slot (object-cover → matches the card slots) */}
+            {pendingMicrobeImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={pendingMicrobeImage}
+                alt={pendingMicrobeName ?? ""}
+                className="absolute inset-0 h-full w-full object-cover"
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
+              />
+            ) : (
+              /* Text fallback ONLY when there's no image */
+              <span className="absolute inset-0 flex items-center justify-center px-2 text-center text-[0.65rem] italic text-[#3a2010] leading-tight line-clamp-4">
                 {pendingMicrobeName}
               </span>
-              {/* Microbe image — square corners (no rounding) */}
-              {pendingMicrobeImage && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={pendingMicrobeImage}
-                  alt={pendingMicrobeName ?? ""}
-                  className="absolute inset-0 h-full w-full object-contain"
-                  onError={(e) => { e.currentTarget.style.display = "none"; }}
-                />
-              )}
-            </div>
-            <div className="flex flex-shrink-0">
+            )}
+
+            {/* Cancel / Confirm — overlaid at the bottom so the image fills the full slot */}
+            <div className="absolute bottom-0 inset-x-0 flex">
               <button
                 onClick={onCancelPending}
-                className="flex-1 py-2 bg-[#4a3020] text-[#d4a96a] hover:bg-[#5a4030] font-bold text-sm transition-colors"
+                className="flex-1 py-2 bg-[#4a3020]/90 text-[#d4a96a] hover:bg-[#5a4030] font-bold text-sm transition-colors"
                 aria-label="Cancel"
               >
                 ✕
@@ -88,7 +90,7 @@ export function CardGrid({
               <button
                 onClick={onConfirm}
                 disabled={isSubmitting}
-                className="flex-1 py-2 bg-[#4a7c3f] text-white hover:bg-[#5a8c4f] font-bold text-sm transition-colors disabled:opacity-50"
+                className="flex-1 py-2 bg-[#4a7c3f]/90 text-white hover:bg-[#5a8c4f] font-bold text-sm transition-colors disabled:opacity-50"
                 aria-label="Confirm answer"
               >
                 {isSubmitting ? "…" : "✓"}

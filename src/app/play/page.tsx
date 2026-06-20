@@ -1125,8 +1125,9 @@ function MicrobeThumb({
 }) {
   const src = resolveImageSrc(microbe.imageUrl ?? microbe.answerImageUrl);
   const label = microbe.shortName ?? microbe.name ?? "";
-  // Different sizing for small (grid) vs large (feedback bar) variants
-  const dim = size === "sm" ? "w-full aspect-square" : "h-14 w-14 flex-shrink-0";
+  // Different sizing for small (grid) vs large (feedback bar / end-screen) variants.
+  // lg uses a card aspect (3/4, h-16 w-12) so card-shaped microbe images aren't squished/cropped.
+  const dim = size === "sm" ? "w-full aspect-square" : "h-[11.25rem] w-[8.75rem] flex-shrink-0";
 
   return (
     // Template literal merges static + dynamic classes
@@ -1188,7 +1189,7 @@ function EndScreen({
 
   return (
     <div className="end-screen-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="end-screen-panel flex flex-col w-full max-w-2xl max-h-[85vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
+      <div className="end-screen-panel flex flex-col w-full max-w-7xl max-h-[85vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
 
         {/* ── Title + score ─────────────────────────────────────── */}
         <div className="relative flex items-center justify-between px-8 py-5 flex-shrink-0 border-b border-[#c4a870]">
@@ -1239,21 +1240,21 @@ function RoundReviewRow({ result, attemptNumber }: { result: RoundResult; attemp
         </span>
       </div>
 
-      <div className="flex items-start gap-3">
-        <div className="flex gap-1.5">
+      <div className="flex items-start gap-4 flex-wrap">
+        <div className="flex gap-2">
           {result.openedSlots.map((slot) => (
-            <div key={slot.index} className="h-14 w-10 flex-shrink-0 rounded overflow-hidden">
+            <div key={slot.index} className="h-[11.25rem] w-[8.75rem] flex-shrink-0 rounded-lg overflow-hidden">
               {slot.revealed && slot.card ? (
                 <ClueCardThumb card={slot.card} />
               ) : (
-                <div className="h-full w-full rounded bg-[#c4a870] border border-[#b09060]" />
+                <div className="h-full w-full rounded-lg bg-[#c4a870] border border-[#b09060]" />
               )}
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-2.5 ml-2">
+        <div className="flex items-center gap-3 ml-2">
           <MicrobeThumb microbe={result.correctMicrobe} size="lg" />
-          <span className="italic text-sm text-[#3a2010]">{result.correctMicrobe.name}</span>
+          <span className="italic text-base font-medium text-[#3a2010]">{result.correctMicrobe.name}</span>
         </div>
       </div>
 
@@ -1272,11 +1273,11 @@ function RoundReviewRow({ result, attemptNumber }: { result: RoundResult; attemp
 // SUB-COMPONENT: thumbnail version of a clue card (used in end-screen)
 function ClueCardThumb({ card }: { card: ClueCard }) {
   return (
-    <div className="h-full w-full relative rounded bg-[#f5e6c8] flex flex-col items-center justify-center gap-0.5 p-1">
-      <span className="text-[0.38rem] uppercase tracking-wide text-[#9a7850] text-center leading-tight truncate w-full">
+    <div className="h-full w-full relative rounded-lg bg-[#f5e6c8] flex flex-col items-center justify-center gap-1 p-1.5">
+      <span className="text-[0.7rem] uppercase tracking-wide text-[#9a7850] text-center leading-tight w-full">
         {card.category.replace(/_/g, " ")}
       </span>
-      <span className="text-[0.45rem] text-[#3a2010] text-center leading-tight italic line-clamp-2">
+      <span className="text-[0.85rem] text-[#3a2010] text-center leading-snug italic line-clamp-5">
         {card.label}
       </span>
       {/* Real image overlay if URL is provided */}
@@ -1285,7 +1286,7 @@ function ClueCardThumb({ card }: { card: ClueCard }) {
         <img
           src={resolveImageSrc(card.imageUrl)}
           alt={card.label}
-          className="absolute inset-0 h-full w-full object-cover rounded"
+          className="absolute inset-0 h-full w-full object-cover rounded-lg"
           onError={(e) => { e.currentTarget.style.display = "none"; }}
         />
       )}
