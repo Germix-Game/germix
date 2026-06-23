@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import type { GameMode } from "@/types/game";
 
 // Shape of GET /api/game-modes — see src/app/api/game-modes/route.ts
@@ -24,10 +25,17 @@ export default function LevelSelectPage() {
       });
   }, []);
 
+  // Still waiting on /api/game-modes — don't render the locked (grayscale)
+  // look yet, since most of the time parasite turns out to be unlocked.
+  const modesLoading = !modes;
+
   // A post-test window blocks every mode (including bacteria) until submitted.
   // Parasite additionally needs its own unlock date to have passed.
   const bacteriaLocked = !!modes?.posttestRequired;
-  const parasiteLocked = !modes || modes.posttestRequired || !modes.parasite.unlocked;
+  const parasiteLocked = modesLoading || modes.posttestRequired || !modes.parasite.unlocked;
+  // Only paint the grayscale "locked" look once we actually know it's locked —
+  // not during the brief window before the fetch resolves.
+  const parasiteShowsLocked = !modesLoading && parasiteLocked;
   const parasiteUnlocksAt =
     modes && !modes.posttestRequired && !modes.parasite.unlocked && modes.parasite.unlocksAt
       ? new Date(modes.parasite.unlocksAt).toLocaleDateString()
@@ -46,29 +54,27 @@ export default function LevelSelectPage() {
         className="relative h-screen w-screen overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
       >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src="/assets/game-selection/germix-graphic-game-26.png"
         alt=""
         aria-hidden
         draggable={false}
-        className="pointer-events-none absolute inset-0 select-none"
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          objectPosition: "center",
-        }}
+        fill
+        priority
+        sizes="100vw"
+        className="pointer-events-none select-none object-contain object-center"
       />
 
       {/* Bacteria level button — top-left */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src="/assets/game-selection/bateria_level.png"
         alt="Bacteria"
         draggable={false}
+        width={1920}
+        height={1080}
+        priority
         onClick={() => { if (!bacteriaLocked) handleSelect("BACTERIA"); }}
-        className={`absolute select-none transition-transform duration-200 ${
+        className={`absolute h-auto select-none transition-transform duration-200 ${
           starting || bacteriaLocked
             ? "cursor-not-allowed opacity-50"
             : "cursor-pointer hover:scale-105"
@@ -77,16 +83,20 @@ export default function LevelSelectPage() {
       />
 
       {/* Parasite level button — bottom-right */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src="/assets/game-selection/parasite_level.png"
         alt="Parasites"
         draggable={false}
+        width={1920}
+        height={1080}
+        priority
         onClick={() => { if (!parasiteLocked) handleSelect("PARASITE"); }}
-        className={`absolute select-none transition-transform duration-200 ${
-          starting || parasiteLocked
+        className={`absolute h-auto select-none transition-transform duration-200 ${
+          starting || parasiteShowsLocked
             ? "cursor-not-allowed grayscale opacity-50"
-            : "cursor-pointer hover:scale-105"
+            : parasiteLocked
+              ? "cursor-not-allowed"
+              : "cursor-pointer hover:scale-105"
         }`}
         style={{ bottom: "2%", right: "12%", width: "37vw" }}
       />

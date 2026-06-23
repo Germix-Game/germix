@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MenuButtons } from "@/components/menu/MenuButtons";
 import { createClient } from "@/utils/supabase/client";
-import { HOME_CRITICAL_ASSETS } from "@/lib/preload-images";
+import { HOME_CRITICAL_ASSETS, SELECT_CRITICAL_ASSETS, preloadImages } from "@/lib/preload-images";
 
 // ─── Card layout data ─────────────────────────────────────────────────────────
 // Positions are percentages of the 1280×720 reference canvas used in the original
@@ -82,6 +82,13 @@ export default function HomePage() {
       }
     });
   }, []);
+
+  // Warm up /select's level-art so it's already cached when the player clicks
+  // "PLAY NOW" instead of loading from scratch there.
+  useEffect(() => {
+    router.prefetch("/select");
+    preloadImages(SELECT_CRITICAL_ASSETS);
+  }, [router]);
 
   async function handleLogout() {
     setLoggingOut(true);
