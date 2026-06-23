@@ -36,19 +36,9 @@ export default function LevelSelectPage() {
   async function handleSelect(gameMode: GameMode) {
     if (starting) return;
     setStarting(true);
-    try {
-      const res = await fetch("/api/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gameMode }),
-      });
-      if (!res.ok) return;
-      const session = await res.json();
-      localStorage.setItem("currentSessionId", session.id);
-      router.push("/play");
-    } finally {
-      setStarting(false);
-    }
+    // Navigate immediately — /play's own loading screen creates the session
+    // and fetches the first round, so the player waits there instead of here.
+    router.push(`/play?mode=${gameMode}`);
   }
 
   return (

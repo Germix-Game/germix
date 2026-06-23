@@ -9,6 +9,7 @@
 // useCallback → memoize a function so it doesn't get recreated every render (perf optimization)
 import { useState, useEffect, useCallback, useRef, type RefObject } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createAnimatable, spring } from "animejs";
 
 // Import game UI components from the components folder
@@ -17,6 +18,7 @@ import { CardGrid } from "@/components/game/CardGrid";
 import { HeartsBar } from "@/components/game/HeartsBar";
 import { ScoreBar } from "@/components/game/ScoreBar";
 import { useScaleToFit } from "@/hooks/useScaleToFit";
+import { HOME_CRITICAL_ASSETS, preloadImages } from "@/lib/preload-images";
 
 // `import type` → imports ONLY TypeScript types (erased at build time, zero runtime cost)
 // These types describe the shape of game data — defined in src/types/game.ts
@@ -145,6 +147,15 @@ export default function PlayPage() {
   const [won, setWon] = useState(false);                               // did the player win or lose?
 
   const { containerRef, contentRef, scale } = useScaleToFit();
+  const router = useRouter();
+
+  // Warm up the route the player will land on when they exit (back button,
+  // "Exit" confirm, or game-over) — prefetch the page chunk and its background
+  // art now, while they're busy playing, so /home doesn't load from scratch.
+  useEffect(() => {
+    router.prefetch("/home");
+    preloadImages(HOME_CRITICAL_ASSETS);
+  }, [router]);
 
   // ── bootstrap ────────────────────────────────────────────────────────────
   // useEffect runs AFTER the component renders. With `[]` deps, it runs ONCE on mount.
@@ -165,6 +176,14 @@ export default function PlayPage() {
       return; // exit early — don't try to load a real session
     }
 
+    // NEW GAME branch — arrived from /select with ?mode=... — create the
+    // session here so the wait happens on this loading screen, not on /select.
+    const mode = params.get("mode");
+    if (mode) {
+      void startNewSession(mode);
+      return;
+    }
+
     // REAL MODE branch — get session ID from browser's localStorage
     // localStorage persists across page reloads (until cleared).
     const id = localStorage.getItem("currentSessionId");
@@ -175,6 +194,26 @@ export default function PlayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     // ↑ The lint rule wants `fetchSession` in deps, but we only want this to run once on mount, so we silence it.
   }, []);
+
+  // Create a brand-new session for the chosen game mode, then load it the
+  // same way an existing session would be resumed.
+  async function startNewSession(gameMode: string) {
+    try {
+      const res = await fetch("/api/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameMode }),
+      });
+      if (!res.ok) { setPhase("error"); return; }
+      const session = await res.json();
+      localStorage.setItem("currentSessionId", session.id);
+      setSessionId(session.id);
+      void startCardsFetch(session.id);
+      void fetchSession(session.id);
+    } catch {
+      setPhase("error");
+    }
+  }
 
   // Fetch session data from the backend
   // `async` makes the function return a Promise; `await` pauses until a Promise resolves.
@@ -879,7 +918,7 @@ export default function PlayPage() {
           won={won}
           results={roundResults}
           score={score}
-          onExit={() => { window.location.href = "/home"; }}
+          onExit={() => router.push("/home")}
         />
       )}
     </div>

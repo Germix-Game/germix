@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MenuButtons } from "@/components/menu/MenuButtons";
 import { createClient } from "@/utils/supabase/client";
+import { HOME_CRITICAL_ASSETS } from "@/lib/preload-images";
 
 // ─── Card layout data ─────────────────────────────────────────────────────────
 // Positions are percentages of the 1280×720 reference canvas used in the original
@@ -60,9 +61,7 @@ const CARDS: CardDef[] = [
 ];
 
 const PRELOAD_ASSETS = [
-  "/assets/backgrounds/main_page_background.png",
-  "/assets/ui/game-logo.png",
-  "/assets/ui/main-page-element-bg.png",
+  ...HOME_CRITICAL_ASSETS,
   ...CARDS.map((c) => c.src),
 ];
 

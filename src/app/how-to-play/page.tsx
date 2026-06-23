@@ -21,15 +21,16 @@ export default function HowToPlayPage() {
       className={`${alice.className} min-h-screen w-full bg-cover bg-center px-4 py-8`}
       style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
     >
+      <Link
+        href="/home"
+        className="fixed left-4 top-4 z-20 flex h-9 items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
+      >
+        ← Back
+      </Link>
+
       <div className="mx-auto max-w-2xl">
         {/* Header */}
-        <div className="mb-6 flex items-center gap-4">
-          <Link
-            href="/home"
-            className="flex h-9 items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
-          >
-            ← Back
-          </Link>
+        <div className="mb-6 text-center">
           <h1
             className="text-2xl font-bold tracking-wide text-[#d4a96a]"
             style={{ fontFamily: "'Impact','Arial Black',sans-serif" }}
