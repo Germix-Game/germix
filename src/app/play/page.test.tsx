@@ -11,6 +11,12 @@ vi.mock('animejs', () => ({
   spring: vi.fn(() => ({ settlingDuration: 500 })),
 }))
 
+// PlayPage isn't rendered under Next's App Router in these tests — stub the
+// hook so the prefetch-on-mount call doesn't throw "app router not mounted".
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), prefetch: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+}))
+
 import { render, screen, within, fireEvent, waitFor, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import PlayPage from './page'
