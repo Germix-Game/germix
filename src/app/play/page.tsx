@@ -164,6 +164,14 @@ export default function PlayPage() {
       return; // exit early — don't try to load a real session
     }
 
+    // NEW GAME branch — arrived from /select with ?mode=... — create the
+    // session here so the wait happens on this loading screen, not on /select.
+    const mode = params.get("mode");
+    if (mode) {
+      void startNewSession(mode);
+      return;
+    }
+
     // REAL MODE branch — get session ID from browser's localStorage
     // localStorage persists across page reloads (until cleared).
     const id = localStorage.getItem("currentSessionId");
@@ -174,6 +182,26 @@ export default function PlayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     // ↑ The lint rule wants `fetchSession` in deps, but we only want this to run once on mount, so we silence it.
   }, []);
+
+  // Create a brand-new session for the chosen game mode, then load it the
+  // same way an existing session would be resumed.
+  async function startNewSession(gameMode: string) {
+    try {
+      const res = await fetch("/api/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameMode }),
+      });
+      if (!res.ok) { setPhase("error"); return; }
+      const session = await res.json();
+      localStorage.setItem("currentSessionId", session.id);
+      setSessionId(session.id);
+      void startCardsFetch(session.id);
+      void fetchSession(session.id);
+    } catch {
+      setPhase("error");
+    }
+  }
 
   // Fetch session data from the backend
   // `async` makes the function return a Promise; `await` pauses until a Promise resolves.
