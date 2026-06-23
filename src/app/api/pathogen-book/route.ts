@@ -3,7 +3,13 @@ import { prisma } from '@/lib/prisma'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import type { GameMode } from '@prisma/client'
 
-const VALID_MODES = new Set<string>(['BACTERIA', 'FUNGI', 'PARASITES', 'VIRUS'])
+// 'PARASITE' (singular) is the real Prisma GameMode enum value and the only
+// spelling any first-party caller sends (see src/types/game.ts). 'PARASITES'
+// is kept here purely as a defensive alias for any stray/cached caller still
+// using the old plural — both must resolve to the same filter, or whichever
+// spelling is "wrong" silently gets every microbe across all modes instead of
+// just the one it asked for.
+const VALID_MODES = new Set<string>(['BACTERIA', 'FUNGI', 'PARASITE', 'PARASITES', 'VIRUS'])
 
 const MODE_MAP: Record<string, string> = { PARASITES: 'PARASITE' }
 

@@ -28,6 +28,7 @@ import type {
   MicrobeTag,         // enum of tags like "AEROBE", "SPORE_FORMER"
   GramType,           // enum: "POSITIVE" | "NEGATIVE" | "ACID_FAST"
   RoundResult,        // shape of one round's outcome (for end-screen recap)
+  GameMode,           // enum: "BACTERIA" | "FUNGI" | "PARASITE" | "VIRUS"
 } from "@/types/game";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -107,7 +108,7 @@ export default function PlayPage() {
   const [heartsLeft, setHeartsLeft] = useState(3);                   // lives remaining (start at 3)
   const [score, setScore] = useState(0);                             // total score across all rounds
   const [round, setRound] = useState(1);                             // current round number (1-indexed)
-  const [gameMode, setGameMode] = useState("BACTERIA");              // "BACTERIA" | future modes
+  const [gameMode, setGameMode] = useState<GameMode>("BACTERIA");    // current game mode
   const [isSubmitting, setIsSubmitting] = useState(false);           // true while an answer fetch is in-flight (prevents double-submit)
   const [cardsReady, setCardsReady] = useState(false);               // false while pre-fetching card data — cards are unclickable until true
 
@@ -200,7 +201,7 @@ export default function PlayPage() {
   }
 
   // Fetch the list of microbes (answer choices) for the current game mode
-  async function fetchMicrobes(mode: string) {
+  async function fetchMicrobes(mode: GameMode) {
     try {
       const res = await fetch(`/api/pathogen-book?gameMode=${mode}`);
       if (!res.ok) return;

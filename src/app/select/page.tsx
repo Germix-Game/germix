@@ -1,13 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import type { GameMode } from "@/types/game";
+
+// Shape of GET /api/game-modes — see src/app/api/game-modes/route.ts
+interface GameModesResponse {
+  posttestRequired: boolean;
+  parasite: { unlocked: boolean; unlocksAt: string | null };
+}
 
 export default function LevelSelectPage() {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
+  const [modes, setModes] = useState<GameModesResponse | null>(null);
 
-  async function handleSelect(gameMode: string) {
+  useEffect(() => {
+    fetch("/api/game-modes")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then(setModes)
+      .catch(() => {
+        // Fail open on bacteria, fail closed on parasite — see render logic below.
+      });
+  }, []);
+
+  // A post-test window blocks every mode (including bacteria) until submitted.
+  // Parasite additionally needs its own unlock date to have passed.
+  const bacteriaLocked = !!modes?.posttestRequired;
+  const parasiteLocked = !modes || modes.posttestRequired || !modes.parasite.unlocked;
+  const parasiteUnlocksAt =
+    modes && !modes.posttestRequired && !modes.parasite.unlocked && modes.parasite.unlocksAt
+      ? new Date(modes.parasite.unlocksAt).toLocaleDateString()
+      : null;
+
+  async function handleSelect(gameMode: GameMode) {
     if (starting) return;
     setStarting(true);
     try {
@@ -51,22 +77,51 @@ export default function LevelSelectPage() {
         src="/assets/game-selection/bateria_level.png"
         alt="Bacteria"
         draggable={false}
-        onClick={() => handleSelect("BACTERIA")}
+        onClick={() => { if (!bacteriaLocked) handleSelect("BACTERIA"); }}
         className={`absolute select-none transition-transform duration-200 ${
-          starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
+          starting || bacteriaLocked
+            ? "cursor-not-allowed opacity-50"
+            : "cursor-pointer hover:scale-105"
         }`}
         style={{ top: "2%", left: "12%", width: "37vw" }}
       />
 
-      {/* Parasite level button — bottom-right (locked) */}
+      {/* Parasite level button — bottom-right */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/assets/game-selection/parasite_level.png"
         alt="Parasites"
         draggable={false}
-        className="absolute select-none cursor-not-allowed grayscale opacity-50 transition-transform duration-200"
+        onClick={() => { if (!parasiteLocked) handleSelect("PARASITE"); }}
+        className={`absolute select-none transition-transform duration-200 ${
+          starting || parasiteLocked
+            ? "cursor-not-allowed grayscale opacity-50"
+            : "cursor-pointer hover:scale-105"
+        }`}
         style={{ bottom: "2%", right: "12%", width: "37vw" }}
       />
+      {parasiteUnlocksAt && (
+        <p
+          className="absolute select-none text-xs font-medium"
+          style={{ bottom: "1%", right: "14%", color: "#c8a060", fontFamily: "Arial, sans-serif" }}
+        >
+          Unlocks {parasiteUnlocksAt}
+        </p>
+      )}
+
+      {modes?.posttestRequired && (
+        <div
+          className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-xl border px-5 py-2.5 text-center text-sm"
+          style={{
+            background: "rgba(61, 26, 10, 0.9)",
+            borderColor: "rgba(196, 168, 112, 0.8)",
+            color: "#f5e6c8",
+            fontFamily: "Arial, sans-serif",
+          }}
+        >
+          A post-test is required before you can play again. Please complete it first.
+        </div>
+      )}
 
       {/* Back button — top-left */}
       <button

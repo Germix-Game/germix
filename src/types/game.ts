@@ -1,3 +1,8 @@
+// Canonical game-mode values — must match Prisma's GameMode enum exactly
+// (prisma/schema.prisma). Single source of truth so call sites can't drift
+// into aliases like "PARASITES" (plural) that the backend doesn't recognize.
+export type GameMode = "BACTERIA" | "FUNGI" | "PARASITE" | "VIRUS";
+
 export type CardCategory =
   | "GRAM_STAIN"
   | "VIRULENCE_FACTOR"
@@ -42,7 +47,7 @@ export interface SessionState {
   currentRound: number;
   totalScore: number;
   completed: boolean;
-  gameMode: string;
+  gameMode: GameMode;
   slots: CardSlotState[];
 }
 

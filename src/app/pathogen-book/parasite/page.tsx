@@ -3,7 +3,7 @@ import { PathogenBookLayout } from "@/components/pathogen-book/PathogenBookLayou
 export default function ParasiteBookPage() {
   return (
     <PathogenBookLayout
-      gameMode="PARASITES"
+      gameMode="PARASITE"
       backgroundSrc="/assets/pathogen-book/parasite.png"
     />
   );

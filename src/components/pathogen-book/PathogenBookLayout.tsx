@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Alice } from "next/font/google";
+import type { GameMode } from "@/types/game";
 
 const alice = Alice({ weight: "400", subsets: ["latin"] });
 
@@ -28,8 +29,6 @@ type ClueCardEntry = {
   sortOrder: number;
 };
 
-type GameMode = "BACTERIA" | "FUNGI" | "PARASITES" | "VIRUS";
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 // DB stores paths without the /assets/ prefix (e.g. "cards/answers/bacteria/foo.png").
@@ -44,7 +43,7 @@ function resolveImageSrc(url: string): string {
 
 const TABS: { mode: GameMode; href: string; label: string }[] = [
   { mode: "BACTERIA", href: "/pathogen-book/bacteria", label: "Bacteria" },
-  { mode: "PARASITES", href: "/pathogen-book/parasite", label: "Parasite" },
+  { mode: "PARASITE", href: "/pathogen-book/parasite", label: "Parasite" },
   { mode: "FUNGI",    href: "/pathogen-book/fungi",    label: "Fungi"    },
   { mode: "VIRUS",    href: "/pathogen-book/virus",    label: "Virus"    },
 ];
