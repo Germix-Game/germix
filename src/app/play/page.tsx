@@ -9,6 +9,7 @@
 // useCallback → memoize a function so it doesn't get recreated every render (perf optimization)
 import { useState, useEffect, useCallback, useRef, type RefObject } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createAnimatable, spring } from "animejs";
 
 // Import game UI components from the components folder
@@ -17,6 +18,7 @@ import { CardGrid } from "@/components/game/CardGrid";
 import { HeartsBar } from "@/components/game/HeartsBar";
 import { ScoreBar } from "@/components/game/ScoreBar";
 import { useScaleToFit } from "@/hooks/useScaleToFit";
+import { HOME_CRITICAL_ASSETS, preloadImages } from "@/lib/preload-images";
 
 // `import type` → imports ONLY TypeScript types (erased at build time, zero runtime cost)
 // These types describe the shape of game data — defined in src/types/game.ts
@@ -144,6 +146,15 @@ export default function PlayPage() {
   const [won, setWon] = useState(false);                               // did the player win or lose?
 
   const { containerRef, contentRef, scale } = useScaleToFit();
+  const router = useRouter();
+
+  // Warm up the route the player will land on when they exit (back button,
+  // "Exit" confirm, or game-over) — prefetch the page chunk and its background
+  // art now, while they're busy playing, so /home doesn't load from scratch.
+  useEffect(() => {
+    router.prefetch("/home");
+    preloadImages(HOME_CRITICAL_ASSETS);
+  }, [router]);
 
   // ── bootstrap ────────────────────────────────────────────────────────────
   // useEffect runs AFTER the component renders. With `[]` deps, it runs ONCE on mount.
@@ -906,7 +917,7 @@ export default function PlayPage() {
           won={won}
           results={roundResults}
           score={score}
-          onExit={() => { window.location.href = "/home"; }}
+          onExit={() => router.push("/home")}
         />
       )}
     </div>
