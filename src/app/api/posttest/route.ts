@@ -28,48 +28,26 @@ export async function GET() {
     })
     const submitted = submission !== null
 
-    if (submitted && submission) {
-      const questions = await prisma.postTestQuestion.findMany({
-        where: { period },
-        orderBy: { sortOrder: 'asc' },
-      })
-      const questionsWithAnswers = questions.map((q, idx) => ({
+    const questions = await prisma.postTestQuestion.findMany({
+      where: { period },
+      orderBy: { sortOrder: 'asc' },
+      select: {
+        id: true,
+        body: true,
+        options: true,
+      },
+    })
+
+    return Response.json({
+      enabled: true,
+      period,
+      submitted,
+      questions: questions.map(q => ({
         id: q.id,
         body: q.body,
         options: q.options,
-        correctOption: q.correctOption,
-        submittedAnswer: submission.answers[idx] || null,
-      }))
-
-      return Response.json({
-        enabled: true,
-        period,
-        submitted: true,
-        score: submission.score,
-        questions: questionsWithAnswers,
-      })
-    } else {
-      const questions = await prisma.postTestQuestion.findMany({
-        where: { period },
-        orderBy: { sortOrder: 'asc' },
-        select: {
-          id: true,
-          body: true,
-          options: true,
-        },
-      })
-
-      return Response.json({
-        enabled: true,
-        period,
-        submitted: false,
-        questions: questions.map(q => ({
-          id: q.id,
-          body: q.body,
-          options: q.options,
-        })),
-      })
-    }
+      })),
+    })
   } catch (e) {
     if (e instanceof Response) return e
     throw e

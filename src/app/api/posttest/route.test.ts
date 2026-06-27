@@ -198,10 +198,9 @@ describe('GET /api/posttest', () => {
     expect(body.period).toBe(PostTestPeriod.MIDTERM)
     expect(body.submitted).toBe(false)
     expect(body.questions).toHaveLength(3)
-    expect(body.questions[0]).not.toHaveProperty('correctOption')
   })
 
-  it('sets submitted to true if user has submission and returns correctOption + submittedAnswer', async () => {
+  it('sets submitted to true if user has submission', async () => {
     vi.mocked(prisma.postTest.findUnique).mockResolvedValue({
       id: 'submission-1',
       score: 2,
@@ -210,12 +209,8 @@ describe('GET /api/posttest', () => {
     const res = await GET()
     const body = await res.json()
     expect(body.submitted).toBe(true)
-    expect(body.score).toBe(2)
     expect(body.questions).toHaveLength(3)
-    expect(body.questions[0]).toHaveProperty('correctOption')
-    expect(body.questions[0].correctOption).toBe(AnswerOption.A)
-    expect(body.questions[0].submittedAnswer).toBe(AnswerOption.A)
-    expect(body.questions[1].submittedAnswer).toBe(AnswerOption.D)
+    expect(body.questions[0]).not.toHaveProperty('correctOption')
   })
 })
 

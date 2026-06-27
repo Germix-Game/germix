@@ -270,24 +270,15 @@ export default function HomePage() {
             posttestRequired={posttestRequired}
             onPlayClick={() => setShowPosttestPopup(true)}
           />
-          {posttestEnabled ? (
+          {posttestEnabled && posttestRequired && (
             <button
               onClick={() => setShowPosttestPopup(true)}
               className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-4 text-xs font-semibold tracking-wide text-[#f5e6c8] shadow hover:bg-[#3d1a0a] transition-colors cursor-pointer select-none"
-              title={posttestRequired ? "Complete the post-test" : "Post-test completed"}
+              title="Complete the post-test"
             >
-              <span>{posttestRequired ? "📝" : "✓"}</span>
+              <span>📝</span>
               <span>POST TEST {posttestPeriod ? `(${posttestPeriod})` : ""}</span>
             </button>
-          ) : (
-            <div
-              className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-4 text-xs font-semibold tracking-wide text-[#6b5040] shadow cursor-not-allowed select-none"
-              aria-disabled="true"
-              title="Post test is not yet available"
-            >
-              <span>🔒</span>
-              <span>POST TEST</span>
-            </div>
           )}
         </div>
 
