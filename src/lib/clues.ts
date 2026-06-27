@@ -9,10 +9,25 @@ const SLOT_CATEGORIES: CardCategory[][] = [
   ['CLINICAL_MANIFESTATION'],   // slot 4 — Diseases + key clinical clues
 ]
 
-// One clue card per group, in FIXED slot order (length 5) — each category always
-// sits in the same slot (e.g. special trait is always slot 3). Within a group,
-// which specific clue shows is still picked at random per round.
-// null if microbe lacks a group.
+type WithCategory = { clueCard: { category: CardCategory } }
+
+// Map a microbe's clues (sorted by sortOrder) onto the fixed slot layout: one
+// clue per slot, in FIXED slot order, picking the first candidate (lowest
+// sortOrder) within each category group. Pure and DETERMINISTIC — the same input
+// always yields the same slot→clue mapping. This is what guarantees the cards the
+// player sees (/cards) match the card that gets revealed/graded (/reveal): both
+// routes run this over the same sortOrder-sorted clue list. null if the microbe
+// lacks a category group.
+export function selectSlotClues<T extends WithCategory>(cluesSortedByOrder: T[]): (T | null)[] {
+  return SLOT_CATEGORIES.map((group) => {
+    const candidates = cluesSortedByOrder.filter((mc) => group.includes(mc.clueCard.category))
+    return candidates[0] ?? null
+  })
+}
+
+// One clue card per slot, in fixed slot order (length 5). null if microbe lacks
+// a group. Shared by the cards route; the reveal route maps its already-joined
+// clues with selectSlotClues directly so the two stay in lockstep.
 export async function getRoundClues(microbeId: string) {
   const all = await prisma.microbeClue.findMany({
     where: { microbeId },
@@ -20,9 +35,5 @@ export async function getRoundClues(microbeId: string) {
     include: { clueCard: true },
   })
 
-  return SLOT_CATEGORIES.map((group) => {
-    const candidates = all.filter((mc) => group.includes(mc.clueCard.category))
-    if (candidates.length === 0) return null
-    return candidates[Math.floor(Math.random() * candidates.length)]
-  })
+  return selectSlotClues(all)
 }
