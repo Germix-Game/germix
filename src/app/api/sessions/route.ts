@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { createSessionSchema } from '@/lib/schemas/sessions'
 import { TOTAL_MICROBES, formatSession } from '@/lib/sessions'
+import { PostTestPeriod } from '@prisma/client'
 
 function shuffle<T>(array: T[]): T[] {
   const arr = [...array]
@@ -17,7 +18,27 @@ export async function POST(request: NextRequest) {
   try {
     const player = await requireAuth()
 
+    // ── Posttest Lockout Security Check ──────────────────────────────────────
+    const configs = await prisma.config.findMany()
+    const configMap = new Map(configs.map(c => [c.key, c.value]))
+    const posttestEnabledVal = configMap.get('posttest_enabled')
+    const posttestPeriodVal = configMap.get('posttest_period')
+
+    if (posttestEnabledVal === 'true' && posttestPeriodVal) {
+      const period = posttestPeriodVal.toUpperCase() === 'FINAL'
+        ? PostTestPeriod.FINAL
+        : PostTestPeriod.MIDTERM
+
+      const submission = await prisma.postTest.findUnique({
+        where: { playerId_period: { playerId: player.id, period } },
+      })
+      if (!submission) {
+        return Response.json({ error: 'Post-test required before playing' }, { status: 403 })
+      }
+    }
+
     let body: unknown
+
     try {
       body = await request.json()
     } catch {

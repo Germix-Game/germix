@@ -3,7 +3,8 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     postTestQuestion: { findMany: vi.fn() },
-    postTest: { create: vi.fn() },
+    postTest: { create: vi.fn(), findUnique: vi.fn() },
+    config: { findMany: vi.fn() },
   },
 }))
 
@@ -13,7 +14,7 @@ vi.mock('@/lib/auth', () => ({
 
 import { NextRequest } from 'next/server'
 import { Prisma } from '@prisma/client'
-import { POST } from './route'
+import { POST, GET } from './route'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { PostTestPeriod, AnswerOption } from '@prisma/client'
@@ -165,3 +166,56 @@ describe('POST /api/posttest', () => {
     })
   })
 })
+
+describe('GET /api/posttest', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(requireAuth).mockResolvedValue(mockPlayer as never)
+    vi.mocked(prisma.config.findMany).mockResolvedValue([
+      { key: 'posttest_enabled', value: 'true' },
+      { key: 'posttest_period', value: 'midterm' },
+    ])
+    vi.mocked(prisma.postTestQuestion.findMany).mockResolvedValue(mockQuestions as never)
+    vi.mocked(prisma.postTest.findUnique).mockResolvedValue(null)
+  })
+
+  it('returns disabled when config posttest_enabled is false', async () => {
+    vi.mocked(prisma.config.findMany).mockResolvedValue([
+      { key: 'posttest_enabled', value: 'false' },
+      { key: 'posttest_period', value: 'midterm' },
+    ])
+
+    const res = await GET()
+    const body = await res.json()
+    expect(body.enabled).toBe(false)
+    expect(body.questions).toEqual([])
+  })
+
+  it('returns questions for active period and submitted status', async () => {
+    const res = await GET()
+    const body = await res.json()
+    expect(body.enabled).toBe(true)
+    expect(body.period).toBe(PostTestPeriod.MIDTERM)
+    expect(body.submitted).toBe(false)
+    expect(body.questions).toHaveLength(3)
+    expect(body.questions[0]).not.toHaveProperty('correctOption')
+  })
+
+  it('sets submitted to true if user has submission and returns correctOption + submittedAnswer', async () => {
+    vi.mocked(prisma.postTest.findUnique).mockResolvedValue({
+      id: 'submission-1',
+      score: 2,
+      answers: [AnswerOption.A, AnswerOption.D, AnswerOption.C],
+    } as never)
+    const res = await GET()
+    const body = await res.json()
+    expect(body.submitted).toBe(true)
+    expect(body.score).toBe(2)
+    expect(body.questions).toHaveLength(3)
+    expect(body.questions[0]).toHaveProperty('correctOption')
+    expect(body.questions[0].correctOption).toBe(AnswerOption.A)
+    expect(body.questions[0].submittedAnswer).toBe(AnswerOption.A)
+    expect(body.questions[1].submittedAnswer).toBe(AnswerOption.D)
+  })
+})
+
