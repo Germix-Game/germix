@@ -1,0 +1,2211 @@
+{
+  "parasiteAnswers": [
+    {
+      "id": "cmqay5wh30000ti64z8rnl84k",
+      "name": "Cryptosporidium parvum",
+      "answerImageUrl": "cards/answers/parasite/79.png"
+    },
+    {
+      "id": "cmqaybcpe0001ti64ov2ycffj",
+      "name": "Cystoisospora belli",
+      "answerImageUrl": "cards/answers/parasite/80.png"
+    },
+    {
+      "id": "cmqayd5lp0002ti644dtbaugd",
+      "name": "Cyclospora cayetanensis",
+      "answerImageUrl": "cards/answers/parasite/78.png"
+    },
+    {
+      "id": "cmqayf6i40003ti645lt3tnzh",
+      "name": "Toxoplasma gondii",
+      "answerImageUrl": "cards/answers/parasite/81.png"
+    },
+    {
+      "id": "cmqaygvy90004ti64euned7v1",
+      "name": "Plasmodium falciparum",
+      "answerImageUrl": "cards/answers/parasite/82.png"
+    },
+    {
+      "id": "cmqayij6l0005ti64t83dejy4",
+      "name": "Plasmodium vivax",
+      "answerImageUrl": "cards/answers/parasite/83.png"
+    },
+    {
+      "id": "cmqayk8xj0006ti64zqma7g9m",
+      "name": "Plasmodium malariae",
+      "answerImageUrl": "cards/answers/parasite/85.png"
+    },
+    {
+      "id": "cmqaylf9p0007ti64h2bvef1q",
+      "name": "Plasmodium ovale",
+      "answerImageUrl": "cards/answers/parasite/84.png"
+    },
+    {
+      "id": "cmqaymtz80008ti64ich8odlt",
+      "name": "Plasmodium knowlesi",
+      "answerImageUrl": "cards/answers/parasite/86.png"
+    },
+    {
+      "id": "cmqaynzoy0009ti64t58jd6c7",
+      "name": "Giardia duodenalis",
+      "answerImageUrl": "cards/answers/parasite/87.png"
+    },
+    {
+      "id": "cmqaypfiz000ati64u45r9mhi",
+      "name": "Trichomonas vaginalis",
+      "answerImageUrl": "cards/answers/parasite/88.png"
+    },
+    {
+      "id": "cmqayra89000bti64lcw52yoh",
+      "name": "Leishmania spp.",
+      "answerImageUrl": "cards/answers/parasite/89.png"
+    },
+    {
+      "id": "cmqaysma2000cti64isasxa65",
+      "name": "African Trypanosoma spp.",
+      "answerImageUrl": "cards/answers/parasite/90.png"
+    },
+    {
+      "id": "cmqayu4kq000dti64wtp6n96f",
+      "name": "American Trypanosoma",
+      "answerImageUrl": "cards/answers/parasite/91.png"
+    },
+    {
+      "id": "cmqayviu3000eti64chua6fo5",
+      "name": "Entamoeba histolytica",
+      "answerImageUrl": "cards/answers/parasite/92.png"
+    },
+    {
+      "id": "cmqaywqqq000fti648g21e9n7",
+      "name": "Naegleria fowleri",
+      "answerImageUrl": "cards/answers/parasite/93.png"
+    },
+    {
+      "id": "cmqayy3ba000gti64t9h1g7ag",
+      "name": "Acanthamoeba spp.",
+      "answerImageUrl": "cards/answers/parasite/94.png"
+    },
+    {
+      "id": "cmqayzfam000hti64ne8jlv2l",
+      "name": "Balantidium coli",
+      "answerImageUrl": "cards/answers/parasite/95.png"
+    },
+    {
+      "id": "cmqaz1v1s000iti64tp6xmgxl",
+      "name": "Paragonimus westermani",
+      "answerImageUrl": "cards/answers/parasite/96.png"
+    },
+    {
+      "id": "cmqaz3ayr000jti64qwwuejjo",
+      "name": "Opisthorchis viverrini",
+      "answerImageUrl": "cards/answers/parasite/97.png"
+    },
+    {
+      "id": "cmqaz62av000lti64dixt51tr",
+      "name": "Fasciolopsis buski",
+      "answerImageUrl": "cards/answers/parasite/99.png"
+    },
+    {
+      "id": "cmqaz7tn2000mti6480mjqpts",
+      "name": "Schistosoma mansoni",
+      "answerImageUrl": "cards/answers/parasite/100.png"
+    },
+    {
+      "id": "cmqaz9g9f000nti64jq15n66a",
+      "name": "Schistosoma japonicum",
+      "answerImageUrl": "cards/answers/parasite/101.png"
+    },
+    {
+      "id": "cmqazax8f000oti64f7btdtf0",
+      "name": "Schistosoma haematobium",
+      "answerImageUrl": "cards/answers/parasite/102.png"
+    },
+    {
+      "id": "cmqazg5va000qti64lv67h8v8",
+      "name": "Schistosoma mekongi",
+      "answerImageUrl": "cards/answers/parasite/103.png"
+    },
+    {
+      "id": "cmqazhwae000rti64pyngv1lv",
+      "name": "Taenia saginata",
+      "answerImageUrl": "cards/answers/parasite/104.png"
+    },
+    {
+      "id": "cmqazjt31000sti64ks5qxgo0",
+      "name": "Taenia solium",
+      "answerImageUrl": "cards/answers/parasite/105.png"
+    },
+    {
+      "id": "cmqazl6sq000tti6476t5gzea",
+      "name": "Diphyllobothrium latum",
+      "answerImageUrl": "cards/answers/parasite/106.png"
+    },
+    {
+      "id": "cmqazo6u7000uti6405e2yzxf",
+      "name": "Enterobius vermicularis",
+      "answerImageUrl": "cards/answers/parasite/108.png"
+    },
+    {
+      "id": "cmqazph5f000vti64d6tg3qpn",
+      "name": "Trichuris trichiura",
+      "answerImageUrl": "cards/answers/parasite/109.png"
+    },
+    {
+      "id": "cmqazr59f000wti64xdlyen8r",
+      "name": "Capillaria philippinensis",
+      "answerImageUrl": "cards/answers/parasite/110.png"
+    },
+    {
+      "id": "cmqazslp1000xti64ofc623dc",
+      "name": "Ascaris lumbricoides",
+      "answerImageUrl": "cards/answers/parasite/111.png"
+    },
+    {
+      "id": "cmqazu74c000yti64d0an2hnm",
+      "name": "Ancylostoma duodenale",
+      "answerImageUrl": "cards/answers/parasite/113.png"
+    },
+    {
+      "id": "cmqazvdnp000zti64wk7gabzy",
+      "name": "Necator americanus",
+      "answerImageUrl": "cards/answers/parasite/112.png"
+    },
+    {
+      "id": "cmqazwyuc0010ti64hj42au1a",
+      "name": "Strongyloides stercoralis",
+      "answerImageUrl": "cards/answers/parasite/116.png"
+    },
+    {
+      "id": "cmqazytir0011ti647krovbp9",
+      "name": "Wuchereria bancrofti",
+      "answerImageUrl": "cards/answers/parasite/117.png"
+    },
+    {
+      "id": "cmqb00es40012ti64xdxc3ue9",
+      "name": "Brugia malayi",
+      "answerImageUrl": "cards/answers/parasite/118.png"
+    },
+    {
+      "id": "cmqb01ptj0013ti64csngix9j",
+      "name": "Trichinella spiralis",
+      "answerImageUrl": "cards/answers/parasite/119.png"
+    },
+    {
+      "id": "cmqb02vjz0014ti649tl6udu8",
+      "name": "Angiostrongylus cantonensis",
+      "answerImageUrl": "cards/answers/parasite/120.png"
+    },
+    {
+      "id": "cmqb0536p0015ti64sjhoibd8",
+      "name": "Gnathostoma spinigerum",
+      "answerImageUrl": "cards/answers/parasite/121.png"
+    },
+    {
+      "id": "cmqaz4xyt000kti64ik660csn",
+      "name": "Fasciola hepatica",
+      "answerImageUrl": "cards/answers/parasite/98.png"
+    }
+  ],
+  "clueCards": [
+    {
+      "id": "cmpwuqitu0000tis4xn9pmuqj",
+      "label": "Golden pigment produced on blood agar",
+      "imageUrl": "cards/clues/special-trait/golden-pigment.png"
+    },
+    {
+      "id": "cmpwusysl0001tis4xwokzrra",
+      "label": "Pathogen is skin normal flora",
+      "imageUrl": "cards/clues/special-trait/skin-normal-flora.png"
+    },
+    {
+      "id": "cmpwutszl0002tis49pccflah",
+      "label": "Contaminant from skin",
+      "imageUrl": "cards/clues/special-trait/skin-contaminant.png"
+    },
+    {
+      "id": "cmpwuvrs60003tis4omb3tkci",
+      "label": "Infection related to implanted Prosthetic material",
+      "imageUrl": "cards/clues/special-trait/prosthetic-material.png"
+    },
+    {
+      "id": "cmpwuy8m20004tis4yj62c1m0",
+      "label": "Increased risk in young sexually active women",
+      "imageUrl": "cards/clues/special-trait/young-sexually-active-women.png"
+    },
+    {
+      "id": "cmpwv0nh10005tis42cjrx3wr",
+      "label": "Undetectable capsule in lab report",
+      "imageUrl": "cards/clues/special-trait/undetectable-capsule.png"
+    },
+    {
+      "id": "cmpwv1jcp0006tis4rt3z0m67",
+      "label": "Trigger immune sequelae",
+      "imageUrl": "cards/clues/special-trait/trigger-immune-sequelae.png"
+    },
+    {
+      "id": "cmpwv28qm0007tis4uqw53yhh",
+      "label": "Colonizes in vagina / GI",
+      "imageUrl": "cards/clues/special-trait/colonizes-vagina-gi.png"
+    },
+    {
+      "id": "cmpwv4kvv0008tis4l1lfw899",
+      "label": "Cause neonatal disease",
+      "imageUrl": "cards/clues/special-trait/neonatal-disease.png"
+    },
+    {
+      "id": "cmpwv67ja0009tis4pk9jrm0n",
+      "label": "Increased risk in asplenic patient",
+      "imageUrl": "cards/clues/special-trait/asplenic.png"
+    },
+    {
+      "id": "cmpwv7qqo000atis49wnubudi",
+      "label": "Pathogen is GI normal flora",
+      "imageUrl": "cards/clues/special-trait/gi-normal-flora.png"
+    },
+    {
+      "id": "cmpwv9onc000btis4o7snkg7p",
+      "label": "Food poisoning from rice",
+      "imageUrl": "cards/clues/special-trait/food-poisoning-rice.png"
+    },
+    {
+      "id": "cmpwvba3w000ctis4i9ikkt5q",
+      "label": "Non-spore, irregular staining organism",
+      "imageUrl": "cards/clues/special-trait/non-spore-irregular-staining.png"
+    },
+    {
+      "id": "cmpwverh7000dtis4iefjuolr",
+      "label": "Grey-ish leucorrhea with fishy odor",
+      "imageUrl": "cards/clues/special-trait/grey-ish-leucorrhea.png"
+    },
+    {
+      "id": "cmpwvfqyn000etis4yoy8hyvc",
+      "label": "Sexual Transmitted disease (STD)",
+      "imageUrl": "cards/clues/special-trait/std.png"
+    },
+    {
+      "id": "cmpwvjbgy000ftis4shd8doou",
+      "label": "Maintain low vaginal pH",
+      "imageUrl": "cards/clues/special-trait/maintain-low-vaginal-ph.png"
+    },
+    {
+      "id": "cmpwvkizs000gtis4hhgwpfo6",
+      "label": "Obligate aerobe",
+      "imageUrl": "cards/clues/special-trait/obligate-aerobe.png"
+    },
+    {
+      "id": "cmpwvl2mo000htis4nxztax3y",
+      "label": "Prefer infecting lung apex",
+      "imageUrl": "cards/clues/special-trait/prefer-infecting-lung-apex.png"
+    },
+    {
+      "id": "cmpwvmk9u000itis415a4lpl7",
+      "label": "Opportunistic infection (steroid-dependent / transplant patient)",
+      "imageUrl": "cards/clues/special-trait/opportunistic-infection.png"
+    },
+    {
+      "id": "cmpwvn178000jtis4neb2i5qm",
+      "label": "Found in soil",
+      "imageUrl": "cards/clues/special-trait/found-in-soil.png"
+    },
+    {
+      "id": "cmpwvoelk000ktis4hik56c53",
+      "label": "Increased risk in sexually unprotective patient",
+      "imageUrl": "cards/clues/special-trait/increased-risk-in-sexually-unprotective-patient.png"
+    },
+    {
+      "id": "cmpwvp001000ltis4su69xmyt",
+      "label": "Coffee bean shape under microscope",
+      "imageUrl": "cards/clues/special-trait/coffee-bean.png"
+    },
+    {
+      "id": "cmpwvqb47000mtis4upj0xf4y",
+      "label": "Increased risk in complement deficiency patient",
+      "imageUrl": "cards/clues/special-trait/increased-risk-in-complement-deficiency-patient.png"
+    },
+    {
+      "id": "cmpwvr04a000ntis4cmlaifud",
+      "label": "Waterhouse-Friderichsen syndrome",
+      "imageUrl": "cards/clues/special-trait/w-f-syndrome.png"
+    },
+    {
+      "id": "cmpwvt1aa000otis4qtrx0ao7",
+      "label": "High risk in COPD patient",
+      "imageUrl": "cards/clues/special-trait/copd.png"
+    },
+    {
+      "id": "cmpwvto3n000ptis4w7e2vwel",
+      "label": "Upper airway colonizer",
+      "imageUrl": "cards/clues/special-trait/upper-airway-colonizer.png"
+    },
+    {
+      "id": "cmpwvv5y7000qtis4lpa2zzpv",
+      "label": "Major UTI pathogen",
+      "imageUrl": "cards/clues/special-trait/uti.png"
+    },
+    {
+      "id": "cmpwvwl3y000rtis43gywrmgz",
+      "label": "Increased risk in DM patient",
+      "imageUrl": "cards/clues/special-trait/increased-risk-in-dm-patient.png"
+    },
+    {
+      "id": "cmpwvxwom000stis43kectoik",
+      "label": "Increased risk in alcoholism patient",
+      "imageUrl": "cards/clues/special-trait/increased-risk-in-alcoholism-patient.png"
+    },
+    {
+      "id": "cmpww8ypj000ttis4clqnhc5l",
+      "label": "Infected via rodent flea bites",
+      "imageUrl": "cards/clues/special-trait/flea-rodent.png"
+    },
+    {
+      "id": "cmpwwwtde000utis41wmuc7im",
+      "label": "Poultry / Eggs / Reptile reservoir",
+      "imageUrl": "cards/clues/special-trait/poultry-eggs-reptile.png"
+    },
+    {
+      "id": "cmpwwyimb000vtis4s54wzf24",
+      "label": "Person-to-person transmission",
+      "imageUrl": "cards/clues/special-trait/person-to-person.png"
+    },
+    {
+      "id": "cmpwwz7gt000wtis4t8spgett",
+      "label": "Widely spread in daycare",
+      "imageUrl": "cards/clues/special-trait/daycare.png"
+    },
+    {
+      "id": "cmpwx0l61000xtis4q1fbhnzk",
+      "label": "Water-borne (brackish/fresh)",
+      "imageUrl": "cards/clues/special-trait/water-borne.png"
+    },
+    {
+      "id": "cmpwx1w8v000ytis4lxbz5qnc",
+      "label": "Raw seafood (oyster)",
+      "imageUrl": "cards/clues/special-trait/raw-seafood-oyster.png"
+    },
+    {
+      "id": "cmpwx3o0d000ztis482j9jowg",
+      "label": "Seawater exposure",
+      "imageUrl": "cards/clues/special-trait/seawater.png"
+    },
+    {
+      "id": "cmpwx51bl0010tis4f9d1gkti",
+      "label": "High risk in patient with liver disease",
+      "imageUrl": "cards/clues/special-trait/high-risk-in-patient-liver-disease.png"
+    },
+    {
+      "id": "cmpwx6d4y0011tis41mevuug1",
+      "label": "Moist environments",
+      "imageUrl": "cards/clues/special-trait/moist-env.png"
+    },
+    {
+      "id": "cmpwx6z0b0012tis4ocjthnz5",
+      "label": "Multidrug Resistant",
+      "imageUrl": "cards/clues/special-trait/multidrug.png"
+    },
+    {
+      "id": "cmpwx84bn0013tis4rgpl7hg8",
+      "label": "Melioidosis",
+      "imageUrl": "cards/clues/special-trait/melioidosis.png"
+    },
+    {
+      "id": "cmpwx9jrd0014tis4kenbocyy",
+      "label": "ICU Ventilator-associated",
+      "imageUrl": "cards/clues/special-trait/icu.png"
+    },
+    {
+      "id": "cmpwxb6mg0015tis4iu1hh2ck",
+      "label": "School of fish appearance under microscope",
+      "imageUrl": "cards/clues/special-trait/school-of-fish.png"
+    },
+    {
+      "id": "cmpwxpb0g001atis479m7y28r",
+      "label": "Food-borne via unpasteurized milk",
+      "imageUrl": "cards/clues/special-trait/food-borne-unpasteurized-milk.png"
+    },
+    {
+      "id": "cmpwxqhqo001btis4aoqxrvbh",
+      "label": "Animal exposure (mainly goat, sheep)",
+      "imageUrl": "cards/clues/special-trait/animal-exposure.png"
+    },
+    {
+      "id": "cmpwxwuiw001ftis48n4x1t59",
+      "label": "Congenital infection",
+      "imageUrl": "cards/clues/special-trait/congenital.png"
+    },
+    {
+      "id": "cmpwxzakw001htis4fpbt9mq2",
+      "label": "Water exposure (Flood)",
+      "imageUrl": "cards/clues/special-trait/water-exposure.png"
+    },
+    {
+      "id": "cmpwy2rna001jtis4643sz6j3",
+      "label": "Infected person-to-person via respiratory tract",
+      "imageUrl": "cards/clues/special-trait/person-to-person-res.png"
+    },
+    {
+      "id": "cmpwy4tdv001ltis4z56rmmxq",
+      "label": "Causing trachoma",
+      "imageUrl": "cards/clues/special-trait/trachoma.png"
+    },
+    {
+      "id": "cmpwy6w7l001ntis4cbdl0pbw",
+      "label": "Atypical \"walking\" pneumonia",
+      "imageUrl": "cards/clues/special-trait/atypical-walking-pneumonia.png"
+    },
+    {
+      "id": "cmpxvnr590000ti70mr6rd743",
+      "label": "Water Diarrhea",
+      "imageUrl": "cards/clues/clinical-manifestation/18.png"
+    },
+    {
+      "id": "cmpxvnrf20001ti7082td2x7j",
+      "label": "Malnutrition",
+      "imageUrl": "cards/clues/clinical-manifestation/19.png"
+    },
+    {
+      "id": "cmpxvnrog0002ti70dzwzglcl",
+      "label": "Abdominal cramp",
+      "imageUrl": "cards/clues/clinical-manifestation/20.png"
+    },
+    {
+      "id": "cmpxvnrxu0003ti70xao8tndc",
+      "label": "Seizure",
+      "imageUrl": "cards/clues/clinical-manifestation/21.png"
+    },
+    {
+      "id": "cmpxvns790004ti70lm7j0txt",
+      "label": "Intermittent fever and shaking chills",
+      "imageUrl": "cards/clues/clinical-manifestation/22.png"
+    },
+    {
+      "id": "cmpxvnsgk0005ti700nznurmp",
+      "label": "Malaria",
+      "imageUrl": "cards/clues/clinical-manifestation/23.png"
+    },
+    {
+      "id": "cmpxvnspw0006ti70u0bs0m52",
+      "label": "Steatorrhea",
+      "imageUrl": "cards/clues/clinical-manifestation/24.png"
+    },
+    {
+      "id": "cmpxvnt050007ti70ew63ajzo",
+      "label": "Cervicitis",
+      "imageUrl": "cards/clues/clinical-manifestation/25.png"
+    },
+    {
+      "id": "cmpxvnt9i0008ti70sbindvd3",
+      "label": "Strawberry cervix",
+      "imageUrl": "cards/clues/clinical-manifestation/26.png"
+    },
+    {
+      "id": "cmps1te710015ti9oe10ofa1z",
+      "label": "Bipolar safety-pin stain",
+      "imageUrl": "cards/clues/lab-characteristic/bipolar-safety-pin-stain.png"
+    },
+    {
+      "id": "cmpwy8zn9001ptis4pbqkymhj",
+      "label": "Eat canned food/honey contamination",
+      "imageUrl": "cards/clues/special-trait/canned-food.png"
+    },
+    {
+      "id": "cmpwyb17h001qtis435do5ong",
+      "label": "Greater risk in Unvaccinated person",
+      "imageUrl": "cards/clues/special-trait/unvac.png"
+    },
+    {
+      "id": "cmpwycn4d001rtis4xi241yp9",
+      "label": "High risk in post-antibiotics patient",
+      "imageUrl": "cards/clues/special-trait/high-risk-in-post-antibiotics.png"
+    },
+    {
+      "id": "cmpwyfwsx001stis4mjbwqbmv",
+      "label": "Fresh water (lake) exposure",
+      "imageUrl": "cards/clues/special-trait/fresh-water-lake.png"
+    },
+    {
+      "id": "cmpwyij2n001utis4trbnmmdb",
+      "label": "Increased risk in patient with abnormal heart valve",
+      "imageUrl": "cards/clues/special-trait/abnormal-heart-valve.png"
+    },
+    {
+      "id": "cmpxvntiu0009ti70i6pe1ofk",
+      "label": "Cutaneous leishmaniasis",
+      "imageUrl": "cards/clues/clinical-manifestation/27.png"
+    },
+    {
+      "id": "cmpxvnts8000ati70hevwrmbt",
+      "label": "Mucocutaneous leishmaniasis",
+      "imageUrl": "cards/clues/clinical-manifestation/28.png"
+    },
+    {
+      "id": "cmpxvnu1k000bti70r6cwuwgw",
+      "label": "Visceral leishmaniasis",
+      "imageUrl": "cards/clues/clinical-manifestation/29.png"
+    },
+    {
+      "id": "cmpxvnuav000cti702b25u3tx",
+      "label": "Dum Dum fever",
+      "imageUrl": "cards/clues/clinical-manifestation/30.png"
+    },
+    {
+      "id": "cmpxvnuk9000dti70gv8qk41y",
+      "label": "Organ enlargement",
+      "imageUrl": "cards/clues/clinical-manifestation/31.png"
+    },
+    {
+      "id": "cmpxvnutk000eti7043zvytz8",
+      "label": "Pancytopenia",
+      "imageUrl": "cards/clues/clinical-manifestation/32.png"
+    },
+    {
+      "id": "cmpxvnv2w000fti70xb1rsio0",
+      "label": "Winterbottom's sign",
+      "imageUrl": "cards/clues/clinical-manifestation/33.png"
+    },
+    {
+      "id": "cmpxvnvc7000gti70h9l48c7l",
+      "label": "African sleeping sickness",
+      "imageUrl": "cards/clues/clinical-manifestation/34.png"
+    },
+    {
+      "id": "cmpxvnvlj000hti70dmrae5yr",
+      "label": "Chagas disease",
+      "imageUrl": "cards/clues/clinical-manifestation/35.png"
+    },
+    {
+      "id": "cmpxvnvuw000iti70e2cpzwh8",
+      "label": "Bloody diarrhea",
+      "imageUrl": "cards/clues/clinical-manifestation/36.png"
+    },
+    {
+      "id": "cmpxvnw4a000jti70kcqhuz41",
+      "label": "Dysentery",
+      "imageUrl": "cards/clues/clinical-manifestation/37.png"
+    },
+    {
+      "id": "cmpxvnwdp000kti70p68jszmo",
+      "label": "Liver abscess",
+      "imageUrl": "cards/clues/clinical-manifestation/38.png"
+    },
+    {
+      "id": "cmpxvnwn4000lti70bq72lhy7",
+      "label": "Primary amoebic meningocephalitis",
+      "imageUrl": "cards/clues/clinical-manifestation/39.png"
+    },
+    {
+      "id": "cmpxvnwwe000mti70zxg9s6ym",
+      "label": "Keratitis",
+      "imageUrl": "cards/clues/clinical-manifestation/40.png"
+    },
+    {
+      "id": "cmpxvnx5o000nti70s2onw8sw",
+      "label": "Hemoptysis",
+      "imageUrl": "cards/clues/clinical-manifestation/41.png"
+    },
+    {
+      "id": "cmpxvnxf0000oti706z61h62h",
+      "label": "Rusty coloered sputum",
+      "imageUrl": "cards/clues/clinical-manifestation/42.png"
+    },
+    {
+      "id": "cmpxvnxob000pti70ou1yx3d5",
+      "label": "Cholangitis",
+      "imageUrl": "cards/clues/clinical-manifestation/43.png"
+    },
+    {
+      "id": "cmpxvnxxm000qti70iwt80dz5",
+      "label": "Cholangiocarcinoma",
+      "imageUrl": "cards/clues/clinical-manifestation/44.png"
+    },
+    {
+      "id": "cmps1t47s0000ti9o8s51ozou",
+      "label": "Catalase Negative",
+      "imageUrl": "cards/clues/lab-characteristic/catalase-negative.png"
+    },
+    {
+      "id": "cmps1t4gr0001ti9o8thirlhr",
+      "label": "Coagulase Positive",
+      "imageUrl": "cards/clues/lab-characteristic/coagulase-positive.png"
+    },
+    {
+      "id": "cmps1t4ph0002ti9oev3a0xlg",
+      "label": "Novobiotin Resistant",
+      "imageUrl": "cards/clues/lab-characteristic/novobiotin-resistant.png"
+    },
+    {
+      "id": "cmps1t4y90003ti9oew7rku7c",
+      "label": "Growth in 6.5% NaCl",
+      "imageUrl": "cards/clues/lab-characteristic/growth-in-6-5-nacl.png"
+    },
+    {
+      "id": "cmps1t56x0004ti9o5vv9c4fe",
+      "label": "Growth in Acidic Environment",
+      "imageUrl": "cards/clues/lab-characteristic/growth-in-acidic-environment.png"
+    },
+    {
+      "id": "cmps1t5ft0005ti9oq4g4smt8",
+      "label": "Growth on Mannitol Salt Agar (MSA)",
+      "imageUrl": "cards/clues/lab-characteristic/growth-on-mannitol-salt-agar.png"
+    },
+    {
+      "id": "cmps1t5ok0006ti9oodavprj0",
+      "label": "Bile esculin Positive",
+      "imageUrl": "cards/clues/lab-characteristic/bile-esculin-positive.png"
+    },
+    {
+      "id": "cmps1t5x70007ti9o69snof53",
+      "label": "Colourless Colony on MacConkey Agar",
+      "imageUrl": "cards/clues/lab-characteristic/colourless-colony-on-macconkey-agar.png"
+    },
+    {
+      "id": "cmps1t65w0008ti9ozv25qb4f",
+      "label": "Growth on Thayer-Martin Agar",
+      "imageUrl": "cards/clues/lab-characteristic/growth-on-thayer-martin-agar.png"
+    },
+    {
+      "id": "cmps1t6em0009ti9o6c2wlo0q",
+      "label": "Green Colony on TCBS Agar",
+      "imageUrl": "cards/clues/lab-characteristic/green-colony-on-tcbs-agar.png"
+    },
+    {
+      "id": "cmps1t6nf000ati9o5jh7v2gq",
+      "label": "Yellow Colony on TCBS Agar",
+      "imageUrl": "cards/clues/lab-characteristic/yellow-colony-on-tcbs-agar.png"
+    },
+    {
+      "id": "cmps1t6w6000bti9ode302aw7",
+      "label": "Growth on Campy Agar",
+      "imageUrl": "cards/clues/lab-characteristic/growth-on-campy-agar.png"
+    },
+    {
+      "id": "cmps1t74w000cti9ojhsqnixy",
+      "label": "Growth on BCYE Agar",
+      "imageUrl": "cards/clues/lab-characteristic/growth-on-bcye-agar.png"
+    },
+    {
+      "id": "cmps1t7dk000dti9oc8s4a67e",
+      "label": "Slow growing",
+      "imageUrl": "cards/clues/lab-characteristic/slow-growing.png"
+    },
+    {
+      "id": "cmps1t7m8000eti9o38emmqa9",
+      "label": "Growth on Chocolate Agar + X & V factors",
+      "imageUrl": "cards/clues/lab-characteristic/growth-on-chocolate-agar.png"
+    },
+    {
+      "id": "cmps1t7v0000fti9ow58gpc1u",
+      "label": "Oxidase Positive",
+      "imageUrl": "cards/clues/lab-characteristic/oxidase-positive.png"
+    },
+    {
+      "id": "cmps1t83o000gti9o7rtf17s2",
+      "label": "Whiff test Positive",
+      "imageUrl": "cards/clues/lab-characteristic/whiff-test-positive.png"
+    },
+    {
+      "id": "cmps1t8cc000hti9ol9vkf27t",
+      "label": "H2S Positive",
+      "imageUrl": "cards/clues/lab-characteristic/h2s-positive.png"
+    },
+    {
+      "id": "cmps1t8l0000iti9o4xa4b21x",
+      "label": "H2S Negative",
+      "imageUrl": "cards/clues/lab-characteristic/h2s-negative.png"
+    },
+    {
+      "id": "cmps1t8tz000jti9ogsx0j2p9",
+      "label": "Urease Positive",
+      "imageUrl": "cards/clues/lab-characteristic/urease-positive.png"
+    },
+    {
+      "id": "cmps1t92n000kti9o22sv04s8",
+      "label": "Urease Negative",
+      "imageUrl": "cards/clues/lab-characteristic/urease-negative.png"
+    },
+    {
+      "id": "cmps1t9bc000lti9otn1x6nv4",
+      "label": "Chinese Alphabet Gram stain",
+      "imageUrl": "cards/clues/lab-characteristic/chinese-alphabet-gram-stain.png"
+    },
+    {
+      "id": "cmps1t9k2000mti9o737iqwuw",
+      "label": "Acid Fast Positive",
+      "imageUrl": "cards/clues/lab-characteristic/acid-fast-positive.png"
+    },
+    {
+      "id": "cmps1t9tm000nti9oy92vsqlq",
+      "label": "Modified Acid Fast Positive",
+      "imageUrl": "cards/clues/lab-characteristic/modified-acid-fast-positive.png"
+    },
+    {
+      "id": "cmps1ta2a000oti9o3pas9xdd",
+      "label": "Indole test Positive",
+      "imageUrl": "cards/clues/lab-characteristic/indole-test-positive.png"
+    },
+    {
+      "id": "cmps1tab0000pti9o73cmavxh",
+      "label": "Toxin detection from anaerobic culture",
+      "imageUrl": "cards/clues/lab-characteristic/toxin-detection-from-anaerobic-culture.png"
+    },
+    {
+      "id": "cmps1tajt000qti9onj3cnb97",
+      "label": "Use Nucleic Acid Amplification Test (NAAT) as a diagnostic test",
+      "imageUrl": "cards/clues/lab-characteristic/naat-diagnostic-test.png"
+    },
+    {
+      "id": "cmps1tasl000rti9owomf0zr0",
+      "label": "Use Polymerase Chain Reaction (PCR) as a diagnostic test",
+      "imageUrl": "cards/clues/lab-characteristic/pcr-diagnostic-test.png"
+    },
+    {
+      "id": "cmps1tb19000sti9ohil3k77v",
+      "label": "Catalase Positive",
+      "imageUrl": "cards/clues/lab-characteristic/catalase-positive.png"
+    },
+    {
+      "id": "cmps1tb9y000tti9od8di4jf3",
+      "label": "Coagulase Negative",
+      "imageUrl": "cards/clues/lab-characteristic/coagulase-negative.png"
+    },
+    {
+      "id": "cmps1tbio000uti9oew0v9q72",
+      "label": "Novobiotin Sensitive",
+      "imageUrl": "cards/clues/lab-characteristic/novobiotin-sensitive.png"
+    },
+    {
+      "id": "cmpxvny6y000rti70zsz4ru7j",
+      "label": "Pancreatitis",
+      "imageUrl": "cards/clues/clinical-manifestation/45.png"
+    },
+    {
+      "id": "cmpxvnyga000sti70zimg0xbb",
+      "label": "Cholecystitis",
+      "imageUrl": "cards/clues/clinical-manifestation/46.png"
+    },
+    {
+      "id": "cmpxvnypn000tti705l25lgpi",
+      "label": "Intestinal obstruction",
+      "imageUrl": "cards/clues/clinical-manifestation/47.png"
+    },
+    {
+      "id": "cmpxvnyz0000uti70b9jwaush",
+      "label": "Katayama fever",
+      "imageUrl": "cards/clues/clinical-manifestation/48.png"
+    },
+    {
+      "id": "cmps1tbrf000vti9ovkz7r7dp",
+      "label": "Beta Hemolysis",
+      "imageUrl": "cards/clues/lab-characteristic/beta-hemolysis.png"
+    },
+    {
+      "id": "cmps1tc0a000wti9or8o8zwkl",
+      "label": "Alpha Hemolysis",
+      "imageUrl": "cards/clues/lab-characteristic/alpha-hemolysis.png"
+    },
+    {
+      "id": "cmps1tc9b000xti9o6ouai9t5",
+      "label": "Gamma (non) Hemolysis",
+      "imageUrl": "cards/clues/lab-characteristic/gamma-non-hemolysis.png"
+    },
+    {
+      "id": "cmps1tci3000yti9ovqio9clg",
+      "label": "Double Zone Hemolysis",
+      "imageUrl": "cards/clues/lab-characteristic/double-zone-hemolysis.png"
+    },
+    {
+      "id": "cmps1tcqr000zti9o6jmaub23",
+      "label": "Pink Colony on MacConkey Agar",
+      "imageUrl": "cards/clues/lab-characteristic/pink-colony-on-macconkey-agar.png"
+    },
+    {
+      "id": "cmps1tczg0010ti9oybhyyrdw",
+      "label": "Oxidase Negative",
+      "imageUrl": "cards/clues/lab-characteristic/oxidase-negative.png"
+    },
+    {
+      "id": "cmps1td860011ti9ov68mh2sd",
+      "label": "Citrate Negative",
+      "imageUrl": "cards/clues/lab-characteristic/citrate-negative.png"
+    },
+    {
+      "id": "cmps1tdgw0012ti9of9ksyjhd",
+      "label": "Citrate Positive",
+      "imageUrl": "cards/clues/lab-characteristic/citrate-positive.png"
+    },
+    {
+      "id": "cmps1tdpm0013ti9o7uwx0ful",
+      "label": "ELEK test Positive",
+      "imageUrl": "cards/clues/lab-characteristic/elek-test-positive.png"
+    },
+    {
+      "id": "cmps1tdyd0014ti9onja3w8ul",
+      "label": "CAMP test Positive",
+      "imageUrl": "cards/clues/lab-characteristic/camp-test-positive.png"
+    },
+    {
+      "id": "cmps1tefx0016ti9o5fxvskqy",
+      "label": "Producing Terminal spores (drumstick)",
+      "imageUrl": "cards/clues/lab-characteristic/producing-terminal-spores-drumstick.png"
+    },
+    {
+      "id": "cmps26bkh0017ti9oq3d8ioe9",
+      "label": "Gram + coccobacilli (purple)",
+      "imageUrl": "cards/clues/gram-stain/gram-positive-coccobacilli-purple.png"
+    },
+    {
+      "id": "cmps26btg0018ti9os2w7bkep",
+      "label": "Gram + cocci in chain",
+      "imageUrl": "cards/clues/gram-stain/gram-positive-cocci-in-chain.png"
+    },
+    {
+      "id": "cmps26c2b0019ti9ohb4nb8ht",
+      "label": "Gram + cocci in cluster",
+      "imageUrl": "cards/clues/gram-stain/gram-positive-cocci-in-cluster.png"
+    },
+    {
+      "id": "cmps26cb2001ati9ow70pk59q",
+      "label": "Gram + bacilli",
+      "imageUrl": "cards/clues/gram-stain/gram-positive-bacilli.png"
+    },
+    {
+      "id": "cmps26cjv001bti9oo9t8mt5k",
+      "label": "Gram - cocci",
+      "imageUrl": "cards/clues/gram-stain/gram-negative-cocci.png"
+    },
+    {
+      "id": "cmps26csk001cti9o8ylyavh1",
+      "label": "Gram - bacilli",
+      "imageUrl": "cards/clues/gram-stain/gram-negative-bacilli.png"
+    },
+    {
+      "id": "cmps26d1c001dti9ohl823sjn",
+      "label": "Gram invisible (Undetectable)",
+      "imageUrl": "cards/clues/gram-stain/gram-invisible-undetectable.png"
+    },
+    {
+      "id": "cmps26da4001eti9o53h4nlyb",
+      "label": "Gram + coccobacilli (red)",
+      "imageUrl": "cards/clues/gram-stain/gram-positive-coccobacilli-red.png"
+    },
+    {
+      "id": "cmps26dit001fti9oiiz83bes",
+      "label": "Gram - curved",
+      "imageUrl": "cards/clues/gram-stain/gram-negative-curved.png"
+    },
+    {
+      "id": "cmps2eq8i001gti9oqxwbx2pb",
+      "label": "Skin & soft tissue infections (SSTI)",
+      "imageUrl": "cards/clues/clinical-manifestation/ssti.png"
+    },
+    {
+      "id": "cmps2eqht001hti9o71mw4n43",
+      "label": "Prosthetic / biofilm infections",
+      "imageUrl": "cards/clues/clinical-manifestation/biofilm-infections.png"
+    },
+    {
+      "id": "cmps2eqr1001iti9oms7b2uou",
+      "label": "Pharyngitis / URTI",
+      "imageUrl": "cards/clues/clinical-manifestation/urti.png"
+    },
+    {
+      "id": "cmps2er09001jti9oomq7wscl",
+      "label": "Pneumonia syndromes",
+      "imageUrl": "cards/clues/clinical-manifestation/pneumonia.png"
+    },
+    {
+      "id": "cmps2er9g001kti9o8ni4lseg",
+      "label": "Meningitis syndromes",
+      "imageUrl": "cards/clues/clinical-manifestation/meningitis.png"
+    },
+    {
+      "id": "cmps2erim001lti9ouq7g289s",
+      "label": "Neonatal infections",
+      "imageUrl": "cards/clues/clinical-manifestation/neonatal-infections.png"
+    },
+    {
+      "id": "cmps2errt001mti9optnxpoau",
+      "label": "Endocarditis",
+      "imageUrl": "cards/clues/clinical-manifestation/endocarditis.png"
+    },
+    {
+      "id": "cmps2es12001nti9oc0qpjq8a",
+      "label": "GI / food poisoning",
+      "imageUrl": "cards/clues/clinical-manifestation/food-poisoning.png"
+    },
+    {
+      "id": "cmps2esa8001oti9oxlexw16k",
+      "label": "Hepatobiliary / intra-abdominal infections",
+      "imageUrl": "cards/clues/clinical-manifestation/hepatobiliary-infections.png"
+    },
+    {
+      "id": "cmps2esjg001pti9of5a2765x",
+      "label": "Zoonotic infections",
+      "imageUrl": "cards/clues/clinical-manifestation/zoonotic-infections.png"
+    },
+    {
+      "id": "cmps2essn001qti9oh9lkqh7u",
+      "label": "Sexually Transmitted Infections (STI)",
+      "imageUrl": "cards/clues/clinical-manifestation/sti.png"
+    },
+    {
+      "id": "cmps2et1u001rti9o03mp0pu5",
+      "label": "Neurologic toxin diseases",
+      "imageUrl": "cards/clues/clinical-manifestation/neurologic-toxin-diseases.png"
+    },
+    {
+      "id": "cmps2etb5001sti9o2gts6a1w",
+      "label": "Sepsis syndrome",
+      "imageUrl": "cards/clues/clinical-manifestation/sepsis-syndrome.png"
+    },
+    {
+      "id": "cmps31aph002dti9osq4shozs",
+      "label": "Methicillin-resistant Stathylococcus aureus (MRSA)",
+      "imageUrl": "cards/clues/special-trait/mrsa.png"
+    },
+    {
+      "id": "cmps31ayc002eti9o2aa1z0e3",
+      "label": "Encapsulated Lancet-shaped organism",
+      "imageUrl": "cards/clues/special-trait/encapsulated-lancet-shaped-organism.png"
+    },
+    {
+      "id": "cmps31b71002fti9oufjxk44j",
+      "label": "Pathogen is oral normal flora",
+      "imageUrl": "cards/clues/special-trait/oral-normal-flora.png"
+    },
+    {
+      "id": "cmps31bfp002gti9oztnhpf0t",
+      "label": "Zoonosis: pigs/raw pork",
+      "imageUrl": "cards/clues/special-trait/zoonosis-pigs-raw-pork.png"
+    },
+    {
+      "id": "cmps31boe002hti9o8mziz6hv",
+      "label": "Common nosocomial pathogen",
+      "imageUrl": "cards/clues/special-trait/nosocomial-pathogen.png"
+    },
+    {
+      "id": "cmps31bx2002iti9of2wydskf",
+      "label": "Vancomycin-resistant Enterococci (VRE) possible",
+      "imageUrl": "cards/clues/special-trait/vre-possible.png"
+    },
+    {
+      "id": "cmps31c5r002jti9oumv1gg9t",
+      "label": "Zoonosis",
+      "imageUrl": "cards/clues/special-trait/zoonosis.png"
+    },
+    {
+      "id": "cmps31ceh002kti9ousmzf6ns",
+      "label": "Bioterrorism",
+      "imageUrl": "cards/clues/special-trait/bioterrorism.png"
+    },
+    {
+      "id": "cmps31cn4002lti9o1h9cb5q5",
+      "label": "Destroy eye tissues",
+      "imageUrl": "cards/clues/special-trait/destroy-eye-tissues.png"
+    },
+    {
+      "id": "cmps31cvw002mti9okoa18hb0",
+      "label": "Aspiration related",
+      "imageUrl": "cards/clues/special-trait/aspiration-related.png"
+    },
+    {
+      "id": "cmps31d4n002nti9oyov53sgb",
+      "label": "Struvite Stone (MgNH4PO4)",
+      "imageUrl": "cards/clues/special-trait/struvite-stone.png"
+    },
+    {
+      "id": "cmps31ddd002oti9ofpshun4x",
+      "label": "Increased risk in iron overload patient",
+      "imageUrl": "cards/clues/special-trait/iron-overload-patient.png"
+    },
+    {
+      "id": "cmps31dm2002pti9oewn7g3i2",
+      "label": "Live in soil / water in the Northeast of Thailand",
+      "imageUrl": "cards/clues/special-trait/thailand-soil-water.png"
+    },
+    {
+      "id": "cmps31dus002qti9oekf45buu",
+      "label": "Infected through Cat / Dog bites",
+      "imageUrl": "cards/clues/special-trait/cat-dog-bites.png"
+    },
+    {
+      "id": "cmps31e44002rti9ozwftpe3d",
+      "label": "Rat bite",
+      "imageUrl": "cards/clues/special-trait/rat-bite.png"
+    },
+    {
+      "id": "cmps31ecu002sti9obbh9up0v",
+      "label": "Colonizes gastric mucosa",
+      "imageUrl": "cards/clues/special-trait/gastric-mucosa.png"
+    },
+    {
+      "id": "cmps31ell002tti9o31elh57f",
+      "label": "Uncooked poultry",
+      "imageUrl": "cards/clues/special-trait/uncooked-poultry.png"
+    },
+    {
+      "id": "cmps31eua002uti9ovfkywh5s",
+      "label": "Food-borne via pasteurized milk",
+      "imageUrl": "cards/clues/special-trait/food-borne-pasteurized-milk.png"
+    },
+    {
+      "id": "cmps31f2y002vti9oxp1fbx46",
+      "label": "Contact with animal urine",
+      "imageUrl": "cards/clues/special-trait/contact-animal-urine.png"
+    },
+    {
+      "id": "cmps31fbn002wti9oyu245dec",
+      "label": "Gas production in tissue",
+      "imageUrl": "cards/clues/special-trait/gas-production-tissue.png"
+    },
+    {
+      "id": "cmps31fkd002xti9ohwyd7fsc",
+      "label": "Wound contamination",
+      "imageUrl": "cards/clues/special-trait/wound-contamination.png"
+    },
+    {
+      "id": "cmps31ft1002yti9ogmn2sbl9",
+      "label": "Causes acne",
+      "imageUrl": "cards/clues/special-trait/causes-acne.png"
+    },
+    {
+      "id": "cmps3egu3002zti9oyy7hcom6",
+      "label": "Polysaccharide capsule",
+      "imageUrl": "cards/clues/virulence-factor/polysaccharide-capsule.png"
+    },
+    {
+      "id": "cmps3eh2p0030ti9oygndpmc9",
+      "label": "Pili / Fimbriae / Adhesins",
+      "imageUrl": "cards/clues/virulence-factor/pili-fimbriae-adhesins.png"
+    },
+    {
+      "id": "cmps3ehbd0031ti9oi9e2d1kr",
+      "label": "Produce Endotoxin / LOS / LPS",
+      "imageUrl": "cards/clues/virulence-factor/endotoxin-los-lps.png"
+    },
+    {
+      "id": "cmps3ehjz0032ti9ouxz4btqi",
+      "label": "Produce IgA protease",
+      "imageUrl": "cards/clues/virulence-factor/iga-protease.png"
+    },
+    {
+      "id": "cmps3ehsi0033ti9o3mfaxm89",
+      "label": "Biofilm formation",
+      "imageUrl": "cards/clues/virulence-factor/biofilm-formation.png"
+    },
+    {
+      "id": "cmps3ei100034ti9obflvkkns",
+      "label": "Produce Urease",
+      "imageUrl": "cards/clues/virulence-factor/urease.png"
+    },
+    {
+      "id": "cmps3ei9l0035ti9o32nh063i",
+      "label": "Intracellular survival",
+      "imageUrl": "cards/clues/virulence-factor/intracellular-survival.png"
+    },
+    {
+      "id": "cmps3eii40036ti9oibf5kk87",
+      "label": "Type 3 secretion system",
+      "imageUrl": "cards/clues/virulence-factor/type-3-secretion-system.png"
+    },
+    {
+      "id": "cmps3eiqm0037ti9o8wlsk1g7",
+      "label": "Type 4 secretion system",
+      "imageUrl": "cards/clues/virulence-factor/type-4-secretion-system.png"
+    },
+    {
+      "id": "cmps3eiz30038ti9o5pbozrkf",
+      "label": "Produce Toxin",
+      "imageUrl": "cards/clues/virulence-factor/toxin.png"
+    },
+    {
+      "id": "cmps3ej7l0039ti9oaj1lsitc",
+      "label": "Normal flora",
+      "imageUrl": "cards/clues/virulence-factor/normal-flora.png"
+    },
+    {
+      "id": "cmps3ejg2003ati9orflrnaai",
+      "label": "Antibiotic resistance mechanisms",
+      "imageUrl": "cards/clues/virulence-factor/antibiotic-resistance-mechanisms.png"
+    },
+    {
+      "id": "cmps3ejom003bti9o4hi7epar",
+      "label": "Cytotoxic",
+      "imageUrl": "cards/clues/virulence-factor/cytotoxic.png"
+    },
+    {
+      "id": "cmps3ejx7003cti9ohj8fdqw4",
+      "label": "Endocarditis-associated organisms",
+      "imageUrl": "cards/clues/virulence-factor/endocarditis-associated-organisms.png"
+    },
+    {
+      "id": "cmps3ek5p003dti9og7ae11xb",
+      "label": "Immune evasion",
+      "imageUrl": "cards/clues/virulence-factor/immunity-evasion.png"
+    },
+    {
+      "id": "cmps3ekea003eti9o5qio8k5a",
+      "label": "Endothelial invasion",
+      "imageUrl": "cards/clues/virulence-factor/endothelial-invasion.png"
+    },
+    {
+      "id": "cmpxtp7ne0000tih8qvam33ki",
+      "label": "No true invasion",
+      "imageUrl": "cards/clues/special-trait/no-true-invasion.png"
+    },
+    {
+      "id": "cmpxtrvs70001tih8t9h1t0h1",
+      "label": "Vaccine preventable",
+      "imageUrl": "cards/clues/special-trait/vaccine-preventable.png"
+    },
+    {
+      "id": "cmpxvnz89000vti701cybwfk1",
+      "label": "Non-productive cough dyspnea and chest pain",
+      "imageUrl": "cards/clues/clinical-manifestation/49.png"
+    },
+    {
+      "id": "cmpxvnzhn000wti70iz64mze2",
+      "label": "Swimmer itch rash (urticaria)",
+      "imageUrl": "cards/clues/clinical-manifestation/50.png"
+    },
+    {
+      "id": "cmpxvnzqz000xti70r5167f0w",
+      "label": "Cirrhosis",
+      "imageUrl": "cards/clues/clinical-manifestation/51.png"
+    },
+    {
+      "id": "cmpxvo00a000yti70gl7re12d",
+      "label": "Portal hypertension",
+      "imageUrl": "cards/clues/clinical-manifestation/52.png"
+    },
+    {
+      "id": "cmpxvo09m000zti70c01vnees",
+      "label": "Hematuria",
+      "imageUrl": "cards/clues/clinical-manifestation/53.png"
+    },
+    {
+      "id": "cmpxvo0iw0010ti70vjbvwtm9",
+      "label": "Diarrhea",
+      "imageUrl": "cards/clues/clinical-manifestation/54.png"
+    },
+    {
+      "id": "cmpxvo0sb0011ti70c7szd60y",
+      "label": "Taeniasis",
+      "imageUrl": "cards/clues/clinical-manifestation/55.png"
+    },
+    {
+      "id": "cmpxvo11n0012ti70wgi9ptyi",
+      "label": "Cysticerosis",
+      "imageUrl": "cards/clues/clinical-manifestation/56.png"
+    },
+    {
+      "id": "cmpxvo1b00013ti702iiucro5",
+      "label": "Neurocysticercosis",
+      "imageUrl": "cards/clues/clinical-manifestation/57.png"
+    },
+    {
+      "id": "cmpxvo1kk0014ti70law2mpum",
+      "label": "Vitamin B12 deficiency",
+      "imageUrl": "cards/clues/clinical-manifestation/58.png"
+    },
+    {
+      "id": "cmpxvo1u30015ti70jjq57ctl",
+      "label": "Megaloblastic anemia",
+      "imageUrl": "cards/clues/clinical-manifestation/59.png"
+    },
+    {
+      "id": "cmpxvo23j0016ti70ur0m90g9",
+      "label": "Peptic ulcer",
+      "imageUrl": "cards/clues/clinical-manifestation/60.png"
+    },
+    {
+      "id": "cmpxvo2cw0017ti70wv7zlmk9",
+      "label": "Food poisoning",
+      "imageUrl": "cards/clues/clinical-manifestation/61.png"
+    },
+    {
+      "id": "cmpxvo2mc0018ti70a6q91l3g",
+      "label": "Appendicitis",
+      "imageUrl": "cards/clues/clinical-manifestation/62.png"
+    },
+    {
+      "id": "cmpxvo2vt0019ti70fgf99cmu",
+      "label": "Intestinal perforation",
+      "imageUrl": "cards/clues/clinical-manifestation/63.png"
+    },
+    {
+      "id": "cmpxvo358001ati70de32l1lo",
+      "label": "Perianal pruritis",
+      "imageUrl": "cards/clues/clinical-manifestation/64.png"
+    },
+    {
+      "id": "cmpxvo3en001bti70eu180fb3",
+      "label": "Vulva itching",
+      "imageUrl": "cards/clues/clinical-manifestation/65.png"
+    },
+    {
+      "id": "cmpxvo3o1001cti70h31hd5kq",
+      "label": "Rectal prolapse",
+      "imageUrl": "cards/clues/clinical-manifestation/66.png"
+    },
+    {
+      "id": "cmpxvo3xh001dti703yykfwb5",
+      "label": "Abdominal bloating",
+      "imageUrl": "cards/clues/clinical-manifestation/67.png"
+    },
+    {
+      "id": "cmpxvo46w001eti70v4ir3akk",
+      "label": "Loeffler's syndrome",
+      "imageUrl": "cards/clues/clinical-manifestation/68.png"
+    },
+    {
+      "id": "cmpxvo4h8001fti70o5kcjgtx",
+      "label": "Iron deficiency anemia",
+      "imageUrl": "cards/clues/clinical-manifestation/69.png"
+    },
+    {
+      "id": "cmpxvo4qp001gti70fil8plg6",
+      "label": "Creeping eruption",
+      "imageUrl": "cards/clues/clinical-manifestation/70.png"
+    },
+    {
+      "id": "cmpxvo509001hti701yh2zhu9",
+      "label": "Hyperinfection syndrome",
+      "imageUrl": "cards/clues/clinical-manifestation/71.png"
+    },
+    {
+      "id": "cmpxvo59r001iti70kdfjwo20",
+      "label": "Disseminated strongyloidiasis",
+      "imageUrl": "cards/clues/clinical-manifestation/72.png"
+    },
+    {
+      "id": "cmpxvo5j5001jti7029uogle2",
+      "label": "Lymphedema",
+      "imageUrl": "cards/clues/clinical-manifestation/73.png"
+    },
+    {
+      "id": "cmpxvo5sg001kti70arid4os2",
+      "label": "Elephantiasis",
+      "imageUrl": "cards/clues/clinical-manifestation/74.png"
+    },
+    {
+      "id": "cmpxvo61v001lti702la5vz2y",
+      "label": "Hydrocele",
+      "imageUrl": "cards/clues/clinical-manifestation/75.png"
+    },
+    {
+      "id": "cmpxvo6bc001mti70vlxdwmng",
+      "label": "Chyluria",
+      "imageUrl": "cards/clues/clinical-manifestation/76.png"
+    },
+    {
+      "id": "cmpxvo6kt001nti70gdbyfvw9",
+      "label": "Periorbital and facial edema",
+      "imageUrl": "cards/clues/clinical-manifestation/77.png"
+    },
+    {
+      "id": "cmpxvo6ub001oti70hpqy64uy",
+      "label": "Myocarditis",
+      "imageUrl": "cards/clues/clinical-manifestation/78.png"
+    },
+    {
+      "id": "cmpxvo73t001pti707rikosvq",
+      "label": "Meningitis",
+      "imageUrl": "cards/clues/clinical-manifestation/79.png"
+    },
+    {
+      "id": "cmpxvo7d7001qti70amobs823",
+      "label": "Ocular angiostrongyliasis",
+      "imageUrl": "cards/clues/clinical-manifestation/80.png"
+    },
+    {
+      "id": "cmpxvo7mm001rti70qsvmvisu",
+      "label": "Cutaneous gnathostomiasis",
+      "imageUrl": "cards/clues/clinical-manifestation/81.png"
+    },
+    {
+      "id": "cmpxvo7w1001sti70arf94298",
+      "label": "Visceral gnathostomiasis",
+      "imageUrl": "cards/clues/clinical-manifestation/82.png"
+    },
+    {
+      "id": "cmpxvo85k001tti70s9s6pur2",
+      "label": "Sharp abdominal pain N/V anorexia",
+      "imageUrl": "cards/clues/clinical-manifestation/83.png"
+    },
+    {
+      "id": "cmpxvo8f0001uti70rg06bjjj",
+      "label": "Cough hemoptysis pleuritic chest pain",
+      "imageUrl": "cards/clues/clinical-manifestation/84.png"
+    },
+    {
+      "id": "cmpxvo8oc001vti70setjq2ho",
+      "label": "Uveitis retinal damage vision loss",
+      "imageUrl": "cards/clues/clinical-manifestation/85.png"
+    },
+    {
+      "id": "cmpxvo8xs001wti70eo32e77g",
+      "label": "Conjunctivitis",
+      "imageUrl": "cards/clues/clinical-manifestation/86.png"
+    },
+    {
+      "id": "cmpxvvwev0000ti242vszp6zj",
+      "label": "21",
+      "imageUrl": "cards/clues/morphology/21.png"
+    },
+    {
+      "id": "cmpxvvwnt0001ti2460fb1qp7",
+      "label": "22",
+      "imageUrl": "cards/clues/morphology/22.png"
+    },
+    {
+      "id": "cmpxvvwwo0002ti24z4w8bju0",
+      "label": "23",
+      "imageUrl": "cards/clues/morphology/23.png"
+    },
+    {
+      "id": "cmpxvvx5j0003ti24j95a1zjn",
+      "label": "24",
+      "imageUrl": "cards/clues/morphology/24.png"
+    },
+    {
+      "id": "cmpxvvxec0004ti242agi8jwt",
+      "label": "25",
+      "imageUrl": "cards/clues/morphology/25.png"
+    },
+    {
+      "id": "cmpxvvxn10005ti243lpuysjs",
+      "label": "26",
+      "imageUrl": "cards/clues/morphology/26.png"
+    },
+    {
+      "id": "cmpxvvxvv0006ti24hjbm4u2v",
+      "label": "27",
+      "imageUrl": "cards/clues/morphology/27.png"
+    },
+    {
+      "id": "cmpxvvy4q0007ti24dsh2cmix",
+      "label": "28",
+      "imageUrl": "cards/clues/morphology/28.png"
+    },
+    {
+      "id": "cmpxvvye10008ti24uoslisoq",
+      "label": "29",
+      "imageUrl": "cards/clues/morphology/29.png"
+    },
+    {
+      "id": "cmpxvvyn40009ti2440pcc4st",
+      "label": "30",
+      "imageUrl": "cards/clues/morphology/30.png"
+    },
+    {
+      "id": "cmpxvvyw3000ati242sc633sa",
+      "label": "31",
+      "imageUrl": "cards/clues/morphology/31.png"
+    },
+    {
+      "id": "cmpxvvz4y000bti245z0x7qiw",
+      "label": "32",
+      "imageUrl": "cards/clues/morphology/32.png"
+    },
+    {
+      "id": "cmpxvvzdn000cti24y2qh3jxx",
+      "label": "33",
+      "imageUrl": "cards/clues/morphology/33.png"
+    },
+    {
+      "id": "cmpxvvzmg000dti24nttn8s0d",
+      "label": "34",
+      "imageUrl": "cards/clues/morphology/34.png"
+    },
+    {
+      "id": "cmpxvvzva000eti24hb72jp0w",
+      "label": "35",
+      "imageUrl": "cards/clues/morphology/35.png"
+    },
+    {
+      "id": "cmpxvw047000fti24iddeu1xm",
+      "label": "36",
+      "imageUrl": "cards/clues/morphology/36.png"
+    },
+    {
+      "id": "cmpxvw0de000gti241gqpw4ov",
+      "label": "37",
+      "imageUrl": "cards/clues/morphology/37.png"
+    },
+    {
+      "id": "cmpxvw0mi000hti24fxzb8i9u",
+      "label": "38",
+      "imageUrl": "cards/clues/morphology/38.png"
+    },
+    {
+      "id": "cmpxvw0v8000iti2406spgho1",
+      "label": "39",
+      "imageUrl": "cards/clues/morphology/39.png"
+    },
+    {
+      "id": "cmpxvw14u000jti24cl7dzpdg",
+      "label": "40",
+      "imageUrl": "cards/clues/morphology/40.png"
+    },
+    {
+      "id": "cmpxvw1dn000kti24p9etqwva",
+      "label": "41",
+      "imageUrl": "cards/clues/morphology/41.png"
+    },
+    {
+      "id": "cmpxvw1me000lti24a4sxayep",
+      "label": "42",
+      "imageUrl": "cards/clues/morphology/42.png"
+    },
+    {
+      "id": "cmpxvw1v6000mti24sp05khr1",
+      "label": "43",
+      "imageUrl": "cards/clues/morphology/43.png"
+    },
+    {
+      "id": "cmpxvw246000nti24f6kxvd2q",
+      "label": "44",
+      "imageUrl": "cards/clues/morphology/44.png"
+    },
+    {
+      "id": "cmpxvw2cw000oti246dhsxrnv",
+      "label": "45",
+      "imageUrl": "cards/clues/morphology/45.png"
+    },
+    {
+      "id": "cmpxvw2lm000pti24fci0kd3t",
+      "label": "46",
+      "imageUrl": "cards/clues/morphology/46.png"
+    },
+    {
+      "id": "cmpxvw2ub000qti24k4h499jb",
+      "label": "47",
+      "imageUrl": "cards/clues/morphology/47.png"
+    },
+    {
+      "id": "cmpxvw333000rti243implgd0",
+      "label": "48",
+      "imageUrl": "cards/clues/morphology/48.png"
+    },
+    {
+      "id": "cmpxvw3bx000sti24ioa1sgez",
+      "label": "49",
+      "imageUrl": "cards/clues/morphology/49.png"
+    },
+    {
+      "id": "cmpxvw3kw000tti24mh5gxgg3",
+      "label": "50",
+      "imageUrl": "cards/clues/morphology/50.png"
+    },
+    {
+      "id": "cmpxvw3tw000uti240iynbilr",
+      "label": "51",
+      "imageUrl": "cards/clues/morphology/51.png"
+    },
+    {
+      "id": "cmpxvw42t000vti246ag8v76j",
+      "label": "52",
+      "imageUrl": "cards/clues/morphology/52.png"
+    },
+    {
+      "id": "cmpxvw4bm000wti243mbv2u2p",
+      "label": "53",
+      "imageUrl": "cards/clues/morphology/53.png"
+    },
+    {
+      "id": "cmpxvw4l4000xti24dp6p2h2s",
+      "label": "54",
+      "imageUrl": "cards/clues/morphology/54.png"
+    },
+    {
+      "id": "cmpxvw4u2000yti24vh5cc9kp",
+      "label": "55",
+      "imageUrl": "cards/clues/morphology/55.png"
+    },
+    {
+      "id": "cmpxvw532000zti24yqegblkg",
+      "label": "56",
+      "imageUrl": "cards/clues/morphology/56.png"
+    },
+    {
+      "id": "cmpxvw5c60010ti24f46dpcfz",
+      "label": "57",
+      "imageUrl": "cards/clues/morphology/57.png"
+    },
+    {
+      "id": "cmpxvw5l50011ti24qppkoocl",
+      "label": "58",
+      "imageUrl": "cards/clues/morphology/58.png"
+    },
+    {
+      "id": "cmpxvw5u70012ti24m3gjlshp",
+      "label": "59",
+      "imageUrl": "cards/clues/morphology/59.png"
+    },
+    {
+      "id": "cmpxvw6430013ti24ozjwa5t1",
+      "label": "60",
+      "imageUrl": "cards/clues/morphology/60.png"
+    },
+    {
+      "id": "cmpxvw6cx0014ti242b9rwvc2",
+      "label": "61",
+      "imageUrl": "cards/clues/morphology/61.png"
+    },
+    {
+      "id": "cmpxvw6ls0015ti24rjwk9wir",
+      "label": "62",
+      "imageUrl": "cards/clues/morphology/62.png"
+    },
+    {
+      "id": "cmpxvw6uz0016ti24z0uhwjsz",
+      "label": "63",
+      "imageUrl": "cards/clues/morphology/63.png"
+    },
+    {
+      "id": "cmpxvw73t0017ti248h5h9vsf",
+      "label": "64",
+      "imageUrl": "cards/clues/morphology/64.png"
+    },
+    {
+      "id": "cmpxvw7co0018ti24afdvowax",
+      "label": "65",
+      "imageUrl": "cards/clues/morphology/65.png"
+    },
+    {
+      "id": "cmpxvw7lj0019ti24w5fakqfd",
+      "label": "66",
+      "imageUrl": "cards/clues/morphology/66.png"
+    },
+    {
+      "id": "cmpxvw7ua001ati24zwz2vt0k",
+      "label": "67",
+      "imageUrl": "cards/clues/morphology/67.png"
+    },
+    {
+      "id": "cmpxw9z3d0000tio0lbhqd3lr",
+      "label": "Fecal-oral transmission",
+      "imageUrl": "cards/clues/transmission/fecal-oral.png"
+    },
+    {
+      "id": "cmpxw9zd80001tio01wiy3699",
+      "label": "Zoonosis: Cat",
+      "imageUrl": "cards/clues/transmission/cat.png"
+    },
+    {
+      "id": "cmpxw9zn10002tio0k5m5smqo",
+      "label": "Transplacenta",
+      "imageUrl": "cards/clues/transmission/transplacenta.png"
+    },
+    {
+      "id": "cmpxw9zwx0003tio0sgi53tgk",
+      "label": "Blood transfusion",
+      "imageUrl": "cards/clues/transmission/blood-transfusion.png"
+    },
+    {
+      "id": "cmpxwa06q0004tio02yl19jpz",
+      "label": "Organ transplant",
+      "imageUrl": "cards/clues/transmission/organ-transplant.png"
+    },
+    {
+      "id": "cmpxwa0gi0005tio0eab38s4e",
+      "label": "Zoonosis: Anopheles mosquito",
+      "imageUrl": "cards/clues/transmission/mosquito.png"
+    },
+    {
+      "id": "cmpxwa0qd0006tio0hk4kdgvr",
+      "label": "Zoonosis: monkey",
+      "imageUrl": "cards/clues/transmission/monkey.png"
+    },
+    {
+      "id": "cmpxwa10b0007tio0pedudoet",
+      "label": "Sexual transmission",
+      "imageUrl": "cards/clues/transmission/sexual.png"
+    },
+    {
+      "id": "cmpxwa1a10008tio0vpc4ovx2",
+      "label": "Zoonosis: sandfly",
+      "imageUrl": "cards/clues/transmission/sandfly.png"
+    },
+    {
+      "id": "cmpxwa1jt0009tio0soenh3iv",
+      "label": "Zoonosis: tsetse fly",
+      "imageUrl": "cards/clues/transmission/tsetse-fly.png"
+    },
+    {
+      "id": "cmpxwa1tl000atio0v3pl1muy",
+      "label": "Zoonosis: kissing bug",
+      "imageUrl": "cards/clues/transmission/kissing-bug.png"
+    },
+    {
+      "id": "cmpxwa23b000btio0eq72tziz",
+      "label": "Contact with fresh water",
+      "imageUrl": "cards/clues/transmission/fresh-water.png"
+    },
+    {
+      "id": "cmpxwa2d6000ctio0dsw97og1",
+      "label": "Penetrate nasal mucosa",
+      "imageUrl": "cards/clues/transmission/penetrate-nasal-mucosa.png"
+    },
+    {
+      "id": "cmpxwa2mv000dtio0hcqt3oj1",
+      "label": "Contact to contaminated contact lens",
+      "imageUrl": "cards/clues/transmission/contact-lens.png"
+    },
+    {
+      "id": "cmpxwa2xo000etio0zruk6e2a",
+      "label": "Contact through skin wound",
+      "imageUrl": "cards/clues/transmission/skin-wound.png"
+    },
+    {
+      "id": "cmpxwa37f000ftio075i5zq71",
+      "label": "Skin contact",
+      "imageUrl": "cards/clues/transmission/skin-contact.png"
+    },
+    {
+      "id": "cmpxwa3h8000gtio0raw5iys6",
+      "label": "Parasite penetrates host skin",
+      "imageUrl": "cards/clues/transmission/parasite-penetrate.png"
+    },
+    {
+      "id": "cmpxwa3qx000htio054jibexd",
+      "label": "Zoonosis: Culex spp.",
+      "imageUrl": "cards/clues/transmission/culex-spp.png"
+    },
+    {
+      "id": "cmpxwa40o000itio0oaad6m9a",
+      "label": "Zoonosis: Aedes spp.",
+      "imageUrl": "cards/clues/transmission/aedes-spp.png"
+    },
+    {
+      "id": "cmpy1kveu0000ti4so3uhsa3q",
+      "label": "Modified acid-fast stain: oval-shaped oocyst (5um in diameter) (47)",
+      "imageUrl": "cards/clues/lab-characteristic/47.png"
+    },
+    {
+      "id": "cmpy1kvob0001ti4ss561aj13",
+      "label": "Modified acid-fast stain: oval-shaped oocyst (10um in diameter) (48)",
+      "imageUrl": "cards/clues/lab-characteristic/48.png"
+    },
+    {
+      "id": "cmpy1kvxn0002ti4smplxhl2d",
+      "label": "Modified acid-fast stain: Rugby-shaped oocyst (49)",
+      "imageUrl": "cards/clues/lab-characteristic/49.png"
+    },
+    {
+      "id": "cmpy1kw6s0003ti4sxcqzajja",
+      "label": "Tachyzoite in macrophage (50)",
+      "imageUrl": "cards/clues/lab-characteristic/50.png"
+    },
+    {
+      "id": "cmpy1kwg10004ti4sx1ecqth9",
+      "label": "Bradyzoite in brain tissue (51)",
+      "imageUrl": "cards/clues/lab-characteristic/51.png"
+    },
+    {
+      "id": "cmpy1kwpc0005ti4scgap3osw",
+      "label": "Founds multiple rim-enhancing lesions in brain parenchyma (52)",
+      "imageUrl": "cards/clues/lab-characteristic/52.png"
+    },
+    {
+      "id": "cmpy1kwye0006ti4smi20pht1",
+      "label": "Thin double chromatid with multiple infections in normal-sized RBC (53)",
+      "imageUrl": "cards/clues/lab-characteristic/53.png"
+    },
+    {
+      "id": "cmpy1kx7m0007ti4se3uay3ro",
+      "label": "Banana-shaped RBC (54)",
+      "imageUrl": "cards/clues/lab-characteristic/54.png"
+    },
+    {
+      "id": "cmpy1kxgw0008ti4sfzjao8ms",
+      "label": "Amoebic enlarged RBC with Schuffner's dot (55)",
+      "imageUrl": "cards/clues/lab-characteristic/55.png"
+    },
+    {
+      "id": "cmpy1kxq20009ti4sof8jq8jq",
+      "label": "Band form in normal-sized RBC (56)",
+      "imageUrl": "cards/clues/lab-characteristic/56.png"
+    },
+    {
+      "id": "cmpy1kxzb000ati4s7dqv5952",
+      "label": "Fimbriation / oval-shaped enlarged RBC with Schuffner's dot (57)",
+      "imageUrl": "cards/clues/lab-characteristic/57.png"
+    },
+    {
+      "id": "cmpy1ky8s000bti4sqflaf3kh",
+      "label": "Objective: differentiate spp. (58)",
+      "imageUrl": "cards/clues/lab-characteristic/58.png"
+    },
+    {
+      "id": "cmpy1kyi6000cti4s4id96zls",
+      "label": "Pear-shaped organism with 2 nuclei and falling leaf-like motility (59)",
+      "imageUrl": "cards/clues/lab-characteristic/59.png"
+    },
+    {
+      "id": "cmpy1kyre000dti4sitd93z6c",
+      "label": "Pear-shape organism with jerky or twitching movement (60)",
+      "imageUrl": "cards/clues/lab-characteristic/60.png"
+    },
+    {
+      "id": "cmpy3iiqz000hti0cx1wonvpj",
+      "label": "Eating fermented fish",
+      "imageUrl": "cards/clues/special-trait/fermented-fish.png"
+    },
+    {
+      "id": "cmpy1kz1e000eti4s4430j0u9",
+      "label": "Single nucleus with prominent kinetoplast organism (61)",
+      "imageUrl": "cards/clues/lab-characteristic/61.png"
+    },
+    {
+      "id": "cmpy1kzar000fti4sbrkfmc2v",
+      "label": "Trypomastigote (62)",
+      "imageUrl": "cards/clues/lab-characteristic/62.png"
+    },
+    {
+      "id": "cmpy1kzjz000gti4sgp4gxfnj",
+      "label": "Curved organism with large prominent kinetoplast (63)",
+      "imageUrl": "cards/clues/lab-characteristic/63.png"
+    },
+    {
+      "id": "cmpy1kztd000hti4snyac8ugf",
+      "label": "Round organism with 4 nuclei and ingested RBC (64)",
+      "imageUrl": "cards/clues/lab-characteristic/64.png"
+    },
+    {
+      "id": "cmpy1l02n000iti4sbjsrlk36",
+      "label": "Anchovy pus (65)",
+      "imageUrl": "cards/clues/lab-characteristic/65.png"
+    },
+    {
+      "id": "cmpy1l0br000jti4siw7ryhmh",
+      "label": "Motile trophozoites (66)",
+      "imageUrl": "cards/clues/lab-characteristic/66.png"
+    },
+    {
+      "id": "cmpy1l0ks000kti4smh2vuv52",
+      "label": "Star-shaped cyst (67)",
+      "imageUrl": "cards/clues/lab-characteristic/67.png"
+    },
+    {
+      "id": "cmpy1l0ty000lti4sl9qigx2k",
+      "label": "Large oval egg with cilia (68)",
+      "imageUrl": "cards/clues/lab-characteristic/68.png"
+    },
+    {
+      "id": "cmpy1l132000mti4s1ivd0ium",
+      "label": "Egg with flat operculum at one-end and thicken shell at the other (69)",
+      "imageUrl": "cards/clues/lab-characteristic/69.png"
+    },
+    {
+      "id": "cmpy1l1c9000nti4s6ic1k0km",
+      "label": "Egg with flat operculum at one-end and thicken shell at the other (70)",
+      "imageUrl": "cards/clues/lab-characteristic/70.png"
+    },
+    {
+      "id": "cmpy1l1lh000oti4sg58p3960",
+      "label": "Small operculated egg with prominent operculated shoulders (71)",
+      "imageUrl": "cards/clues/lab-characteristic/71.png"
+    },
+    {
+      "id": "cmpy1l1ur000pti4stolgcnws",
+      "label": "Oval egg with distinct operculum at one end (72)",
+      "imageUrl": "cards/clues/lab-characteristic/72.png"
+    },
+    {
+      "id": "cmpy1l248000qti4sjys0wjkh",
+      "label": "Large operculated egg (73)",
+      "imageUrl": "cards/clues/lab-characteristic/73.png"
+    },
+    {
+      "id": "cmpy1l2dj000rti4sst47kvbr",
+      "label": "Non-operculated egg with big prominent lateral spicule near post-end (74)",
+      "imageUrl": "cards/clues/lab-characteristic/74.png"
+    },
+    {
+      "id": "cmpy1l2mu000sti4sosvdo85m",
+      "label": "Non-operculated egg with small inconspicuous spine (75)",
+      "imageUrl": "cards/clues/lab-characteristic/75.png"
+    },
+    {
+      "id": "cmpy1l2w1000tti4s39r3mnl1",
+      "label": "Non-operculated egg with wide terminal spine in mid-line (76)",
+      "imageUrl": "cards/clues/lab-characteristic/76.png"
+    },
+    {
+      "id": "cmpy1l35a000uti4s9nv46n6h",
+      "label": "Thick brown radially striated shell contains egg inside (77)",
+      "imageUrl": "cards/clues/lab-characteristic/77.png"
+    },
+    {
+      "id": "cmpy1l3ef000vti4sqjm9l2v2",
+      "label": "Segmental parasite with 4 suckers but without rostellum (78)",
+      "imageUrl": "cards/clues/lab-characteristic/78.png"
+    },
+    {
+      "id": "cmpy1l3nn000wti4s08vthpbf",
+      "label": "Segmental parasite with rostellum and 4 suckers (79)",
+      "imageUrl": "cards/clues/lab-characteristic/79.png"
+    },
+    {
+      "id": "cmpy1l3wx000xti4spk47cxfi",
+      "label": "Small operculated egg with delicate knob at the opposite end (80)",
+      "imageUrl": "cards/clues/lab-characteristic/80.png"
+    },
+    {
+      "id": "cmpy1l463000yti4sd92x333h",
+      "label": "Multiple whitish-pink cylindal organism with circular motion (81)",
+      "imageUrl": "cards/clues/lab-characteristic/81.png"
+    },
+    {
+      "id": "cmpy1l4fj000zti4sua5rj6sl",
+      "label": "Asymmetrical organism with one side flattened while other side convex (82)",
+      "imageUrl": "cards/clues/lab-characteristic/82.png"
+    },
+    {
+      "id": "cmpy1l4ov0010ti4s22c9v412",
+      "label": "Scotch tape test positive (83)",
+      "imageUrl": "cards/clues/lab-characteristic/83.png"
+    },
+    {
+      "id": "cmpy1l4y00011ti4s1do2ljlk",
+      "label": "Barrel egg with bipolar plugs / protuberance / caps (84)",
+      "imageUrl": "cards/clues/lab-characteristic/84.png"
+    },
+    {
+      "id": "cmpy1l57m0012ti4s4rcn1mj1",
+      "label": "Peanut-shaped with thick striated shell and flattened bipolar plugs (85)",
+      "imageUrl": "cards/clues/lab-characteristic/85.png"
+    },
+    {
+      "id": "cmpy1l5gu0013ti4sac4j7gkm",
+      "label": "Oval egg with multiple thick layer shell and outer rough layer (86)",
+      "imageUrl": "cards/clues/lab-characteristic/86.png"
+    },
+    {
+      "id": "cmpy1l5q10014ti4s0s2cqhqg",
+      "label": "Large elongated egg with thinner shell (87)",
+      "imageUrl": "cards/clues/lab-characteristic/87.png"
+    },
+    {
+      "id": "cmpy1l5z60015ti4suhp2kvbu",
+      "label": "Oval egg with segmented embryo inside & thin transparent smooth shell (88)",
+      "imageUrl": "cards/clues/lab-characteristic/88.png"
+    },
+    {
+      "id": "cmpy1l68c0016ti4s0fzjuan9",
+      "label": "Adult worm with 2 pairs of sharp teeth (89)",
+      "imageUrl": "cards/clues/lab-characteristic/89.png"
+    },
+    {
+      "id": "cmpy1l6hj0017ti4slz665107",
+      "label": "Adult worm with 2 semulunar cutting plate (90)",
+      "imageUrl": "cards/clues/lab-characteristic/90.png"
+    },
+    {
+      "id": "cmpy1l6qq0018ti4sijp4ewl1",
+      "label": "Long organism with short buccal cavity and double-bulb esophagus (91)",
+      "imageUrl": "cards/clues/lab-characteristic/91.png"
+    },
+    {
+      "id": "cmpy1l6zx0019ti4sshoein9l",
+      "label": "Long smooth gently curved organism without nuclei on tail (92)",
+      "imageUrl": "cards/clues/lab-characteristic/92.png"
+    },
+    {
+      "id": "cmpy1l793001ati4ssualnda9",
+      "label": "Long angular organism with 2 nuclei extend to tail tip (93)",
+      "imageUrl": "cards/clues/lab-characteristic/93.png"
+    },
+    {
+      "id": "cmpy1l7i9001bti4snqjefxmo",
+      "label": "Coiled basophilic larvae within muscle fiber (94)",
+      "imageUrl": "cards/clues/lab-characteristic/94.png"
+    },
+    {
+      "id": "cmpy1l7rg001cti4sw17x47v2",
+      "label": "Elevated CK & LDH (95)",
+      "imageUrl": "cards/clues/lab-characteristic/95.png"
+    },
+    {
+      "id": "cmpy1l80l001dti4s6viotqsi",
+      "label": "Slender larvae with thin cuticle surrounded by eosinophils (96)",
+      "imageUrl": "cards/clues/lab-characteristic/96.png"
+    },
+    {
+      "id": "cmpy1l89u001eti4sd97823i1",
+      "label": "Large larvae with thick cuticle and cuticular spine (97)",
+      "imageUrl": "cards/clues/lab-characteristic/97.png"
+    },
+    {
+      "id": "cmpy3idqf0000ti0czc484kmr",
+      "label": "Higher risk in HIV patient",
+      "imageUrl": "cards/clues/special-trait/hiv.png"
+    },
+    {
+      "id": "cmpy3ie190001ti0c9z1ml45d",
+      "label": "Opportunistic infection",
+      "imageUrl": "cards/clues/special-trait/opportunistic.png"
+    },
+    {
+      "id": "cmpy3iebs0002ti0ct9s5yd0d",
+      "label": "Autoinfection",
+      "imageUrl": "cards/clues/special-trait/autoinfection.png"
+    },
+    {
+      "id": "cmpy3iemf0003ti0crwojq3th",
+      "label": "More severe in pregnant women",
+      "imageUrl": "cards/clues/special-trait/pregnant-women.png"
+    },
+    {
+      "id": "cmpy3iex10004ti0cjtjwd0kp",
+      "label": "Traveling history",
+      "imageUrl": "cards/clues/special-trait/traveling.png"
+    },
+    {
+      "id": "cmpy3if7o0005ti0ctpe6hdi7",
+      "label": "The most severe malaria",
+      "imageUrl": "cards/clues/special-trait/malaria.png"
+    },
+    {
+      "id": "cmpy3ifii0006ti0codaet7ny",
+      "label": "Relapse malaria",
+      "imageUrl": "cards/clues/special-trait/relapse-malaria.png"
+    },
+    {
+      "id": "cmpy3ift50007ti0cmba1q9ta",
+      "label": "Hypnozoite found in liver",
+      "imageUrl": "cards/clues/special-trait/hypnozoite-liver.png"
+    },
+    {
+      "id": "cmpy3ig3p0008ti0cjvb7x8x2",
+      "label": "Can potentially cause malnutrition (Vitamin A D E K)",
+      "imageUrl": "cards/clues/special-trait/malnutrition.png"
+    },
+    {
+      "id": "cmpy3igea0009ti0chq95d1f7",
+      "label": "Vaginitis",
+      "imageUrl": "cards/clues/special-trait/vaginitis.png"
+    },
+    {
+      "id": "cmpy3igos000ati0cz2pxk4yr",
+      "label": "Urethritis",
+      "imageUrl": "cards/clues/special-trait/urethritis.png"
+    },
+    {
+      "id": "cmpy3igzc000bti0cffm7at35",
+      "label": "Flagella found in promastigote stage within sandfly",
+      "imageUrl": "cards/clues/special-trait/flagella-sandfly.png"
+    },
+    {
+      "id": "cmpy3iha2000cti0c66xmv5uv",
+      "label": "Reactivation in immunocompromised patients",
+      "imageUrl": "cards/clues/special-trait/immunocompromised.png"
+    },
+    {
+      "id": "cmpy3ihkp000dti0capjt4tyw",
+      "label": "Increased risk in poor sanitization environment",
+      "imageUrl": "cards/clues/special-trait/poor-sanitization.png"
+    },
+    {
+      "id": "cmpy3ihv9000eti0crf4u4hfq",
+      "label": "History of playing in contaminated water",
+      "imageUrl": "cards/clues/special-trait/contaminated-water.png"
+    },
+    {
+      "id": "cmpy3ii5s000fti0caj1wx253",
+      "label": "Increased risk in contact lens wearer",
+      "imageUrl": "cards/clues/special-trait/contact-lens-wearer.png"
+    },
+    {
+      "id": "cmpy3iigc000gti0cr1hpcgze",
+      "label": "Severe in immunocompromised",
+      "imageUrl": "cards/clues/special-trait/severe-immunocompromised.png"
+    },
+    {
+      "id": "cmpy3ij1i000iti0cya79qrix",
+      "label": "Eating uncooked fish",
+      "imageUrl": "cards/clues/special-trait/uncooked-fish.png"
+    },
+    {
+      "id": "cmpy3ijc4000jti0clfnsj4y7",
+      "label": "Eating metacercariae",
+      "imageUrl": "cards/clues/special-trait/metacercariae.png"
+    },
+    {
+      "id": "cmpy3ijml000kti0c0cp9hgp7",
+      "label": "Eating contaminated vegetation",
+      "imageUrl": "cards/clues/special-trait/contaminated-vegetation.png"
+    },
+    {
+      "id": "cmpy3ijx2000lti0ci1kj8qte",
+      "label": "Eating watercress morning glory",
+      "imageUrl": "cards/clues/special-trait/watercress-morning-glory.png"
+    },
+    {
+      "id": "cmpy3ik7m000mti0cinz2fkp3",
+      "label": "Eating somtam pu",
+      "imageUrl": "cards/clues/special-trait/somtam-pu.png"
+    },
+    {
+      "id": "cmpy3iki5000nti0cumodieze",
+      "label": "Rarely causes brain mass epilepsy",
+      "imageUrl": "cards/clues/special-trait/brain-mass-epilepsy.png"
+    },
+    {
+      "id": "cmpy3iksp000oti0cf9k68ra9",
+      "label": "Can potentially cause hepatocellular carcinoma",
+      "imageUrl": "cards/clues/special-trait/hepatocellular-carcinoma.png"
+    },
+    {
+      "id": "cmpy3il39000pti0cz2qajt7t",
+      "label": "Can potentially cause bladder cancer",
+      "imageUrl": "cards/clues/special-trait/bladder-cancer.png"
+    },
+    {
+      "id": "cmpy3ildt000qti0clky780cr",
+      "label": "Eating undercooked meat",
+      "imageUrl": "cards/clues/special-trait/undercooked-meat.png"
+    },
+    {
+      "id": "cmpy3ilob000rti0czxo9p0mn",
+      "label": "CT brain: numerous parenchymal lesion",
+      "imageUrl": "cards/clues/special-trait/ct-brain.png"
+    },
+    {
+      "id": "cmpy3ilyx000sti0cc0431cen",
+      "label": "MRI: multiple large cysticersus cyst in basal cisternal space",
+      "imageUrl": "cards/clues/special-trait/mri-cisternal.png"
+    },
+    {
+      "id": "cmpy3im9f000tti0ccly4rops",
+      "label": "Eating undercooked pork",
+      "imageUrl": "cards/clues/special-trait/undercooked-pork.png"
+    },
+    {
+      "id": "cmpy3imjx000uti0cu4maezml",
+      "label": "Parasite resides at terminal ileum",
+      "imageUrl": "cards/clues/special-trait/terminal-ileum.png"
+    },
+    {
+      "id": "cmpy3imue000vti0cllzgccpd",
+      "label": "Eating paratenic host fish",
+      "imageUrl": "cards/clues/special-trait/paratenic-host-fish.png"
+    },
+    {
+      "id": "cmpy3in4u000wti0c015tkmly",
+      "label": "Eating inadequate cooked squid",
+      "imageUrl": "cards/clues/special-trait/inadequate-cooked-squid.png"
+    },
+    {
+      "id": "cmpy3infc000xti0chx1dl0z5",
+      "label": "Retro-infection",
+      "imageUrl": "cards/clues/special-trait/retro-infection.png"
+    },
+    {
+      "id": "cmpy3inpv000yti0cykutbbg6",
+      "label": "Increased risk in contaminated hand/food",
+      "imageUrl": "cards/clues/special-trait/contaminated-hand-food.png"
+    },
+    {
+      "id": "cmpy3io0f000zti0chkbqc816",
+      "label": "Protein-losing enteropathy",
+      "imageUrl": "cards/clues/special-trait/enteropathy.png"
+    },
+    {
+      "id": "cmpy3ioay0010ti0cn10t33k2",
+      "label": "PE: borborygmus sound",
+      "imageUrl": "cards/clues/special-trait/pe.png"
+    },
+    {
+      "id": "cmpy3iomg0011ti0c3l2yo2ws",
+      "label": "Largest nematode",
+      "imageUrl": "cards/clues/special-trait/nematode.png"
+    },
+    {
+      "id": "cmpy3iox00012ti0cx37lehtu",
+      "label": "Heart-lung migration",
+      "imageUrl": "cards/clues/special-trait/heart-lung.png"
+    },
+    {
+      "id": "cmpy3ip7k0013ti0csbvxsnbm",
+      "label": "Increased risk in people walking barefoot on contaminated soil",
+      "imageUrl": "cards/clues/special-trait/barefoot.png"
+    },
+    {
+      "id": "cmpy3ipi30014ti0cy51xevu6",
+      "label": "Worldwide distribution",
+      "imageUrl": "cards/clues/special-trait/worldwide.png"
+    },
+    {
+      "id": "cmpy3ipsp0015ti0cweesnav4",
+      "label": "Distributed mainly in Southeast Asia",
+      "imageUrl": "cards/clues/special-trait/asean.png"
+    },
+    {
+      "id": "cmpy3iq380016ti0crloqzrf0",
+      "label": "Eating undercooked meat contaminated with encyst larvae",
+      "imageUrl": "cards/clues/special-trait/meat-encyst-larvae.png"
+    },
+    {
+      "id": "cmpy3iqdq0017ti0c7f6f08xx",
+      "label": "Eating undercooked frog",
+      "imageUrl": "cards/clues/special-trait/frog.png"
+    },
+    {
+      "id": "cmpy3iqo90018ti0csmlfjawt",
+      "label": "Eating undercooked fresh water shrimp or crab",
+      "imageUrl": "cards/clues/special-trait/shrimp-crab.png"
+    },
+    {
+      "id": "cmpy3iqyu0019ti0cyjzpvs26",
+      "label": "Eating undercooked snake",
+      "imageUrl": "cards/clues/special-trait/snake.png"
+    },
+    {
+      "id": "cmq3x0k5o0000tiawpgd7uj1g",
+      "label": "Chigger bite (rural, Asia)",
+      "imageUrl": "cards/clues/special-trait/chigger-bite.png"
+    },
+    {
+      "id": "cmq3xmm620003tiaw5e48ihgb",
+      "label": "Gram + cocci in pairs (diplococci)",
+      "imageUrl": "cards/clues/gram-stain/gram-positive-cocci-in-pair.png"
+    },
+    {
+      "id": "cmq3xn5vx0004tiawbi64kkt0",
+      "label": "Gram - cocci in pairs (diplococci)",
+      "imageUrl": "cards/clues/gram-stain/gram-negative-cocci-in-pair.png"
+    },
+    {
+      "id": "cmq3xwh140005tiawmd5j4frn",
+      "label": "Bamboo stick appearance",
+      "imageUrl": "cards/clues/lab-characteristic/bamboo-stick.png"
+    },
+    {
+      "id": "cmq3xzb7l0006tiawiaklp8g2",
+      "label": "Clearly seen capsule after gram stain",
+      "imageUrl": "cards/clues/lab-characteristic/capsule.png"
+    },
+    {
+      "id": "cmq3y4v9z0007tiawjpldlfwd",
+      "label": "Normal flora",
+      "imageUrl": "cards/clues/clinical-manifestation/normal-flora.png"
+    },
+    {
+      "id": "cmq44mngh0000tirkvs3wpity",
+      "label": "Murine Typhus",
+      "imageUrl": "cards/clues/clinical-manifestation/murine-typhus.png"
+    },
+    {
+      "id": "cmq44myst0001tirkyufcbhey",
+      "label": "Scrub Typhus",
+      "imageUrl": "cards/clues/clinical-manifestation/scrub-typhus.png"
+    },
+    {
+      "id": "cmqazecza000pti647tvdoebp",
+      "label": "Non-operculated egg with inconspicuous spin (98)",
+      "imageUrl": "cards/clues/lab-characteristic/98.png"
+    }
+  ]
+}

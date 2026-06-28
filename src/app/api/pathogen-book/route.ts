@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import type { GameMode } from '@prisma/client'
 
-const VALID_MODES = new Set<string>(['BACTERIA', 'FUNGI', 'PARASITES', 'VIRUS'])
+// Accept both the DB enum value (PARASITE) and the legacy plural (PARASITES).
+const VALID_MODES = new Set<string>(['BACTERIA', 'FUNGI', 'PARASITE', 'PARASITES', 'VIRUS'])
 
 const MODE_MAP: Record<string, string> = { PARASITES: 'PARASITE' }
 

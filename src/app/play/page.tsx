@@ -690,10 +690,10 @@ export default function PlayPage() {
       {/* Arbitrary background image (Tailwind bg-[url-syntax]), bg-cover scales to fill, bg-center centers it */}
       <div
         ref={containerRef}
-        className="relative flex flex-col px-6 pt-1 pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
+        className="relative flex flex-col px-6 pt-[7vh] pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
       >
-        {/* Top bar: Score on left, Exit on right */}
-        <div className="relative z-10 flex items-center justify-between w-full">
+        {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen */}
+        <div className="absolute top-2 inset-x-6 z-20 flex items-center justify-between">
           <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
           <button
             onClick={() => setShowExitConfirm(true)}
