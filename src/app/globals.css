@@ -356,3 +356,47 @@
   0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
   40% { transform: translateY(-10px); opacity: 1; }
 }
+
+/* ─── Credits page (minimal staggered fade-in) ──────────────── */
+@keyframes credit-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.credit-in {
+  animation: credit-in 520ms var(--ease-out-spring) both;
+  animation-delay: var(--credit-delay, 0ms);
+}
+
+/* Background artwork reveal */
+@keyframes credit-bg-in {
+  from { opacity: 0; transform: scale(1.03); }
+  to   { opacity: 1; transform: scale(1);    }
+}
+.credit-bg-in { animation: credit-bg-in 700ms var(--ease-out-spring) both; }
+
+/* Back button slide-in */
+@keyframes credit-back-in {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+.credit-back-in { animation: credit-back-in 520ms var(--ease-out-spring) both 250ms; }
+
+/* Loading screen fade-out once assets are ready */
+@keyframes credit-loader-out {
+  to { opacity: 0; visibility: hidden; }
+}
+.credit-loader-out { animation: credit-loader-out 500ms ease forwards; }
+
+/* Loading dots */
+.credit-dot {
+  animation: loading-bounce 1.4s ease-in-out infinite both;
+  animation-delay: var(--dot-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .credit-in,
+  .credit-bg-in,
+  .credit-back-in { animation: none; }
+  .credit-dot { animation: none; opacity: 0.7; }
+}
