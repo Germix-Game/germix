@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,6 +18,8 @@ type CreditElement = {
   maxW?: string; // overrides the default max width (portrait images need a smaller one)
 };
 
+const BG_SRC = "/assets/credit/credit_and_reference_compressed_2.png";
+
 const ELEMENTS: CreditElement[] = [
   { src: "1_game_top.png", alt: "Germix", width: 1803, height: 529, offsetY: "-2rem", raise: "15%" },
   { src: "2_researcher.png", alt: "Researchers", width: 1844, height: 518, offsetY: "-1rem" },
@@ -27,8 +29,12 @@ const ELEMENTS: CreditElement[] = [
   { src: "6_reference_table.png", alt: "References", width: 1249, height: 4505, maxW: "58rem", offsetY: "-1rem", raise: "-5%" },
 ];
 
+// Every image that must be loaded before we reveal the page.
+const ALL_SRCS = [BG_SRC, ...ELEMENTS.map((el) => `/assets/credit/element/${el.src}`)];
+
 export default function CreditsPage() {
   const router = useRouter();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -37,38 +43,106 @@ export default function CreditsPage() {
     });
   }, [router]);
 
+  // Preload all artwork, then reveal. Fail-safe timeout so a stalled image
+  // never traps the user on the loading screen.
+  useEffect(() => {
+    let remaining = ALL_SRCS.length;
+    let done = false;
+
+    const finish = () => {
+      if (!done) {
+        done = true;
+        setReady(true);
+      }
+    };
+
+    const tick = () => {
+      remaining -= 1;
+      if (remaining <= 0) finish();
+    };
+
+    const imgs = ALL_SRCS.map((src) => {
+      const img = new window.Image();
+      img.onload = tick;
+      img.onerror = tick;
+      img.src = src;
+      return img;
+    });
+
+    const fallback = window.setTimeout(finish, 8000);
+
+    return () => {
+      window.clearTimeout(fallback);
+      imgs.forEach((img) => {
+        img.onload = null;
+        img.onerror = null;
+      });
+    };
+  }, []);
+
   return (
     <div
       className="relative min-h-screen w-full"
       style={{ backgroundColor: "#2b0d05" }}
     >
+      {/* Loading screen */}
+      <div
+        className={`fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 ${
+          ready ? "credit-loader-out pointer-events-none" : ""
+        }`}
+        style={{ backgroundColor: "#2b0d05" }}
+      >
+        <div className="flex items-end gap-2">
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className="credit-dot block h-3 w-3 rounded-full bg-[#e8c98f]"
+              style={{ "--dot-delay": `${i * 160}ms` } as React.CSSProperties}
+            />
+          ))}
+        </div>
+        <p className="text-sm font-semibold uppercase tracking-widest text-[#e8c98f]/80">
+          Loading credits
+        </p>
+      </div>
+
       {/* Background artwork — full screen width */}
       <div className="relative w-full">
         <Image
-          src="/assets/credit/credit_and_reference_compressed.png"
+          src={BG_SRC}
           alt="Germix Credits & References"
           width={1920}
-          height={7997}
-          className="h-auto w-full object-contain"
+          height={8725}
+          className={`h-auto w-full object-contain ${ready ? "credit-bg-in" : "opacity-0"}`}
           priority
         />
 
         {/* Credit elements overlaid, centered with a fixed gap */}
         <div className="absolute inset-0 flex flex-col items-center justify-start gap-8 pt-8">
-          {ELEMENTS.map((el) => (
-            <Image
+          {ELEMENTS.map((el, i) => (
+            <div
               key={el.src}
-              src={`/assets/credit/element/${el.src}`}
-              alt={el.alt}
-              width={el.width}
-              height={el.height}
-              className="h-auto w-full object-contain"
-              style={{
-                maxWidth: el.maxW ?? "96rem",
-                marginTop: el.offsetY,
-                transform: el.raise ? `translateY(${el.raise})` : undefined,
-              }}
-            />
+              className={`flex w-full justify-center ${ready ? "credit-in" : "opacity-0"}`}
+              style={
+                {
+                  marginTop: el.offsetY,
+                  "--credit-delay": `${i * 110}ms`,
+                } as React.CSSProperties
+              }
+            >
+              <Image
+                src={`/assets/credit/element/${el.src}`}
+                alt={el.alt}
+                width={el.width}
+                height={el.height}
+                priority
+                className="h-auto w-full object-contain"
+                style={{
+                  maxWidth: el.maxW ?? "96rem",
+                  transform: el.raise ? `translateY(${el.raise})` : undefined,
+                }}
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -77,7 +151,9 @@ export default function CreditsPage() {
       <div className="fixed top-4 left-4 z-20">
         <Link
           href="/home"
-          className="flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 py-2 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
+          className={`flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 py-2 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a] ${
+            ready ? "credit-back-in" : "opacity-0"
+          }`}
         >
           ← Back
         </Link>
