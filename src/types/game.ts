@@ -5,7 +5,7 @@ export type CardCategory =
   | "SPECIAL_TRAIT"
   | "CLINICAL_MANIFESTATION";
 
-export type GramType = "POSITIVE" | "NEGATIVE" | "ZERO" |"ACID_FAST" | "NONE" | "PROTOZOA" | "PLATYHEMINTH" | "NEMATODE";
+export type GramType = "POSITIVE" | "NEGATIVE" |"ACID_FAST" | "NONE" | "PROTOZOA" | "PLATYHEMINTH" | "NEMATODE";
 
 export type MicrobeTag =
   | "ANAEROBE"
