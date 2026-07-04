@@ -26,8 +26,13 @@ type WithCategory = { clueCard: { category: CardCategory } }
 // lacks a category group.
 export function selectSlotClues<T extends WithCategory>(cluesSortedByOrder: T[]): (T | null)[] {
   return SLOT_CATEGORIES.map((group) => {
-    const candidates = cluesSortedByOrder.filter((mc) => group.includes(mc.clueCard.category))
-    return candidates[0] ?? null
+    const primary = cluesSortedByOrder.filter((mc) => group.primary.includes(mc.clueCard.category))
+    if (primary[0]) return primary[0]
+    // Only fall back when the microbe has NO clue in any primary category.
+    const fallback = group.fallback
+      ? cluesSortedByOrder.filter((mc) => group.fallback!.includes(mc.clueCard.category))
+      : []
+    return fallback[0] ?? null
   })
 }
 
