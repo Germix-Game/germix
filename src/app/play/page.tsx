@@ -585,6 +585,19 @@ export default function PlayPage() {
   // ── filters ──────────────────────────────────────────────────────────────
 
   // Toggle gram filter: click again to clear, click different to switch
+  const filterOptions =
+    gameMode === "PARASITE"
+      ? ([
+        ["PROTOZOA", "Protozoa ", "accent-[5c2a0e"],
+        ["PLATYHEMINTH", "Platyheminth ", "accent-[5c2a0e"],
+        ["NEMATODE", "Nematode ", "accent-[5c2a0e"],
+      ] as const)
+      : ([
+        ["POSITIVE", "GRAM +", "accent-[#5c2a0e]"],
+        ["NEGATIVE", "GRAM −", "accent-[#5c2a0e]"],
+        ["NONE", "GRAM 0", "accent-[5c2a0e"]
+      ] as const);
+
   function toggleGram(gram: GramType) {
     setGramFilter((prev) => (prev === gram ? null : gram));
   }
@@ -782,8 +795,8 @@ export default function PlayPage() {
             pendingMicrobeImage={
               pendingMicrobeId
                 ? (resolveImageSrc(
-                    microbes.find((m) => m.id === pendingMicrobeId)?.answerImageUrl,
-                  ) || null)
+                  microbes.find((m) => m.id === pendingMicrobeId)?.answerImageUrl,
+                ) || null)
                 : null
             }
             onConfirm={() => {
@@ -812,20 +825,13 @@ export default function PlayPage() {
 
           {/* GRAM-TYPE FILTERS — rendered from a tuple array using .map() */}
           {/* `as const` → tells TypeScript these are literal types, not generic strings */}
-          {(
-            [
-              ["POSITIVE", "GRAM +"],
-              ["NEGATIVE", "GRAM −"],
-            ] as const
-          ).map(([value, label]) => (
-            // Destructuring the tuple: [value, label] = ["POSITIVE", "GRAM +"]
-            // `key={value}` → React needs a unique key on each list item for efficient updates
+          {filterOptions.map(([value, label, accentClass]) => (
             <label key={value} className="flex cursor-pointer items-center gap-1.5 select-none">
               <input
                 type="checkbox"
-                checked={gramFilter === value}            // "controlled" input — React owns the state
-                onChange={() => toggleGram(value)}        // run our toggle function when user clicks
-                className="accent-[#5c2a0e] h-3.5 w-3.5"  // accent-* colors the checkbox itself
+                checked={gramFilter === value}
+                onChange={() => toggleGram(value)}
+                className={`${accentClass} h-3.5 w-3.5`}
               />
               <span className="text-[#3a2010] text-base font-semibold">{label}</span>
             </label>
@@ -864,21 +870,20 @@ export default function PlayPage() {
           </div>
 
           {/* TAG FILTERS (anaerobe) — same .map pattern as gram filters */}
-          {(
-            [
+          {gameMode === "BACTERIA" &&
+            ([
               ["ANAEROBE", "ANAEROBE"],
-            ] as const
-          ).map(([value, label]) => (
-            <label key={value} className="flex cursor-pointer items-center gap-1.5 select-none">
-              <input
-                type="checkbox"
-                checked={tagFilters.has(value)}             // Set.has() to check if active
-                onChange={() => toggleTag(value)}
-                className="accent-[#5c2a0e] h-3.5 w-3.5"
-              />
-              <span className="text-[#3a2010] text-base font-semibold">{label}</span>
-            </label>
-          ))}
+            ] as const).map(([value, label]) => (
+              <label key={value} className="flex cursor-pointer items-center gap-1.5 select-none">
+                <input
+                  type="checkbox"
+                  checked={tagFilters.has(value)}
+                  onChange={() => toggleTag(value)}
+                  className="accent-[#5c2a0e] h-3.5 w-3.5"
+                />
+                <span className="text-[#3a2010] text-base font-semibold">{label}</span>
+              </label>
+            ))}
         </div>
 
         {/* MICROBE SELECTION GRID */}
@@ -1158,57 +1163,56 @@ function DraggableMicrobeCard({
       onMouseLeave={handleMouseLeave}
     >
       <div ref={shineRef} className="card-shine" aria-hidden />
-    <div
-      ref={cardRef}
-      role="option"
-      aria-selected={selected}
-      aria-disabled={isWrong}
-      style={{ touchAction: "none", width: "100%", height: "100%" }}
-      className={`relative overflow-hidden rounded-xl transition-colors ${
-        isWrong
+      <div
+        ref={cardRef}
+        role="option"
+        aria-selected={selected}
+        aria-disabled={isWrong}
+        style={{ touchAction: "none", width: "100%", height: "100%" }}
+        className={`relative overflow-hidden rounded-xl transition-colors ${isWrong
           ? "border-red-500 opacity-50 cursor-not-allowed"
           : selected
-          ? "cursor-grab border-[#5c2a0e] shadow-sm"
-          : "cursor-grab border-transparent hover:border-[#c4a870]"
-      }`}
-      onDoubleClick={() => {
-        if (isWrong) return;
-        if (canDrop) onDrop(microbe.id); else onDropRejected();
-      }}
-    >
-      {/* Card face — image fills the whole card */}
-      <div className="absolute inset-0 bg-[#e0c890] flex items-center justify-center">
-        <span className="px-1 text-center text-[0.5rem] font-medium italic leading-tight text-[#5c2a0e]">
-          {label}
-        </span>
-        {src && (
-          <img
-            src={src}
-            alt={label}
-            className="absolute inset-0 h-full w-full object-contain"
-            loading="lazy"
-          />
-        )}
-      </div>
+            ? "cursor-grab border-[#5c2a0e] shadow-sm"
+            : "cursor-grab border-transparent hover:border-[#c4a870]"
+          }`}
+        onDoubleClick={() => {
+          if (isWrong) return;
+          if (canDrop) onDrop(microbe.id); else onDropRejected();
+        }}
+      >
+        {/* Card face — image fills the whole card */}
+        <div className="absolute inset-0 bg-[#e0c890] flex items-center justify-center">
+          <span className="px-1 text-center text-[0.5rem] font-medium italic leading-tight text-[#5c2a0e]">
+            {label}
+          </span>
+          {src && (
+            <img
+              src={src}
+              alt={label}
+              className="absolute inset-0 h-full w-full object-contain"
+              loading="lazy"
+            />
+          )}
+        </div>
 
-      {/* Name strip at the bottom */}
-      {/* <div className="absolute bottom-0 inset-x-0 bg-[#2a1208]/70 px-1 py-0.5">
+        {/* Name strip at the bottom */}
+        {/* <div className="absolute bottom-0 inset-x-0 bg-[#2a1208]/70 px-1 py-0.5">
         <span className="block w-full text-center text-[0.5rem] leading-tight italic text-[#f5e6c8] line-clamp-2">
           {label}
         </span>
       </div> */}
 
-      {/* Wrong-answer overlay — red tint + ✕ icon */}
-      {isWrong && (
-        <div className="absolute inset-0 rounded-xl bg-red-600/30 flex items-center justify-center">
-          <span className="text-red-400 font-black text-xl drop-shadow">✕</span>
-        </div>
-      )}
-      {/* Selection highlight overlay */}
-      {selected && !isWrong && (
-        <div className="absolute inset-0 rounded-xl ring-2 ring-inset ring-[#5c2a0e] bg-[#5c2a0e]/10" />
-      )}
-    </div>
+        {/* Wrong-answer overlay — red tint + ✕ icon */}
+        {isWrong && (
+          <div className="absolute inset-0 rounded-xl bg-red-600/30 flex items-center justify-center">
+            <span className="text-red-400 font-black text-xl drop-shadow">✕</span>
+          </div>
+        )}
+        {/* Selection highlight overlay */}
+        {selected && !isWrong && (
+          <div className="absolute inset-0 rounded-xl ring-2 ring-inset ring-[#5c2a0e] bg-[#5c2a0e]/10" />
+        )}
+      </div>
     </div>
   );
 }
@@ -1365,11 +1369,10 @@ function RoundReviewRow({ result, attemptNumber }: { result: RoundResult; attemp
       <div className="flex items-center gap-2 mb-3">
         <span className="text-[#5c2a0e] text-sm font-medium">Microbe {attemptNumber}</span>
         <span
-          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-            result.correct
-              ? "bg-green-600/20 text-green-800"
-              : "bg-red-600/20 text-red-800"
-          }`}
+          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${result.correct
+            ? "bg-green-600/20 text-green-800"
+            : "bg-red-600/20 text-red-800"
+            }`}
         >
           {result.correct ? `+${result.roundScore}` : "Wrong"}
         </span>
