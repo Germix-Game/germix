@@ -137,6 +137,20 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
             })
 
             if (correct) {
+              // The Pathogen Book shows only the cards a player has actually
+              // opened for this microbe. Accumulate across replays: union the
+              // slots opened this run with whatever was recorded before, so the
+              // entry grows toward the full set as the player re-identifies it.
+              const existingUnlock = await tx.playerMicrobeUnlocked.findUnique({
+                where: {
+                  playerId_microbeId: { playerId: player.id, microbeId: sessionMicrobe.microbeId },
+                },
+                select: { cardSlotsOpened: true },
+              })
+              const mergedSlots = Array.from(
+                new Set([...(existingUnlock?.cardSlotsOpened ?? []), ...revealedSlots]),
+              ).sort((a, b) => a - b)
+
               await tx.playerMicrobeUnlocked.upsert({
                 where: {
                   playerId_microbeId: { playerId: player.id, microbeId: sessionMicrobe.microbeId },
@@ -144,9 +158,11 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
                 create: {
                   playerId: player.id,
                   microbeId: sessionMicrobe.microbeId,
-                  cardSlotsOpened: revealedSlots,
+                  cardSlotsOpened: mergedSlots,
                 },
-                update: {},
+                update: {
+                  cardSlotsOpened: mergedSlots,
+                },
               })
             }
 

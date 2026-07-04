@@ -27,7 +27,15 @@ function forbidden(): never {
  *   catch (e) { if (e instanceof Response) return e; throw e }
  */
 
-export async function requireAuth(): Promise<Player> {
+/**
+ * Resolves the current Player without throwing — returns null when there is no
+ * authenticated user. Honours the dev auth bypass so that EVERY route resolves
+ * the same player id: routes that write (via requireAuth) and routes that only
+ * read (e.g. the Pathogen Book) must agree on who the player is, otherwise
+ * data written under the dev player is invisible to a route that reads via a
+ * different (or missing) Supabase identity.
+ */
+export async function getOptionalPlayer(): Promise<Player | null> {
   if (process.env.NODE_ENV === 'development' && process.env.DEV_AUTH_BYPASS === 'true') {
     const devId = process.env.DEV_PLAYER_ID ?? 'dev-00000000-0000-0000-0000-000000000001'
     const devUsername = `dev-${devId.slice(-8)}`
@@ -45,11 +53,14 @@ export async function requireAuth(): Promise<Player> {
 
   const supabase = await createSupabaseServerClient()
   const { data, error } = await supabase.auth.getUser()
-  if (error || !data.user) unauthorized()
+  if (error || !data.user) return null
 
-  const player = await prisma.player.findUnique({ where: { id: data.user.id } })
+  return prisma.player.findUnique({ where: { id: data.user.id } })
+}
+
+export async function requireAuth(): Promise<Player> {
+  const player = await getOptionalPlayer()
   if (!player) unauthorized()
-
   return player
 }
 

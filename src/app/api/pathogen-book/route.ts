@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import { getOptionalPlayer } from '@/lib/auth'
+import { getBookSlots } from '@/lib/clues'
 import type { GameMode } from '@prisma/client'
 
 const VALID_MODES = new Set<string>(['BACTERIA', 'FUNGI', 'PARASITES', 'VIRUS'])
@@ -10,15 +11,13 @@ const MODE_MAP: Record<string, string> = { PARASITES: 'PARASITE' }
 export async function GET(request: NextRequest) {
   const gameMode = request.nextUrl.searchParams.get('gameMode')
 
-  // Resolve the current player (optional — unauthenticated users see all as locked)
+  // Resolve the current player (optional — unauthenticated users see all as
+  // locked). Uses the same auth as the game routes so unlocks written under the
+  // (dev or real) player are read back under that same id.
   let playerId: string | null = null
   try {
-    const supabase = await createSupabaseServerClient()
-    const { data } = await supabase.auth.getUser()
-    if (data.user) {
-      const player = await prisma.player.findUnique({ where: { id: data.user.id }, select: { id: true } })
-      if (player) playerId = player.id
-    }
+    const player = await getOptionalPlayer()
+    if (player) playerId = player.id
   } catch {
     // not authenticated — all microbes will be locked
   }
@@ -49,28 +48,26 @@ export async function GET(request: NextRequest) {
       unlocked: Array.isArray(unlockedBy) && unlockedBy.length > 0,
     }))
 
-    // Optionally include clues for the first unlocked microbe to avoid a waterfall fetch
+    // Optionally include the opened-slot view for the first unlocked microbe to
+    // avoid a waterfall fetch. Same shape as the per-microbe /clues route.
     const withFirstClues = request.nextUrl.searchParams.get('withFirstClues') === 'true'
     if (withFirstClues && playerId) {
       const firstUnlocked = result.find((m) => m.unlocked)
       if (firstUnlocked) {
-        const clues = await prisma.microbeClue.findMany({
-          where: { microbeId: firstUnlocked.id },
-          select: {
-            sortOrder: true,
-            clueCard: { select: { id: true, category: true, label: true, imageUrl: true } },
-          },
-          orderBy: [{ sortOrder: 'asc' }],
+        const unlock = await prisma.playerMicrobeUnlocked.findUnique({
+          where: { playerId_microbeId: { playerId, microbeId: firstUnlocked.id } },
+          select: { cardSlotsOpened: true },
         })
+        const slots = await getBookSlots(firstUnlocked.id, unlock?.cardSlotsOpened ?? [])
         return Response.json({
           microbes: result,
           firstMicrobeId: firstUnlocked.id,
-          firstMicrobeClues: clues.map(({ sortOrder, clueCard }) => ({ ...clueCard, sortOrder })),
+          firstMicrobeSlots: slots,
         })
       }
     }
 
-    return Response.json({ microbes: result, firstMicrobeId: null, firstMicrobeClues: null })
+    return Response.json({ microbes: result, firstMicrobeId: null, firstMicrobeSlots: null })
   } catch (err) {
     console.error('[pathogen-book] DB error:', err)
     return Response.json({ error: 'Internal server error' }, { status: 500 })

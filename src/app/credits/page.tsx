@@ -4,67 +4,28 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Alice } from "next/font/google";
 import { createClient } from "@/utils/supabase/client";
 
-const alice = Alice({ weight: "400", subsets: ["latin"] });
+// Overlaid credit elements, in filename order (1_ → 6_).
+// offsetY nudges an individual element vertically (marginTop).
+type CreditElement = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  offsetY?: string; // marginTop nudge (shifts layout)
+  raise?: string; // translateY, e.g. "-30%" pulls the element up to overlap the one above
+  maxW?: string; // overrides the default max width (portrait images need a smaller one)
+};
 
-const RESEARCHERS = [
-  "Chonticha Nopmaneejumruslers",
-  "Keerada Keeratihuttyakorn",
-  "Chatakarn Surawatanawisase",
-  "Veerin Banjongpru",
+const ELEMENTS: CreditElement[] = [
+  { src: "1_game_top.png", alt: "Germix", width: 1803, height: 529, offsetY: "-2rem", raise: "15%" },
+  { src: "2_researcher.png", alt: "Researchers", width: 1844, height: 518, offsetY: "-1rem" },
+  { src: "3_game_advisor.png", alt: "Advisors", width: 1755, height: 471, offsetY: "-1rem" },
+  { src: "4_game_dev.png", alt: "Game Developers", width: 1784, height: 983, offsetY: "-1rem", raise: "0%" },
+  { src: "5_designer.png", alt: "Designers", width: 1801, height: 915, offsetY: "-1rem", raise: "-25%" },
+  { src: "6_reference_table.png", alt: "References", width: 1249, height: 4505, maxW: "58rem", offsetY: "-1rem", raise: "-5%" },
 ];
-
-const ADVISORS = [
-  "AJ. Aekkacha Moonwiriyakit",
-  "AJ. Thachawech Kimprasit",
-  "AJ. Suthan Srisangkaew",
-];
-
-const ILLUSTRATORS = ["Akikun"];
-
-const REFERENCES = [
-  { label: "Textbook", title: "X" },
-  { label: "Textbook", title: "X" },
-  { label: "Guidelines", title: "X" },
-];
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h2
-      className="mb-3 text-sm font-bold uppercase tracking-widest text-black"
-      style={{ fontFamily: "'Impact','Arial Black',sans-serif" }}
-    >
-      {children}
-    </h2>
-  );
-}
-
-function ReferenceList({ entries }: { entries: readonly { label: string; title: string }[] }) {
-  return (
-    <ul className="flex flex-col items-center gap-2">
-      {entries.map((ref, i) => (
-        <li key={i} className="flex flex-col items-center leading-tight">
-          <span className="text-[11px] uppercase tracking-wider text-black/50">{ref.label}</span>
-          <span className="text-[13px] font-semibold text-black text-center">{ref.title}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function EntryList({ entries }: { entries: readonly string[] }) {
-  return (
-    <ul className="flex flex-col items-center gap-1.5">
-      {entries.map((name, i) => (
-        <li key={i} className="text-base font-semibold text-black leading-tight">
-          {name}
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 export default function CreditsPage() {
   const router = useRouter();
@@ -78,55 +39,38 @@ export default function CreditsPage() {
 
   return (
     <div
-      className={`${alice.className} relative min-h-screen w-full bg-cover bg-center`}
-      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
+      className="relative min-h-screen w-full"
+      style={{ backgroundColor: "#2b0d05" }}
     >
-      {/* Game graphic — 80% wide, centered, behind text */}
-      <div className="absolute inset-0 flex justify-center">
-        <div className="relative w-4/5 h-full">
-          <Image
-            src="/assets/credit/germix-graphic-game.png"
-            alt="Germix Credits"
-            fill
-            className="object-contain object-top"
-            priority
-          />
+      {/* Background artwork — full screen width */}
+      <div className="relative w-full">
+        <Image
+          src="/assets/credit/credit_and_reference_compressed.png"
+          alt="Germix Credits & References"
+          width={1920}
+          height={7997}
+          className="h-auto w-full object-contain"
+          priority
+        />
+
+        {/* Credit elements overlaid, centered with a fixed gap */}
+        <div className="absolute inset-0 flex flex-col items-center justify-start gap-8 pt-8">
+          {ELEMENTS.map((el) => (
+            <Image
+              key={el.src}
+              src={`/assets/credit/element/${el.src}`}
+              alt={el.alt}
+              width={el.width}
+              height={el.height}
+              className="h-auto w-full object-contain"
+              style={{
+                maxWidth: el.maxW ?? "96rem",
+                marginTop: el.offsetY,
+                transform: el.raise ? `translateY(${el.raise})` : undefined,
+              }}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Credits overlay */}
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-end pb-4 px-4">
-        {/* 2-column grid */}
-        <div className="w-full max-w-lg grid grid-cols-2 gap-x-8 gap-y-6 text-center">
-          {/* Left: Researchers */}
-          <div className="flex flex-col items-center">
-            <SectionTitle>Researchers</SectionTitle>
-            <EntryList entries={RESEARCHERS} />
-          </div>
-
-          {/* Right: Advisors */}
-          <div className="flex flex-col items-center">
-            <SectionTitle>Advisors</SectionTitle>
-            <EntryList entries={ADVISORS} />
-          </div>
-
-          {/* Bottom: Illustrator — spans both columns */}
-          <div className="col-span-2 flex flex-col items-center">
-            <SectionTitle>Illustrator</SectionTitle>
-            <EntryList entries={ILLUSTRATORS} />
-          </div>
-
-          {/* Bottom: Academic References — spans both columns */}
-          <div className="col-span-2 flex flex-col items-center">
-            <SectionTitle>Academic References</SectionTitle>
-            <ReferenceList entries={REFERENCES} />
-          </div>
-        </div>
-
-        <p className="mt-5 text-[13px] text-black/40">
-          © {new Date().getFullYear()} Germix — Microbiology Card Game. All rights reserved.
-
-        </p>
       </div>
 
       {/* Back button */}
