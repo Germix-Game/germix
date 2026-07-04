@@ -1,11 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LevelSelectPage() {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/game-modes")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => {
+        if (data.posttestRequired) {
+          router.push("/home");
+        } else {
+          setChecking(false);
+        }
+      })
+      .catch(() => {
+        setChecking(false);
+      });
+  }, [router]);
 
   function handleSelect(gameMode: string) {
     if (starting) return;
@@ -14,6 +30,15 @@ export default function LevelSelectPage() {
     // and fetches the first round, so the player waits there instead of here.
     router.push(`/play?mode=${gameMode}`);
   }
+
+  if (checking) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-[#2a1208]">
+        <span className="text-[#f5e6c8] text-lg font-semibold animate-pulse">Loading...</span>
+      </div>
+    );
+  }
+
 
   return (
     <div

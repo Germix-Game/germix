@@ -8,10 +8,6 @@ import { TOTAL_MICROBES, TOTAL_ROUNDS, MICROBES_PER_ROUND } from '@/lib/sessions
 
 const answerSchema = z.object({
   answeredMicrobeId: z.string().min(1),
-  // Client-tracked slot indices revealed this round. Merged with whatever the
-  // /reveal endpoint already persisted, so answering never has to wait on that
-  // request landing first — see the comment above the merge below.
-  revealedSlotIndexes: z.array(z.number().int().min(0).max(4)).max(5).optional().default([]),
 })
 
 // Concurrent submissions for the same session (e.g. double-clicks, retried
@@ -38,7 +34,7 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
       return Response.json({ error: 'Invalid input', issues: parsed.error.issues }, { status: 422 })
     }
 
-    const { answeredMicrobeId, revealedSlotIndexes } = parsed.data
+    const { answeredMicrobeId } = parsed.data
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
@@ -87,24 +83,14 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
               throw Response.json({ error: 'No active round found' }, { status: 409 })
             }
 
-            // Merge in whatever the client has revealed locally but the /reveal
-            // endpoint hasn't necessarily persisted yet — this is what lets the
-            // answer button stop waiting on that request to land first. Already
-            // persisted slots are kept regardless of what the client reports, so
-            // a stale/empty client list can't claim fewer reveals than really happened.
-            const revealedSlots = revealedSlotIndexes.length === 0
-              ? sessionMicrobe.revealedSlots
-              : Array.from(new Set([...sessionMicrobe.revealedSlots, ...revealedSlotIndexes])).sort((a, b) => a - b)
+            // Server-authoritative reveal state: the slots opened this round are
+            // read straight from SessionMicrobe (persisted by /reveal), never from
+            // the client payload. The UI blocks answering until /reveal has landed,
+            // so the DB is the single source of truth for scoring and unlocks.
+            const revealedSlots = sessionMicrobe.revealedSlots
 
             if (revealedSlots.length === 0) {
               throw Response.json({ error: 'Reveal at least one card before answering' }, { status: 422 })
-            }
-
-            if (revealedSlots.length !== sessionMicrobe.revealedSlots.length) {
-              await tx.sessionMicrobe.update({
-                where: { sessionId_roundNumber: { sessionId: id, roundNumber: currentPosition } },
-                data: { revealedSlots },
-              })
             }
 
             const correct = answeredMicrobeId === sessionMicrobe.microbeId

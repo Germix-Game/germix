@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, requireOwner } from '@/lib/auth'
-import { getRoundClues } from '@/lib/clues'
+import { selectSlotClues } from '@/lib/clues'
 
 const revealSchema = z.object({
   slotIndex: z.number().int().min(0).max(4),
@@ -51,7 +51,12 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
       where: { sessionId_roundNumber: { sessionId: id, roundNumber: currentPosition } },
       include: {
         microbe: {
-          include: { clues: { orderBy: { sortOrder: 'asc' }, include: { clueCard: true } } },
+          // Must match getRoundClues' ordering EXACTLY (sortOrder, then clueCardId
+          // as a stable tiebreaker) so the clue this route reveals for a slot is the
+          // same clue the /cards route showed the player. sortOrder is not unique,
+          // so dropping the clueCardId tiebreaker lets the two queries disagree on
+          // ties and reveal the wrong card.
+          include: { clues: { orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }], include: { clueCard: true } } },
         },
       },
     })
@@ -64,13 +69,19 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
       return Response.json({ error: 'Slot already revealed' }, { status: 409 })
     }
 
-    const microbeClues = sessionMicrobe.microbe.clues
+    // Map the microbe's clues onto the fixed slot layout with the SAME
+    // deterministic logic the /cards route uses, so the card revealed here is the
+    // exact card shown to the player in that slot (not a different clue from the
+    // same microbe). Indexing the raw, sortOrder-ordered list directly is what
+    // previously let the card and the reveal diverge.
+    const slotClues = selectSlotClues(sessionMicrobe.microbe.clues)
+    const entry = slotClues[slotIndex]
 
-    if (slotIndex >= microbeClues.length) {
-      return Response.json({ error: 'Slot index out of range' }, { status: 422 })
+    if (!entry) {
+      return Response.json({ error: 'No clue for this slot' }, { status: 422 })
     }
 
-    const { clueCard } = microbeClues[slotIndex]
+    const { clueCard } = entry
 
     // Single round trip: atomic conditional append (with RETURNING) instead of
     // a separate read-then-write. The NOT (... = ANY(...)) guard makes this safe

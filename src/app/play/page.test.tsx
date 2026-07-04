@@ -17,6 +17,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), prefetch: vi.fn(), replace: vi.fn(), back: vi.fn() }),
 }))
 
+import { StrictMode } from 'react'
 import { render, screen, within, fireEvent, waitFor, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import PlayPage from './page'
@@ -71,6 +72,69 @@ describe('ErrorScreen', () => {
       const link = screen.getByRole('link', { name: /start a new game/i })
       expect((link as HTMLAnchorElement).href).toContain('/select')
     })
+  })
+})
+
+// ── Session bootstrap (duplicate-session guard) ─────────────────────────────────
+
+describe('Real mode — session bootstrap', () => {
+  const originalFetch = global.fetch
+
+  function setModeUrl(mode: string) {
+    Object.defineProperty(window, 'location', {
+      value: { search: `?mode=${mode}`, href: `http://localhost/play?mode=${mode}` },
+      writable: true,
+      configurable: true,
+    })
+    localStorage.removeItem('currentSessionId')
+  }
+
+  function jsonRes(body: unknown) {
+    return { ok: true, json: async () => body } as Response
+  }
+
+  // Routes every fetch the bootstrap makes and counts POST /api/sessions calls.
+  function mockBootstrapFetch() {
+    const postSessions = vi.fn()
+    let seq = 0
+    global.fetch = vi.fn(async (url: RequestInfo | URL, opts?: RequestInit) => {
+      const u = String(url)
+      const method = opts?.method ?? 'GET'
+      if (u.endsWith('/api/sessions') && method === 'POST') {
+        postSessions()
+        // Distinct id per creation so a duplicate would be observable downstream too.
+        return jsonRes({ id: `sess-${++seq}`, heartsLeft: 3, totalScore: 0, currentRound: 1, gameMode: 'BACTERIA' })
+      }
+      if (u.includes('/cards')) return jsonRes({ cards: [null, null, null, null, null] })
+      if (u.includes('/api/pathogen-book')) return jsonRes({ microbes: [] })
+      if (/\/api\/sessions\/[^/]+$/.test(u)) {
+        return jsonRes({ heartsLeft: 3, totalScore: 0, currentRound: 1, gameMode: 'BACTERIA' })
+      }
+      return jsonRes({})
+    }) as typeof global.fetch
+    return { postSessions }
+  }
+
+  afterEach(() => {
+    global.fetch = originalFetch
+  })
+
+  it('creates exactly one session on mount, even under a StrictMode double-invoke', async () => {
+    // StrictMode double-invokes the mount effect; without the didBootstrap guard
+    // that POSTs /api/sessions twice, creating two sessions with different
+    // shuffles — the root cause of "clues describe X but the answer is graded as Y".
+    setModeUrl('BACTERIA')
+    const { postSessions } = mockBootstrapFetch()
+
+    render(
+      <StrictMode>
+        <PlayPage />
+      </StrictMode>,
+    )
+
+    await waitFor(() => screen.getByRole('listbox', { name: /select a microbe/i }))
+    expect(postSessions).toHaveBeenCalledTimes(1)
+    expect(localStorage.getItem('currentSessionId')).toBe('sess-1')
   })
 })
 

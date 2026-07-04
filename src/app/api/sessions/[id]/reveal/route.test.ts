@@ -33,9 +33,15 @@ const ctx = { params: Promise.resolve({ id: SESSION_ID }) }
 
 const mockPlayer = { id: PLAYER_ID }
 
+// One clue per slot category, in sortOrder. selectSlotClues maps these onto the
+// fixed slot layout: slot 0 → Gram stain / morphology, 1 → virulence,
+// 2 → lab, 3 → special trait, 4 → clinical.
 const mockClueCards = [
-  { sortOrder: 0, clueCard: { category: 'Shape', label: 'Round', imageUrl: '/images/round.png' } },
-  { sortOrder: 1, clueCard: { category: 'Color', label: 'Purple', imageUrl: '/images/purple.png' } },
+  { sortOrder: 0, clueCard: { category: 'GRAM_STAIN',             label: 'Gram +',    imageUrl: '/g.png' } },
+  { sortOrder: 1, clueCard: { category: 'VIRULENCE_FACTOR',       label: 'Capsule',   imageUrl: '/v.png' } },
+  { sortOrder: 2, clueCard: { category: 'LAB_CHARACTERISTIC',     label: 'Catalase+', imageUrl: '/l.png' } },
+  { sortOrder: 3, clueCard: { category: 'SPECIAL_TRAIT',          label: 'Tumbling',  imageUrl: '/s.png' } },
+  { sortOrder: 4, clueCard: { category: 'CLINICAL_MANIFESTATION', label: 'Abscess',   imageUrl: '/c.png' } },
 ]
 
 const mockSession = {
@@ -54,14 +60,6 @@ const mockSessionMicrobe = {
   revealedSlots: [] as number[],
   microbe: { clues: mockClueCards },
 }
-
-const mockClueCards = [
-  { sortOrder: 0, clueCard: { category: 'GRAM_STAIN',            label: 'Gram +',  imageUrl: '/g.png' } },
-  { sortOrder: 1, clueCard: { category: 'VIRULENCE_FACTOR',      label: 'Capsule', imageUrl: '/v.png' } },
-  { sortOrder: 2, clueCard: { category: 'LAB_CHARACTERISTIC',    label: 'Catalase+', imageUrl: '/l.png' } },
-  { sortOrder: 3, clueCard: { category: 'SPECIAL_TRAIT',         label: 'Tumbling', imageUrl: '/s.png' } },
-  { sortOrder: 4, clueCard: { category: 'CLINICAL_MANIFESTATION',label: 'Abscess', imageUrl: '/c.png' } },
-]
 
 describe('POST /api/sessions/:id/reveal', () => {
   beforeEach(() => {
@@ -139,8 +137,11 @@ describe('POST /api/sessions/:id/reveal', () => {
     })
 
     it('returns 422 when the slot has no clue', async () => {
-      // Microbe with no clues → every slot is null regardless of shuffle
-      vi.mocked(prisma.microbeClue.findMany).mockResolvedValue([] as never)
+      // Microbe with no clues → every slot maps to null
+      vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
+        ...mockSessionMicrobe,
+        microbe: { clues: [] },
+      } as never)
       const res = await POST(makeRequest({ slotIndex: 0 }), ctx)
       expect(res.status).toBe(422)
       const body = await res.json()
@@ -149,16 +150,26 @@ describe('POST /api/sessions/:id/reveal', () => {
   })
 
   describe('happy path', () => {
-    it('returns 200 with card data and updated session state', async () => {
+    it('reveals the exact card mapped to the requested slot', async () => {
+      // Slot 0 → Gram stain / morphology group → first candidate = 'Gram +'.
       const res = await POST(makeRequest({ slotIndex: 0 }), ctx)
       expect(res.status).toBe(200)
 
       const body = await res.json()
-      // Slot positions are shuffled, so assert the card is one of the microbe's clues.
-      const validCards = mockClueCards.map((c) => c.clueCard)
-      expect(validCards).toContainEqual(body.card)
+      expect(body.card).toEqual(mockClueCards[0].clueCard)
       expect(body.session.cardsOpened).toBe(1)
       expect(body.session.heartsLeft).toBe(3)
+    })
+
+    it('maps each slot to the same card the cards route would show', async () => {
+      // slot index → expected clue label, per selectSlotClues' fixed layout.
+      const expected = ['Gram +', 'Capsule', 'Catalase+', 'Tumbling', 'Abscess']
+      for (let slotIndex = 0; slotIndex < expected.length; slotIndex++) {
+        vi.mocked(prisma.$queryRaw).mockResolvedValue([{ revealedSlots: [slotIndex] }] as never)
+        const res = await POST(makeRequest({ slotIndex }), ctx)
+        const body = await res.json()
+        expect(body.card.label).toBe(expected[slotIndex])
+      }
     })
 
     it('persists the revealed slot index via an atomic conditional update', async () => {
@@ -181,6 +192,44 @@ describe('POST /api/sessions/:id/reveal', () => {
       const res = await POST(makeRequest({ slotIndex: 1 }), ctx)
       const body = await res.json()
       expect(body.session.cardsOpened).toBe(2)
+    })
+  })
+
+  // Regression guard for the "revealed card ≠ shown card" bug: /reveal and /cards
+  // run two SEPARATE queries and must order clues identically. sortOrder is not
+  // unique, so both must break ties on clueCardId or Postgres can return tied rows
+  // in different orders and the two routes disagree about which clue is in a slot.
+  describe('stays in lockstep with the /cards route (sortOrder tie-break)', () => {
+    it('loads clues ordered by sortOrder THEN clueCardId — the same ordering /cards uses', async () => {
+      await POST(makeRequest({ slotIndex: 0 }), ctx)
+
+      const findUniqueArg = vi.mocked(prisma.sessionMicrobe.findUnique).mock.calls[0][0] as {
+        include: { microbe: { include: { clues: { orderBy: unknown } } } }
+      }
+      expect(findUniqueArg.include.microbe.include.clues.orderBy).toEqual([
+        { sortOrder: 'asc' },
+        { clueCardId: 'asc' },
+      ])
+    })
+
+    it('reveals the tie-winner in slot 0 that /cards would show when two clues share a sortOrder', async () => {
+      // Slot 0 spans GRAM_STAIN + MORPHOLOGY. Both candidates share sortOrder 0, so
+      // only the clueCardId tiebreaker decides the winner. The clues arrive already
+      // ordered by [sortOrder, clueCardId] (as the query now guarantees), so the
+      // route must reveal the first one — exactly what /cards renders for that slot.
+      vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
+        ...mockSessionMicrobe,
+        microbe: {
+          clues: [
+            { sortOrder: 0, clueCardId: 'card-a', clueCard: { category: 'GRAM_STAIN', label: 'Gram +', imageUrl: '/g.png' } },
+            { sortOrder: 0, clueCardId: 'card-b', clueCard: { category: 'MORPHOLOGY', label: 'Cocci', imageUrl: '/m.png' } },
+          ],
+        },
+      } as never)
+
+      const res = await POST(makeRequest({ slotIndex: 0 }), ctx)
+      const body = await res.json()
+      expect(body.card.label).toBe('Gram +')
     })
   })
 })

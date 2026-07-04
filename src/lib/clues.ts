@@ -15,25 +15,36 @@ const SLOT_CATEGORIES: { primary: CardCategory[]; fallback?: CardCategory[] }[] 
   { primary: ['CLINICAL_MANIFESTATION'] },                     // slot 4 — Diseases + key clinical clues
 ]
 
-// One clue card per slot, in FIXED slot order (length 5) — each category always
-// sits in the same slot (e.g. special trait is always slot 3). Within a slot,
-// which specific clue shows is still picked at random per round.
-// null if microbe has no clue for the slot's primary OR fallback categories.
+type WithCategory = { clueCard: { category: CardCategory } }
+
+// Map a microbe's clues (sorted by sortOrder) onto the fixed slot layout: one
+// clue per slot, in FIXED slot order, picking the first candidate (lowest
+// sortOrder) within each category group. Pure and DETERMINISTIC — the same input
+// always yields the same slot→clue mapping. This is what guarantees the cards the
+// player sees (/cards) match the card that gets revealed/graded (/reveal): both
+// routes run this over the same sortOrder-sorted clue list. null if the microbe
+// lacks a category group.
+export function selectSlotClues<T extends WithCategory>(cluesSortedByOrder: T[]): (T | null)[] {
+  return SLOT_CATEGORIES.map((group) => {
+    const candidates = cluesSortedByOrder.filter((mc) => group.includes(mc.clueCard.category))
+    return candidates[0] ?? null
+  })
+}
+
+// One clue card per slot, in fixed slot order (length 5). null if microbe lacks
+// a group. Shared by the cards route; the reveal route maps its already-joined
+// clues with selectSlotClues directly so the two stay in lockstep.
 export async function getRoundClues(microbeId: string) {
   const all = await prisma.microbeClue.findMany({
     where: { microbeId },
-    orderBy: { sortOrder: 'asc' },
+    // sortOrder is NOT unique, so a stable secondary key (clueCardId) is required:
+    // without it Postgres returns sortOrder ties in arbitrary order, and this query
+    // could disagree with the /reveal route's separate query about which clue sits
+    // in a slot — making the card revealed differ from the card shown. Both routes
+    // MUST use this exact ordering to stay in lockstep.
+    orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }],
     include: { clueCard: true },
   })
 
-  return SLOT_CATEGORIES.map((slot) => {
-    // Prefer the primary categories for this slot.
-    let candidates = all.filter((mc) => slot.primary.includes(mc.clueCard.category))
-    // Only if the microbe has nothing in the primary do we try the fallback.
-    if (candidates.length === 0 && slot.fallback) {
-      candidates = all.filter((mc) => slot.fallback!.includes(mc.clueCard.category))
-    }
-    if (candidates.length === 0) return null
-    return candidates[Math.floor(Math.random() * candidates.length)]
-  })
+  return selectSlotClues(all)
 }
