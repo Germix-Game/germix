@@ -122,7 +122,12 @@ export default function PlayPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const dropTargetRef = useRef<HTMLDivElement>(null);
   const prefetchedCardsRef = useRef<(ClueCard | null)[]>([null, null, null, null, null]);
-  const cardsFetchRef = useRef<Promise<{ cards?: unknown } | null> | null>(null);
+  const cardsFetchRef = useRef<{ id: string; promise: Promise<{ cards?: unknown } | null> } | null>(null);
+  // Guards the bootstrap effect so it runs exactly once. Without it, React
+  // StrictMode (on by default in dev) double-invokes the mount effect and
+  // creates TWO sessions — the player then sees one session's cards while
+  // answers go to the other, so every microbe is graded wrong.
+  const didBootstrapRef = useRef(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [pendingMicrobeId, setPendingMicrobeId] = useState<string | null>(null);
   const [dropBlockedMsg, setDropBlockedMsg] = useState<string | null>(null);
@@ -165,6 +170,13 @@ export default function PlayPage() {
   // This is the "did the component just appear?" hook — perfect for initial data loading.
 
   useEffect(() => {
+    // Run exactly once. StrictMode (dev) and any remount otherwise re-run this
+    // effect, and the ?mode= branch below POSTs a brand-new session each time —
+    // creating duplicate sessions with different microbe shuffles. A ref survives
+    // the StrictMode unmount/remount, so the second invocation bails here.
+    if (didBootstrapRef.current) return;
+    didBootstrapRef.current = true;
+
     // Check the URL for ?demo=true
     // window.location.search → "?demo=true&other=foo"
     // URLSearchParams → parses query string into a key-value reader
@@ -261,12 +273,18 @@ export default function PlayPage() {
   // call and fetchCards() below so the two never issue duplicate requests —
   // whichever call happens first kicks it off, the other just awaits it.
   async function startCardsFetch(id: string): Promise<{ cards?: unknown } | null> {
-    if (!cardsFetchRef.current) {
-      cardsFetchRef.current = fetch(`/api/sessions/${id}/cards`)
-        .then((res) => (res.ok ? res.json() : null))
-        .catch(() => null);
+    // Keyed by session id: a leftover promise from a DIFFERENT session (e.g. a
+    // duplicate session created during a double-mount) must never be reused, or
+    // we'd show one session's cards while answering another.
+    if (cardsFetchRef.current?.id !== id) {
+      cardsFetchRef.current = {
+        id,
+        promise: fetch(`/api/sessions/${id}/cards`)
+          .then((res) => (res.ok ? res.json() : null))
+          .catch(() => null),
+      };
     }
-    return cardsFetchRef.current;
+    return cardsFetchRef.current.promise;
   }
 
   // Pre-fetch all 5 clue cards for the current round into a ref.
