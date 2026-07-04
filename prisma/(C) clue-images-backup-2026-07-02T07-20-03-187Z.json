@@ -1,0 +1,386 @@
+[
+  {
+    "id": "cmpy3iebs0002ti0ct9s5yd0d",
+    "category": "SPECIAL_TRAIT",
+    "label": "Autoinfection",
+    "imageUrl": "cards/clues/special-trait/autoinfection.png"
+  },
+  {
+    "id": "cmpy3il39000pti0cz2qajt7t",
+    "category": "SPECIAL_TRAIT",
+    "label": "Can potentially cause bladder cancer",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iksp000oti0cf9k68ra9",
+    "category": "SPECIAL_TRAIT",
+    "label": "Can potentially cause hepatocellular carcinoma",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ig3p0008ti0cjvb7x8x2",
+    "category": "SPECIAL_TRAIT",
+    "label": "Can potentially cause malnutrition (Vitamin A D E K)",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ilob000rti0czxo9p0mn",
+    "category": "SPECIAL_TRAIT",
+    "label": "CT brain: numerous parenchymal lesion",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ipsp0015ti0cweesnav4",
+    "category": "SPECIAL_TRAIT",
+    "label": "Distributed mainly in Southeast Asia",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ijml000kti0c0cp9hgp7",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating contaminated vegetation",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iiqz000hti0cx1wonvpj",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating fermented fish",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ijc4000jti0clfnsj4y7",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating metacercariae",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3imue000vti0cllzgccpd",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating paratenic host fish",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ik7m000mti0cinz2fkp3",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating somtam pu",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ij1i000iti0cya79qrix",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating uncooked fish",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iqo90018ti0csmlfjawt",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating undercooked fresh water shrimp or crab",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iqdq0017ti0c7f6f08xx",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating undercooked frog",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ildt000qti0clky780cr",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating undercooked meat",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iq380016ti0crloqzrf0",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating undercooked meat contaminated with encyst larvae",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3im9f000tti0ccly4rops",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating undercooked pork",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iqyu0019ti0cyjzpvs26",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating undercooked snake",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ijx2000lti0ci1kj8qte",
+    "category": "SPECIAL_TRAIT",
+    "label": "Eating watercress morning glory",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3igzc000bti0cffm7at35",
+    "category": "SPECIAL_TRAIT",
+    "label": "Flagella found in promastigote stage within sandfly",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iox00012ti0cx37lehtu",
+    "category": "SPECIAL_TRAIT",
+    "label": "Heart-lung migration",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3idqf0000ti0czc484kmr",
+    "category": "SPECIAL_TRAIT",
+    "label": "Higher risk in HIV patient",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ihv9000eti0crf4u4hfq",
+    "category": "SPECIAL_TRAIT",
+    "label": "History of playing in contaminated water",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ift50007ti0cmba1q9ta",
+    "category": "SPECIAL_TRAIT",
+    "label": "Hypnozoite found in liver",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ii5s000fti0caj1wx253",
+    "category": "SPECIAL_TRAIT",
+    "label": "Increased risk in contact lens wearer",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3inpv000yti0cykutbbg6",
+    "category": "SPECIAL_TRAIT",
+    "label": "Increased risk in contaminated hand/food",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ip7k0013ti0csbvxsnbm",
+    "category": "SPECIAL_TRAIT",
+    "label": "Increased risk in people walking barefoot on contaminated soil",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ihkp000dti0capjt4tyw",
+    "category": "SPECIAL_TRAIT",
+    "label": "Increased risk in poor sanitization environment",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iomg0011ti0c3l2yo2ws",
+    "category": "SPECIAL_TRAIT",
+    "label": "Largest nematode",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iemf0003ti0crwojq3th",
+    "category": "SPECIAL_TRAIT",
+    "label": "More severe in pregnant women",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ilyx000sti0cc0431cen",
+    "category": "SPECIAL_TRAIT",
+    "label": "MRI: multiple large cysticersus cyst in basal cisternal space",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ie190001ti0c9z1ml45d",
+    "category": "SPECIAL_TRAIT",
+    "label": "Opportunistic infection",
+    "imageUrl": "cards/clues/special-trait/opportunistic-infection.png"
+  },
+  {
+    "id": "cmpy3imjx000uti0cu4maezml",
+    "category": "SPECIAL_TRAIT",
+    "label": "Parasite resides at terminal ileum",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ioay0010ti0cn10t33k2",
+    "category": "SPECIAL_TRAIT",
+    "label": "PE: borborygmus sound",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3io0f000zti0chkbqc816",
+    "category": "SPECIAL_TRAIT",
+    "label": "Protein-losing enteropathy",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iki5000nti0cumodieze",
+    "category": "SPECIAL_TRAIT",
+    "label": "Rarely causes brain mass epilepsy",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iha2000cti0c66xmv5uv",
+    "category": "SPECIAL_TRAIT",
+    "label": "Reactivation in immunocompromised patients",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3ifii0006ti0codaet7ny",
+    "category": "SPECIAL_TRAIT",
+    "label": "Relapse malaria",
+    "imageUrl": "cards/clues/special-trait/relapse-malaria.png"
+  },
+  {
+    "id": "cmpy3infc000xti0chx1dl0z5",
+    "category": "SPECIAL_TRAIT",
+    "label": "Retro-infection",
+    "imageUrl": "cards/clues/special-trait/retro-infection.png"
+  },
+  {
+    "id": "cmpy3iigc000gti0cr1hpcgze",
+    "category": "SPECIAL_TRAIT",
+    "label": "Severe in immunocompromised",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3if7o0005ti0ctpe6hdi7",
+    "category": "SPECIAL_TRAIT",
+    "label": "The most severe malaria",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3iex10004ti0cjtjwd0kp",
+    "category": "SPECIAL_TRAIT",
+    "label": "Traveling history",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpy3igos000ati0cz2pxk4yr",
+    "category": "SPECIAL_TRAIT",
+    "label": "Urethritis",
+    "imageUrl": "cards/clues/special-trait/urethritis.png"
+  },
+  {
+    "id": "cmpy3igea0009ti0chq95d1f7",
+    "category": "SPECIAL_TRAIT",
+    "label": "Vaginitis",
+    "imageUrl": "cards/clues/special-trait/vaginitis.png"
+  },
+  {
+    "id": "cmpy3ipi30014ti0cy51xevu6",
+    "category": "SPECIAL_TRAIT",
+    "label": "Worldwide distribution",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxw9zwx0003tio0sgi53tgk",
+    "category": "TRANSMISSION",
+    "label": "Blood transfusion",
+    "imageUrl": "cards/clues/transmission/blood-transfusion.png"
+  },
+  {
+    "id": "cmpxwa2xo000etio0zruk6e2a",
+    "category": "TRANSMISSION",
+    "label": "Contact through skin wound",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxwa2mv000dtio0hcqt3oj1",
+    "category": "TRANSMISSION",
+    "label": "Contact to contaminated contact lens",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxwa23b000btio0eq72tziz",
+    "category": "TRANSMISSION",
+    "label": "Contact with fresh water",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxw9z3d0000tio0lbhqd3lr",
+    "category": "TRANSMISSION",
+    "label": "Fecal-oral transmission",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxwa06q0004tio02yl19jpz",
+    "category": "TRANSMISSION",
+    "label": "Organ transplant",
+    "imageUrl": "cards/clues/transmission/organ-transplant.png"
+  },
+  {
+    "id": "cmpxwa3h8000gtio0raw5iys6",
+    "category": "TRANSMISSION",
+    "label": "Parasite penetrates host skin",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxwa2d6000ctio0dsw97og1",
+    "category": "TRANSMISSION",
+    "label": "Penetrate nasal mucosa",
+    "imageUrl": "cards/clues/transmission/penetrate-nasal-mucosa.png"
+  },
+  {
+    "id": "cmpxwa10b0007tio0pedudoet",
+    "category": "TRANSMISSION",
+    "label": "Sexual transmission",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxwa37f000ftio075i5zq71",
+    "category": "TRANSMISSION",
+    "label": "Skin contact",
+    "imageUrl": "cards/clues/transmission/skin-contact.png"
+  },
+  {
+    "id": "cmpxw9zn10002tio0k5m5smqo",
+    "category": "TRANSMISSION",
+    "label": "Transplacenta",
+    "imageUrl": "cards/clues/transmission/transplacenta.png"
+  },
+  {
+    "id": "cmpxwa40o000itio0oaad6m9a",
+    "category": "TRANSMISSION",
+    "label": "Zoonosis: Aedes spp.",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxwa0gi0005tio0eab38s4e",
+    "category": "TRANSMISSION",
+    "label": "Zoonosis: Anopheles mosquito",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxw9zd80001tio01wiy3699",
+    "category": "TRANSMISSION",
+    "label": "Zoonosis: Cat",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxwa3qx000htio054jibexd",
+    "category": "TRANSMISSION",
+    "label": "Zoonosis: Culex spp.",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxwa1tl000atio0v3pl1muy",
+    "category": "TRANSMISSION",
+    "label": "Zoonosis: kissing bug",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxwa0qd0006tio0hk4kdgvr",
+    "category": "TRANSMISSION",
+    "label": "Zoonosis: monkey",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxwa1a10008tio0vpc4ovx2",
+    "category": "TRANSMISSION",
+    "label": "Zoonosis: sandfly",
+    "imageUrl": ""
+  },
+  {
+    "id": "cmpxwa1jt0009tio0soenh3iv",
+    "category": "TRANSMISSION",
+    "label": "Zoonosis: tsetse fly",
+    "imageUrl": ""
+  }
+]

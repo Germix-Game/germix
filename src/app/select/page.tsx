@@ -73,13 +73,16 @@ export default function LevelSelectPage() {
         style={{ top: "2%", left: "12%", width: "37vw" }}
       />
 
-      {/* Parasite level button — bottom-right (locked) */}
+      {/* Parasite level button — bottom-right (now playable, same as Bacteria) */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/assets/game-selection/parasite_level.png"
         alt="Parasites"
         draggable={false}
-        className="absolute select-none cursor-not-allowed grayscale opacity-50 transition-transform duration-200"
+        onClick={() => handleSelect("PARASITE")}
+        className={`absolute select-none transition-transform duration-200 ${
+          starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
+        }`}
         style={{ bottom: "2%", right: "12%", width: "37vw" }}
       />
 

@@ -1,12 +1,18 @@
 import { prisma } from '@/lib/prisma'
 import type { CardCategory } from '@prisma/client'
 
-const SLOT_CATEGORIES: CardCategory[][] = [
-  ['GRAM_STAIN', 'MORPHOLOGY'], // slot 0 — Gram stain / morphology
-  ['VIRULENCE_FACTOR'],         // slot 1 — Virulence factors
-  ['LAB_CHARACTERISTIC'],       // slot 2 — Lab high-yield
-  ['SPECIAL_TRAIT'],            // slot 3 — Special features
-  ['CLINICAL_MANIFESTATION'],   // slot 4 — Diseases + key clinical clues
+// Each slot has a `primary` category list and an optional `fallback`.
+// We try the primary categories first; only if the microbe has NO clue in any
+// primary category do we use the fallback. This keeps bacteria unchanged
+// (they have VIRULENCE_FACTOR, so slot 1 stays virulence) while giving
+// parasites — which have no virulence factors — a TRANSMISSION card in slot 1
+// instead of a blank.
+const SLOT_CATEGORIES: { primary: CardCategory[]; fallback?: CardCategory[] }[] = [
+  { primary: ['GRAM_STAIN', 'MORPHOLOGY'] },                    // slot 0 — Gram stain / morphology
+  { primary: ['VIRULENCE_FACTOR'], fallback: ['TRANSMISSION'] }, // slot 1 — Virulence (bacteria) → Transmission (parasites)
+  { primary: ['LAB_CHARACTERISTIC'] },                          // slot 2 — Lab high-yield
+  { primary: ['SPECIAL_TRAIT'] },                              // slot 3 — Special features
+  { primary: ['CLINICAL_MANIFESTATION'] },                     // slot 4 — Diseases + key clinical clues
 ]
 
 type WithCategory = { clueCard: { category: CardCategory } }
@@ -20,8 +26,13 @@ type WithCategory = { clueCard: { category: CardCategory } }
 // lacks a category group.
 export function selectSlotClues<T extends WithCategory>(cluesSortedByOrder: T[]): (T | null)[] {
   return SLOT_CATEGORIES.map((group) => {
-    const candidates = cluesSortedByOrder.filter((mc) => group.includes(mc.clueCard.category))
-    return candidates[0] ?? null
+    const primary = cluesSortedByOrder.filter((mc) => group.primary.includes(mc.clueCard.category))
+    if (primary[0]) return primary[0]
+    // Only fall back when the microbe has NO clue in any primary category.
+    const fallback = group.fallback
+      ? cluesSortedByOrder.filter((mc) => group.fallback!.includes(mc.clueCard.category))
+      : []
+    return fallback[0] ?? null
   })
 }
 

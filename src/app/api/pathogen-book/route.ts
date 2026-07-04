@@ -4,7 +4,8 @@ import { getOptionalPlayer } from '@/lib/auth'
 import { getBookSlots } from '@/lib/clues'
 import type { GameMode } from '@prisma/client'
 
-const VALID_MODES = new Set<string>(['BACTERIA', 'FUNGI', 'PARASITES', 'VIRUS'])
+// Accept both the DB enum value (PARASITE) and the legacy plural (PARASITES).
+const VALID_MODES = new Set<string>(['BACTERIA', 'FUNGI', 'PARASITE', 'PARASITES', 'VIRUS'])
 
 const MODE_MAP: Record<string, string> = { PARASITES: 'PARASITE' }
 
