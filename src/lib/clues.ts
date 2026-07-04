@@ -31,7 +31,12 @@ export function selectSlotClues<T extends WithCategory>(cluesSortedByOrder: T[])
 export async function getRoundClues(microbeId: string) {
   const all = await prisma.microbeClue.findMany({
     where: { microbeId },
-    orderBy: { sortOrder: 'asc' },
+    // sortOrder is NOT unique, so a stable secondary key (clueCardId) is required:
+    // without it Postgres returns sortOrder ties in arbitrary order, and this query
+    // could disagree with the /reveal route's separate query about which clue sits
+    // in a slot — making the card revealed differ from the card shown. Both routes
+    // MUST use this exact ordering to stay in lockstep.
+    orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }],
     include: { clueCard: true },
   })
 
