@@ -122,7 +122,12 @@ export default function PlayPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const dropTargetRef = useRef<HTMLDivElement>(null);
   const prefetchedCardsRef = useRef<(ClueCard | null)[]>([null, null, null, null, null]);
-  const cardsFetchRef = useRef<Promise<{ cards?: unknown } | null> | null>(null);
+  const cardsFetchRef = useRef<{ id: string; promise: Promise<{ cards?: unknown } | null> } | null>(null);
+  // Guards the bootstrap effect so it runs exactly once. Without it, React
+  // StrictMode (on by default in dev) double-invokes the mount effect and
+  // creates TWO sessions — the player then sees one session's cards while
+  // answers go to the other, so every microbe is graded wrong.
+  const didBootstrapRef = useRef(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [pendingMicrobeId, setPendingMicrobeId] = useState<string | null>(null);
   const [dropBlockedMsg, setDropBlockedMsg] = useState<string | null>(null);
@@ -131,6 +136,10 @@ export default function PlayPage() {
   const pointsPillRef = useRef<HTMLDivElement>(null);
   const [scorePop, setScorePop] = useState<{ points: number; startX: number; startY: number } | null>(null);
   const [scoreFlashKey, setScoreFlashKey] = useState(0);
+  // Number of /reveal requests still in flight. While > 0 the server hasn't yet
+  // recorded every opened card, so answering is blocked until they all land —
+  // /answer reads revealed slots straight from the DB and must not race them.
+  const [pendingRevealCount, setPendingRevealCount] = useState(0);
 
   // ─── STATE: Wrong-answer retry tracking ─────────────────────────
   // Set of microbe IDs the player has guessed wrong for the current question.
@@ -161,6 +170,13 @@ export default function PlayPage() {
   // This is the "did the component just appear?" hook — perfect for initial data loading.
 
   useEffect(() => {
+    // Run exactly once. StrictMode (dev) and any remount otherwise re-run this
+    // effect, and the ?mode= branch below POSTs a brand-new session each time —
+    // creating duplicate sessions with different microbe shuffles. A ref survives
+    // the StrictMode unmount/remount, so the second invocation bails here.
+    if (didBootstrapRef.current) return;
+    didBootstrapRef.current = true;
+
     // Check the URL for ?demo=true
     // window.location.search → "?demo=true&other=foo"
     // URLSearchParams → parses query string into a key-value reader
@@ -257,12 +273,18 @@ export default function PlayPage() {
   // call and fetchCards() below so the two never issue duplicate requests —
   // whichever call happens first kicks it off, the other just awaits it.
   async function startCardsFetch(id: string): Promise<{ cards?: unknown } | null> {
-    if (!cardsFetchRef.current) {
-      cardsFetchRef.current = fetch(`/api/sessions/${id}/cards`)
-        .then((res) => (res.ok ? res.json() : null))
-        .catch(() => null);
+    // Keyed by session id: a leftover promise from a DIFFERENT session (e.g. a
+    // duplicate session created during a double-mount) must never be reused, or
+    // we'd show one session's cards while answering another.
+    if (cardsFetchRef.current?.id !== id) {
+      cardsFetchRef.current = {
+        id,
+        promise: fetch(`/api/sessions/${id}/cards`)
+          .then((res) => (res.ok ? res.json() : null))
+          .catch(() => null),
+      };
     }
-    return cardsFetchRef.current;
+    return cardsFetchRef.current.promise;
   }
 
   // Pre-fetch all 5 clue cards for the current round into a ref.
@@ -326,13 +348,17 @@ export default function PlayPage() {
         setSlots((prev) =>
           prev.map((s) => (s.index === index ? { ...s, revealed: true, card: preCard } : s)),
         );
-        // Persist in the background. The answer submission no longer waits on
-        // this — it sends its own locally-tracked revealed slots and the server
-        // merges them in, so there's nothing here for the UI to block on.
+        // Track this reveal so answer submission waits for the server to record
+        // it. /answer reads revealed slots straight from the DB, so answering
+        // before this lands would score/unlock without this card counted.
+        setPendingRevealCount((n) => n + 1);
         void fetch(`/api/sessions/${sessionId}/reveal`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ slotIndex: index }),
+        }).finally(() => {
+          // Decrement in finally so a network failure still re-enables the UI.
+          setPendingRevealCount((n) => n - 1);
         });
         return;
       }
@@ -341,6 +367,8 @@ export default function PlayPage() {
       setSlots((prev) =>
         prev.map((s) => (s.index === index ? { ...s, revealed: true } : s)),
       );
+      // Same reveal-in-flight guard as the pre-fetched path above.
+      setPendingRevealCount((n) => n + 1);
       try {
         const res = await fetch(`/api/sessions/${sessionId}/reveal`, {
           method: "POST",
@@ -366,6 +394,10 @@ export default function PlayPage() {
           prev.map((s) => (s.index === index ? { ...s, card: lateCard } : s)),
         );
         // card stays revealed either way — never flip back
+      } finally {
+        // Decrement in finally so a network failure still re-enables the UI,
+        // and the early `return` on a non-OK response is covered too.
+        setPendingRevealCount((n) => n - 1);
       }
     },
     // Dependencies: re-create this function if any of these change
@@ -385,12 +417,14 @@ export default function PlayPage() {
     phase === "playing" &&
     revealedCount > 0 &&
     selectedMicrobeId !== null &&
-    !isSubmitting;
+    !isSubmitting &&
+    pendingRevealCount === 0;
 
   const canDropAnswer =
     phase === "playing" &&
     revealedCount > 0 &&
-    !isSubmitting;
+    !isSubmitting &&
+    pendingRevealCount === 0;
 
   // The big handler for submitting an answer
   const handleSubmitAnswer = useCallback(async (overrideMicrobeId?: string) => {
@@ -447,13 +481,14 @@ export default function PlayPage() {
 
       // ─── REAL MODE answer logic ───────────────────────────────────
       if (!sessionId) return;
-      // Send our own locally-tracked revealed slots — the server merges these
-      // in, so this request never has to wait on the /reveal calls landing first.
-      const revealedSlotIndexes = slots.filter((s) => s.revealed).map((s) => s.index);
+      // Only the answer is sent. The server reads which cards were revealed
+      // straight from the DB — the UI has already waited for every /reveal to
+      // land (pendingRevealCount === 0 gates this submission), so the DB is
+      // authoritative and there are no client-tracked slots to send.
       const res = await fetch(`/api/sessions/${sessionId}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answeredMicrobeId: answerId, revealedSlotIndexes }),
+        body: JSON.stringify({ answeredMicrobeId: answerId }),
       });
       if (!res.ok) return;
       const data: AnswerResponse = await res.json();
@@ -519,6 +554,7 @@ export default function PlayPage() {
     setPendingMicrobeId(null);
     setWrongMicrobeIds(new Set());
     setQuestionHasWrong(false);
+    setPendingRevealCount(0);
     prefetchedCardsRef.current = [null, null, null, null, null];
     cardsFetchRef.current = null; // next fetchCards() call should hit the network for the new round, not reuse the last round's resolved promise
   }

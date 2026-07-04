@@ -51,7 +51,12 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
       where: { sessionId_roundNumber: { sessionId: id, roundNumber: currentPosition } },
       include: {
         microbe: {
-          include: { clues: { orderBy: { sortOrder: 'asc' }, include: { clueCard: true } } },
+          // Must match getRoundClues' ordering EXACTLY (sortOrder, then clueCardId
+          // as a stable tiebreaker) so the clue this route reveals for a slot is the
+          // same clue the /cards route showed the player. sortOrder is not unique,
+          // so dropping the clueCardId tiebreaker lets the two queries disagree on
+          // ties and reveal the wrong card.
+          include: { clues: { orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }], include: { clueCard: true } } },
         },
       },
     })

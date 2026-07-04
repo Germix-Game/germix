@@ -194,4 +194,42 @@ describe('POST /api/sessions/:id/reveal', () => {
       expect(body.session.cardsOpened).toBe(2)
     })
   })
+
+  // Regression guard for the "revealed card ≠ shown card" bug: /reveal and /cards
+  // run two SEPARATE queries and must order clues identically. sortOrder is not
+  // unique, so both must break ties on clueCardId or Postgres can return tied rows
+  // in different orders and the two routes disagree about which clue is in a slot.
+  describe('stays in lockstep with the /cards route (sortOrder tie-break)', () => {
+    it('loads clues ordered by sortOrder THEN clueCardId — the same ordering /cards uses', async () => {
+      await POST(makeRequest({ slotIndex: 0 }), ctx)
+
+      const findUniqueArg = vi.mocked(prisma.sessionMicrobe.findUnique).mock.calls[0][0] as {
+        include: { microbe: { include: { clues: { orderBy: unknown } } } }
+      }
+      expect(findUniqueArg.include.microbe.include.clues.orderBy).toEqual([
+        { sortOrder: 'asc' },
+        { clueCardId: 'asc' },
+      ])
+    })
+
+    it('reveals the tie-winner in slot 0 that /cards would show when two clues share a sortOrder', async () => {
+      // Slot 0 spans GRAM_STAIN + MORPHOLOGY. Both candidates share sortOrder 0, so
+      // only the clueCardId tiebreaker decides the winner. The clues arrive already
+      // ordered by [sortOrder, clueCardId] (as the query now guarantees), so the
+      // route must reveal the first one — exactly what /cards renders for that slot.
+      vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
+        ...mockSessionMicrobe,
+        microbe: {
+          clues: [
+            { sortOrder: 0, clueCardId: 'card-a', clueCard: { category: 'GRAM_STAIN', label: 'Gram +', imageUrl: '/g.png' } },
+            { sortOrder: 0, clueCardId: 'card-b', clueCard: { category: 'MORPHOLOGY', label: 'Cocci', imageUrl: '/m.png' } },
+          ],
+        },
+      } as never)
+
+      const res = await POST(makeRequest({ slotIndex: 0 }), ctx)
+      const body = await res.json()
+      expect(body.card.label).toBe('Gram +')
+    })
+  })
 })

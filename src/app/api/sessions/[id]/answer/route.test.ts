@@ -61,7 +61,7 @@ const mockSessionMicrobe = {
 type MockTx = {
   gameSession: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> }
   score: { count: ReturnType<typeof vi.fn>; findFirst: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn> }
-  sessionMicrobe: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> }
+  sessionMicrobe: { findUnique: ReturnType<typeof vi.fn> }
   playerMicrobeUnlocked: { upsert: ReturnType<typeof vi.fn> }
   player: { update: ReturnType<typeof vi.fn> }
 }
@@ -88,7 +88,6 @@ function setupTransactionMock() {
       },
       sessionMicrobe: {
         findUnique: vi.fn(() => (prisma.sessionMicrobe.findUnique as () => unknown)()),
-        update: vi.fn(),
       },
       playerMicrobeUnlocked: { upsert: vi.fn() },
       player: { update: vi.fn() },
@@ -213,59 +212,45 @@ describe('POST /api/sessions/:id/answer', () => {
     })
   })
 
-  describe('merging client-reported reveals', () => {
-    it('scores using the union of persisted and client-reported slots, not persisted alone', async () => {
-      // Persisted only has slot 0, but the client says it also revealed 1 and 2
-      // (the /reveal requests for those are still in flight) — score should
-      // reflect all 3, not just the 1 that made it to the DB first.
+  describe('server-authoritative reveal state', () => {
+    it('scores only from the DB revealedSlots, ignoring client-provided slot indexes', async () => {
+      // DB says only slot 0 is revealed. A malicious/stale client claims it also
+      // opened 1,2,3,4 to inflate the "fewer reveals = more points" heuristic in
+      // reverse (or the opposite) — the server must ignore the body entirely and
+      // score on the 1 persisted slot → full 100 points.
       const res = await POST(
-        makeRequest({ answeredMicrobeId: MICROBE_ID, revealedSlotIndexes: [1, 2] }),
+        makeRequest({ answeredMicrobeId: MICROBE_ID, revealedSlotIndexes: [1, 2, 3, 4] }),
         ctx,
       )
       const body = await res.json()
-      expect(body.roundScore).toBe(60) // 3 cards opened
+      expect(body.roundScore).toBe(100) // 1 card opened per the DB, client body ignored
     })
 
-    it('persists the merged slots back onto sessionMicrobe', async () => {
-      await POST(
-        makeRequest({ answeredMicrobeId: MICROBE_ID, revealedSlotIndexes: [1] }),
-        ctx,
-      )
-      expect(capturedTx.sessionMicrobe.update).toHaveBeenCalledWith(
-        expect.objectContaining({ data: { revealedSlots: [0, 1] } }),
-      )
-    })
-
-    it('does not write to sessionMicrobe when the client reports nothing new', async () => {
-      await POST(
-        makeRequest({ answeredMicrobeId: MICROBE_ID, revealedSlotIndexes: [0] }),
-        ctx,
-      )
-      expect(capturedTx.sessionMicrobe.update).not.toHaveBeenCalled()
-    })
-
-    it('does not let an empty client list shrink the persisted reveal count', async () => {
+    it('records Score.cardSlotsOpened from the DB, not the request body', async () => {
       vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
         ...mockSessionMicrobe,
-        revealedSlots: [0, 1, 2],
+        revealedSlots: [0, 2],
       } as never)
-      const res = await POST(makeRequest({ answeredMicrobeId: MICROBE_ID }), ctx)
-      const body = await res.json()
-      expect(body.roundScore).toBe(60) // still scored on 3 persisted cards, not 0
-    })
-
-    it('succeeds when nothing is persisted yet but the client reports a reveal', async () => {
-      vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
-        ...mockSessionMicrobe,
-        revealedSlots: [],
-      } as never)
-      const res = await POST(
-        makeRequest({ answeredMicrobeId: MICROBE_ID, revealedSlotIndexes: [0] }),
+      await POST(
+        makeRequest({ answeredMicrobeId: MICROBE_ID, revealedSlotIndexes: [1, 3, 4] }),
         ctx,
       )
-      expect(res.status).toBe(200)
-      const body = await res.json()
-      expect(body.roundScore).toBe(100)
+      expect(capturedTx.score.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ cardSlotsOpened: [0, 2] }) }),
+      )
+    })
+
+    it('unlocks the microbe with the DB revealedSlots on a correct answer', async () => {
+      vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
+        ...mockSessionMicrobe,
+        revealedSlots: [0, 1],
+      } as never)
+      await POST(makeRequest({ answeredMicrobeId: MICROBE_ID }), ctx)
+      expect(capturedTx.playerMicrobeUnlocked.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({ cardSlotsOpened: [0, 1] }),
+        }),
+      )
     })
   })
 
