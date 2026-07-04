@@ -62,7 +62,7 @@ type MockTx = {
   gameSession: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> }
   score: { count: ReturnType<typeof vi.fn>; findFirst: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn> }
   sessionMicrobe: { findUnique: ReturnType<typeof vi.fn> }
-  playerMicrobeUnlocked: { upsert: ReturnType<typeof vi.fn> }
+  playerMicrobeUnlocked: { findUnique: ReturnType<typeof vi.fn>; upsert: ReturnType<typeof vi.fn> }
   player: { update: ReturnType<typeof vi.fn> }
 }
 
@@ -71,6 +71,9 @@ let capturedTx: MockTx
 // inside the transaction, so route under both based on the where clause.
 let existingCorrectScore: unknown = null
 let wrongAttemptScore: unknown = null
+// Existing PlayerMicrobeUnlocked row (or null) returned inside the transaction,
+// used to test that opened slots accumulate across replays.
+let existingUnlock: { cardSlotsOpened: number[] } | null = null
 
 function setupTransactionMock() {
   vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
@@ -89,7 +92,10 @@ function setupTransactionMock() {
       sessionMicrobe: {
         findUnique: vi.fn(() => (prisma.sessionMicrobe.findUnique as () => unknown)()),
       },
-      playerMicrobeUnlocked: { upsert: vi.fn() },
+      playerMicrobeUnlocked: {
+        findUnique: vi.fn(() => existingUnlock),
+        upsert: vi.fn(),
+      },
       player: { update: vi.fn() },
     }
     return await (fn as (tx: unknown) => Promise<unknown>)(capturedTx)
@@ -101,6 +107,7 @@ describe('POST /api/sessions/:id/answer', () => {
     vi.clearAllMocks()
     existingCorrectScore = null
     wrongAttemptScore = null
+    existingUnlock = null
     vi.mocked(requireAuth).mockResolvedValue(mockPlayer as never)
     vi.mocked(prisma.gameSession.findUnique).mockResolvedValue(mockSession as never)
     vi.mocked(prisma.score.count).mockResolvedValue(0)
@@ -249,6 +256,22 @@ describe('POST /api/sessions/:id/answer', () => {
       expect(capturedTx.playerMicrobeUnlocked.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           create: expect.objectContaining({ cardSlotsOpened: [0, 1] }),
+        }),
+      )
+    })
+
+    it('accumulates opened slots across replays: unions new slots with the existing unlock', async () => {
+      // Player already unlocked this microbe with slots [0, 2] on a prior run;
+      // this run opened [1, 2]. The book should reflect the union [0, 1, 2], sorted.
+      existingUnlock = { cardSlotsOpened: [0, 2] }
+      vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
+        ...mockSessionMicrobe,
+        revealedSlots: [2, 1],
+      } as never)
+      await POST(makeRequest({ answeredMicrobeId: MICROBE_ID }), ctx)
+      expect(capturedTx.playerMicrobeUnlocked.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: { cardSlotsOpened: [0, 1, 2] },
         }),
       )
     })

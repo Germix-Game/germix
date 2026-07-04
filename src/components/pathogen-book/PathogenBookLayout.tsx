@@ -20,12 +20,13 @@ type MicrobeEntry = {
   unlocked: boolean;
 };
 
-type ClueCardEntry = {
-  id: string;
+// One Pathogen Book slot. `card` is present only when the player has opened it —
+// the server withholds unopened card data, so the book shows only what was revealed.
+type BookSlot = {
+  slotIndex: number;
   category: string;
-  label: string;
-  imageUrl: string;
-  sortOrder: number;
+  opened: boolean;
+  card: { id: string; category: string; label: string; imageUrl: string } | null;
 };
 
 type GameMode = "BACTERIA" | "FUNGI" | "PARASITES" | "VIRUS";
@@ -47,16 +48,6 @@ const TABS: { mode: GameMode; href: string; label: string }[] = [
   { mode: "PARASITES", href: "/pathogen-book/parasite", label: "Parasite" },
   { mode: "FUNGI",    href: "/pathogen-book/fungi",    label: "Fungi"    },
   { mode: "VIRUS",    href: "/pathogen-book/virus",    label: "Virus"    },
-];
-
-const CATEGORY_ORDER = [
-  "GRAM_STAIN",
-  "CLINICAL_MANIFESTATION",
-  "LAB_CHARACTERISTIC",
-  "VIRULENCE_FACTOR",
-  "SPECIAL_TRAIT",
-  "TRANSMISSION",
-  "MORPHOLOGY",
 ];
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -203,33 +194,67 @@ function ClueSectionSkeleton() {
   );
 }
 
-function ClueSection({ cards }: { cards: ClueCardEntry[] }) {
-  const sorted = [...cards].sort((a, b) => {
-    const catA = CATEGORY_ORDER.indexOf(a.category);
-    const catB = CATEGORY_ORDER.indexOf(b.category);
-    if (catA !== catB) return catA - catB;
-    return a.sortOrder - b.sortOrder;
-  });
+// Face-down placeholder for a slot the player hasn't opened yet — mirrors the
+// locked-microbe look, with the slot's category so they know what's left to find.
+function LockedClue({ category }: { category: string }) {
+  return (
+    <div
+      className="flex w-full flex-col items-center justify-center rounded"
+      style={{
+        aspectRatio: "1429/2000",
+        background: "linear-gradient(145deg, #2a1a0a 0%, #1a0e05 60%, #0f0804 100%)",
+        boxShadow: "inset 0 2px 4px rgba(0,0,0,0.6), inset 0 -1px 2px rgba(255,200,100,0.05)",
+      }}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#5a3a1a"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="w-1/3 opacity-60"
+      >
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+      <span className="mt-1 px-1 text-center text-[7px] uppercase leading-tight tracking-wide text-[#7a5a30]">
+        {CATEGORY_LABEL[category] ?? ""}
+      </span>
+    </div>
+  );
+}
+
+// Shows one card per slot the microbe has, in fixed game-slot order. Opened slots
+// reveal the card; unopened slots stay face-down so the book reflects exactly what
+// this player discovered.
+function ClueSection({ slots }: { slots: BookSlot[] }) {
+  const sorted = [...slots].sort((a, b) => a.slotIndex - b.slotIndex);
 
   return (
     <div className="grid grid-cols-4 gap-2">
-      {sorted.map((card) => (
-        <div key={card.id} className="flex-shrink-0">
-          {card.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={resolveImageSrc(card.imageUrl)}
-              alt={card.label}
-              className="w-full rounded shadow"
-              draggable={false}
-            />
+      {sorted.map((slot) => (
+        <div key={slot.slotIndex} className="flex-shrink-0">
+          {slot.opened && slot.card ? (
+            slot.card.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={resolveImageSrc(slot.card.imageUrl)}
+                alt={slot.card.label}
+                className="w-full rounded shadow"
+                draggable={false}
+              />
+            ) : (
+              <div
+                className="flex w-full items-center justify-center rounded bg-[#f5e6c8] p-1 text-[8px] italic text-[#7a5a30] shadow"
+                style={{ aspectRatio: "1429/2000" }}
+              >
+                {slot.card.label}
+              </div>
+            )
           ) : (
-            <div
-              className="flex w-full items-center justify-center rounded bg-[#f5e6c8] p-1 text-[8px] italic text-[#7a5a30] shadow"
-              style={{ aspectRatio: "1429/2000" }}
-            >
-              {card.label}
-            </div>
+            <LockedClue category={slot.category} />
           )}
         </div>
       ))}
@@ -248,7 +273,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
   const [microbes, setMicrobes] = useState<MicrobeEntry[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const [clues, setClues] = useState<ClueCardEntry[] | null>(null);
+  const [slots, setSlots] = useState<BookSlot[] | null>(null);
   const [cluesLoading, setCluesLoading] = useState(false);
 
   useEffect(() => {
@@ -257,11 +282,11 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
         if (!r.ok) throw new Error(`${r.status}`);
         return r.json();
       })
-      .then((data: { microbes: MicrobeEntry[]; firstMicrobeId: string | null; firstMicrobeClues: ClueCardEntry[] | null }) => {
+      .then((data: { microbes: MicrobeEntry[]; firstMicrobeId: string | null; firstMicrobeSlots: BookSlot[] | null }) => {
         setMicrobes(data.microbes);
         if (data.firstMicrobeId) {
           setSelectedId(data.firstMicrobeId);
-          setClues(data.firstMicrobeClues ?? []);
+          setSlots(data.firstMicrobeSlots ?? []);
         }
       })
       .catch(() => setMicrobes([]));
@@ -269,15 +294,15 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
 
   function handleSelect(microbeId: string) {
     setSelectedId(microbeId);
-    setClues(null);
+    setSlots(null);
     setCluesLoading(true);
     fetch(`/api/pathogen-book/${microbeId}/clues`)
       .then((r) => {
         if (!r.ok) throw new Error("Failed to fetch clues");
         return r.json();
       })
-      .then((data: ClueCardEntry[]) => setClues(data))
-      .catch(() => setClues([]))
+      .then((data: { slots: BookSlot[] }) => setSlots(data.slots))
+      .catch(() => setSlots([]))
       .finally(() => setCluesLoading(false));
   }
 
@@ -391,9 +416,9 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
             <div className="overflow-y-auto pr-12">
               {cluesLoading ? (
                 <ClueSectionSkeleton />
-              ) : clues && clues.length > 0 ? (
-                <ClueSection cards={clues} />
-              ) : clues !== null ? (
+              ) : slots && slots.length > 0 ? (
+                <ClueSection slots={slots} />
+              ) : slots !== null ? (
                 <p className="text-[11px] italic text-[#9a7850]">No characteristic cards available.</p>
               ) : null}
             </div>
