@@ -6,6 +6,7 @@ import Image from "next/image";
 import { MenuButtons } from "@/components/menu/MenuButtons";
 import { createClient } from "@/utils/supabase/client";
 import { HOME_CRITICAL_ASSETS } from "@/lib/preload-images";
+import { PostTestPopup } from "@/components/menu/PostTestPopup";
 
 // ─── Card layout data ─────────────────────────────────────────────────────────
 // Positions are percentages of the 1280×720 reference canvas used in the original
@@ -72,6 +73,24 @@ export default function HomePage() {
   const [username, setUsername] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
+
+  const [posttestRequired, setPosttestRequired] = useState(false);
+  const [posttestPeriod, setPosttestPeriod] = useState<string | null>(null);
+  const [posttestEnabled, setPosttestEnabled] = useState(false);
+  const [showPosttestPopup, setShowPosttestPopup] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/game-modes")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => {
+        setPosttestRequired(!!data.posttestRequired);
+        if (data.posttest) {
+          setPosttestEnabled(true);
+          setPosttestPeriod(data.posttest.period);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -247,16 +266,31 @@ export default function HomePage() {
             animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
           }}
         >
-          <MenuButtons />
-          <div
-            className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-4 text-xs font-semibold tracking-wide text-[#6b5040] shadow cursor-not-allowed select-none"
-            aria-disabled="true"
-            title="Post test is not yet available"
-          >
-            <span>🔒</span>
-            <span>POST TEST</span>
-          </div>
+          <MenuButtons
+            posttestRequired={posttestRequired}
+            onPlayClick={() => setShowPosttestPopup(true)}
+          />
+          {posttestEnabled && posttestRequired && (
+            <button
+              onClick={() => setShowPosttestPopup(true)}
+              className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-4 text-xs font-semibold tracking-wide text-[#f5e6c8] shadow hover:bg-[#3d1a0a] transition-colors cursor-pointer select-none"
+              title="Complete the post-test"
+            >
+              <span>📝</span>
+              <span>POST TEST {posttestPeriod ? `(${posttestPeriod})` : ""}</span>
+            </button>
+          )}
         </div>
+
+        {showPosttestPopup && posttestPeriod && (
+          <PostTestPopup
+            period={posttestPeriod}
+            onComplete={() => {
+              setPosttestRequired(false);
+            }}
+            onClose={() => setShowPosttestPopup(false)}
+          />
+        )}
       </div>
     </>
   );

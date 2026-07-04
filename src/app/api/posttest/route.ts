@@ -1,9 +1,59 @@
 import { NextRequest } from 'next/server'
-import { Prisma } from '@prisma/client'
+import { Prisma, PostTestPeriod } from '@prisma/client'
 import type { AnswerOption } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { submitPostTestSchema } from '@/lib/schemas/posttest'
+
+export async function GET() {
+  try {
+    const player = await requireAuth()
+
+    const configs = await prisma.config.findMany()
+    const configMap = new Map(configs.map(c => [c.key, c.value]))
+
+    const posttestEnabledVal = configMap.get('posttest_enabled')
+    const posttestPeriodVal = configMap.get('posttest_period')
+
+    if (posttestEnabledVal !== 'true' || !posttestPeriodVal) {
+      return Response.json({ enabled: false, questions: [] })
+    }
+
+    const period = posttestPeriodVal.toUpperCase() === 'FINAL'
+      ? PostTestPeriod.FINAL
+      : PostTestPeriod.MIDTERM
+
+    const submission = await prisma.postTest.findUnique({
+      where: { playerId_period: { playerId: player.id, period } },
+    })
+    const submitted = submission !== null
+
+    const questions = await prisma.postTestQuestion.findMany({
+      where: { period },
+      orderBy: { sortOrder: 'asc' },
+      select: {
+        id: true,
+        body: true,
+        options: true,
+      },
+    })
+
+    return Response.json({
+      enabled: true,
+      period,
+      submitted,
+      questions: questions.map(q => ({
+        id: q.id,
+        body: q.body,
+        options: q.options,
+      })),
+    })
+  } catch (e) {
+    if (e instanceof Response) return e
+    throw e
+  }
+}
+
 
 export async function POST(request: NextRequest) {
   try {
