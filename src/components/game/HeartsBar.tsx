@@ -102,7 +102,7 @@ function PixelHeart({ filled, flashing }: { filled: boolean; flashing: boolean }
       src={filled ? "/assets/ui/heart-alive.png" : "/assets/ui/heart-dead.png"}
       alt=""
       style={{ imageRendering: "pixelated" }}
-      className={`h-[6vh] w-auto ${flashing ? "heart-flash" : ""}`}
+      className={`h-[5vh] [@media(min-height:801px)]:h-[6vh] w-auto ${flashing ? "heart-flash" : ""}`}
       aria-hidden="true"
     />
   );

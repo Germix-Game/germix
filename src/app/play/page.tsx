@@ -17,6 +17,7 @@ import { createAnimatable, spring } from "animejs";
 import { CardGrid } from "@/components/game/CardGrid";
 import { HeartsBar } from "@/components/game/HeartsBar";
 import { ScoreBar } from "@/components/game/ScoreBar";
+import { LandscapeGuard } from "@/components/LandscapeGuard";
 import { useScaleToFit } from "@/hooks/useScaleToFit";
 import { HOME_CRITICAL_ASSETS, preloadImages } from "@/lib/preload-images";
 
@@ -699,6 +700,7 @@ export default function PlayPage() {
     // Full-screen layout, two zones: wood area (top) + parchment area (bottom)
     // overflow-hidden → prevent scrollbars on the outer container
     <div className="flex flex-col h-screen w-full overflow-hidden">
+      <LandscapeGuard />
       {scorePop !== null && (
         <ScorePopup
           points={scorePop.points}
@@ -726,7 +728,7 @@ export default function PlayPage() {
       {/* Arbitrary background image (Tailwind bg-[url-syntax]), bg-cover scales to fill, bg-center centers it */}
       <div
         ref={containerRef}
-        className="relative flex flex-col px-6 pt-1 pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
+        className="relative flex flex-col px-6 pt-1 pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 [@media(max-height:500px)]:basis-[55%] min-h-0 overflow-hidden"
       >
         {/* Top bar: Score on left, Exit on right */}
         <div className="relative z-10 flex items-center justify-between w-full">
@@ -750,7 +752,7 @@ export default function PlayPage() {
         </div>
 
         {phase === "playing" && (
-          <div className="flex justify-center mt-6 mb-4">
+          <div className="flex justify-center mt-1 mb-1 [@media(min-height:801px)]:mt-6 [@media(min-height:801px)]:mb-4">
             <div ref={pointsPillRef} className="flex items-baseline gap-1.5 px-4 py-1 rounded-full bg-[#2a1208]/85 border border-[#d4a96a]/50 shadow-lg">
               <span className="text-[#d4a96a] text-[0.65rem] font-semibold uppercase tracking-wider">Answer now for</span>
               <span className="text-[#f5e6c8] text-base font-black tabular-nums">
@@ -761,7 +763,7 @@ export default function PlayPage() {
           </div>
         )}
 
-        <div className="flex items-center justify-center gap-3 w-full">
+        <div className="flex items-center justify-center gap-3 [@media(max-height:450px)]:gap-1.5 w-full">
           <div className="flex-shrink-0">
             <HeartsBar heartsLeft={heartsLeft} vertical />
           </div>
@@ -805,7 +807,7 @@ export default function PlayPage() {
       </div>
 
       {/* ── Parchment area (bottom zone: filters + microbe answer panel) ── */}
-      <div className="flex flex-col bg-[#f0d9a8] flex-1 basis-1/2 min-h-0 overflow-y-auto">
+      <div className="flex flex-col bg-[#f0d9a8] flex-1 basis-1/2 [@media(max-height:500px)]:basis-[45%] min-h-0 overflow-y-auto">
 
         {/* Filter bar — gram type checkboxes, search, and biological tag checkboxes */}
         <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3 border-b border-[#c4a870] bg-[#f0d9a8] flex-shrink-0">
@@ -890,7 +892,7 @@ export default function PlayPage() {
         >
           {microbesLoading ? (
             // Loading state — microbe list hasn't arrived from the server yet
-            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-8 gap-3">
               {Array.from({ length: 16 }, (_, i) => (
                 <MicrobeCardSkeleton key={i} index={i} />
               ))}
@@ -902,7 +904,7 @@ export default function PlayPage() {
             </p>
           ) : (
             // Responsive grid: 4 columns on mobile, more on larger screens
-            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-8 gap-3">
               {filteredMicrobes.map((microbe, i) => (
                 <DraggableMicrobeCard
                   key={microbe.id}
@@ -1324,10 +1326,10 @@ function EndScreen({
 
   return (
     <div className="end-screen-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="end-screen-panel flex flex-col w-full max-w-7xl max-h-[85vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
+      <div className="end-screen-panel flex flex-col w-full max-w-7xl max-h-[90vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
 
         {/* ── Title + score ─────────────────────────────────────── */}
-        <div className="relative flex items-center justify-between px-8 py-5 flex-shrink-0 border-b border-[#c4a870]">
+        <div className="relative flex items-center justify-between px-4 py-3 sm:px-8 sm:py-5 flex-shrink-0 border-b border-[#c4a870]">
           <button
             onClick={onExit}
             aria-label="Exit"
@@ -1346,7 +1348,7 @@ function EndScreen({
         </div>
 
         {/* ── Round results ─────────────────────────────────────── */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-8 sm:py-6 space-y-4">
           {results.map((result, i) => (
             <RoundReviewRow key={i} result={result} attemptNumber={i + 1} />
           ))}
@@ -1360,7 +1362,7 @@ function EndScreen({
 // SUB-COMPONENT: one row in the end-screen recap (shows revealed cards + correct microbe per round)
 function RoundReviewRow({ result, attemptNumber }: { result: RoundResult; attemptNumber: number }) {
   return (
-    <div className="rounded-xl border border-[#c4a870] bg-[#e8cd94] p-4">
+    <div className="rounded-xl border border-[#c4a870] bg-[#e8cd94] p-3 sm:p-4">
 
       <div className="flex items-center gap-2 mb-3">
         <span className="text-[#5c2a0e] text-sm font-medium">Microbe {attemptNumber}</span>
@@ -1375,12 +1377,12 @@ function RoundReviewRow({ result, attemptNumber }: { result: RoundResult; attemp
         </span>
       </div>
 
-      <div className="flex items-start gap-4 flex-wrap">
-        <div className="flex gap-2">
+      <div className="flex items-start gap-3 flex-wrap">
+        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1">
           {result.openedSlots.map((slot) => (
             <div
               key={slot.index}
-              className="w-[8.75rem] flex-shrink-0 rounded-lg overflow-hidden"
+              className="w-14 sm:w-[8.75rem] shrink-0 rounded-lg overflow-hidden"
               style={{ aspectRatio: "1429 / 2000" }}
             >
               {slot.revealed && slot.card ? (
@@ -1391,9 +1393,9 @@ function RoundReviewRow({ result, attemptNumber }: { result: RoundResult; attemp
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-3 ml-2">
+        <div className="flex items-center gap-2 sm:gap-3">
           <MicrobeThumb microbe={result.correctMicrobe} size="lg" />
-          <span className="italic text-base font-medium text-[#3a2010]">{result.correctMicrobe.name}</span>
+          <span className="italic text-sm sm:text-base font-medium text-[#3a2010]">{result.correctMicrobe.name}</span>
         </div>
       </div>
 

@@ -128,18 +128,38 @@ export default function HomePage() {
     };
   }, []);
 
+  const menuAnim = loaded ? "menu-fade-in 600ms ease-out 400ms both" : "none";
+
+  const menuContent = (
+    <>
+      <MenuButtons
+        posttestRequired={posttestRequired}
+        onPlayClick={() => setShowPosttestPopup(true)}
+      />
+      {posttestEnabled && posttestRequired && (
+        <button
+          onClick={() => setShowPosttestPopup(true)}
+          className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-4 text-xs font-semibold tracking-wide text-[#f5e6c8] shadow hover:bg-[#3d1a0a] transition-colors cursor-pointer select-none"
+          title="Complete the post-test"
+        >
+          <span>📝</span>
+          <span>POST TEST {posttestPeriod ? `(${posttestPeriod})` : ""}</span>
+        </button>
+      )}
+    </>
+  );
+
   return (
     <>
-      {/* Main content */}
       <div
         className="relative h-screen w-screen overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
       >
-        {/* Scattered floating card decorations */}
+        {/* Floating card decorations — only on wide desktop screens */}
         {CARDS.map((card, i) => (
           <div
             key={i}
-            className="absolute"
+            className="absolute hidden lg:block"
             style={{
               left: card.left,
               top: card.top,
@@ -174,9 +194,9 @@ export default function HomePage() {
           </div>
         ))}
 
-        {/* Parchment element — sits behind the logo at the bottom-centre */}
+        {/* Parchment element — desktop only */}
         <div
-          className="absolute left-1/2 pointer-events-none"
+          className="absolute left-1/2 pointer-events-none hidden lg:block"
           style={{
             top: "95%",
             width: "44%",
@@ -195,91 +215,71 @@ export default function HomePage() {
           />
         </div>
 
-        {/* GERMIX logo — centred at 27% height */}
+        {/* Top bar: username left, logout right */}
         <div
-          className="absolute left-1/2 pointer-events-none"
-          style={{
-            top: "27%",
-            width: "50%",
-            transform: "translate(-50%, -50%)",
-            animation: loaded ? "menu-fade-in 650ms ease-out 200ms both" : "none",
-          }}
+          className="absolute top-0 inset-x-0 z-20 flex items-center justify-between p-3 sm:p-4"
+          style={{ animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none" }}
         >
-          <Image
-            src="/assets/ui/game-logo.png"
-            alt="Germix — Microbiology Card Game"
-            width={800}
-            height={300}
-            className="w-full h-auto"
-            priority
-          />
-        </div>
-
-        {/* Username chip — pinned to top-left */}
-        {username && (
-          <div
-            className="absolute top-4 left-4 z-20"
-            style={{
-              animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
-            }}
-          >
-            <div className="flex h-11 items-center gap-2 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#f5e6c8] shadow select-none">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4a96a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          {username ? (
+            <div className="flex h-10 items-center gap-2 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-3 text-sm font-semibold tracking-wide text-[#f5e6c8] shadow select-none max-w-[45vw] overflow-hidden">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d4a96a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
                 <circle cx="12" cy="8" r="4" />
                 <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
               </svg>
-              <span>{username}</span>
+              <span className="truncate">{username}</span>
             </div>
-          </div>
-        )}
-
-        {/* Logout button — pinned to top-right */}
-        {username && (
-          <div
-            className="absolute top-4 right-4 z-20"
-            style={{
-              animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
-            }}
-          >
+          ) : <div />}
+          {username && (
             <button
               onClick={handleLogout}
               disabled={loggingOut}
-              className="flex h-11 items-center gap-2 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex h-10 items-center gap-2 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-3 text-sm font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:opacity-50 disabled:cursor-not-allowed"
               title="Log out"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
               </svg>
               <span>{loggingOut ? "..." : "Logout"}</span>
             </button>
-          </div>
-        )}
-
-        {/* Menu button group + POST TEST below */}
-        <div
-          className="absolute left-1/2 z-10 flex flex-col items-center gap-3"
-          style={{
-            top: "75%",
-            transform: "translate(-50%, -50%)",
-            animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
-          }}
-        >
-          <MenuButtons
-            posttestRequired={posttestRequired}
-            onPlayClick={() => setShowPosttestPopup(true)}
-          />
-          {posttestEnabled && posttestRequired && (
-            <button
-              onClick={() => setShowPosttestPopup(true)}
-              className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-4 text-xs font-semibold tracking-wide text-[#f5e6c8] shadow hover:bg-[#3d1a0a] transition-colors cursor-pointer select-none"
-              title="Complete the post-test"
-            >
-              <span>📝</span>
-              <span>POST TEST {posttestPeriod ? `(${posttestPeriod})` : ""}</span>
-            </button>
           )}
+        </div>
+
+        {/* ── PORTRAIT / TALL layout: logo above, menu below, vertically centred ── */}
+        <div
+          className="absolute inset-0 [@media(max-height:500px)]:hidden flex flex-col items-center justify-center gap-4 sm:gap-6 z-10 px-6 pt-14 pb-6 overflow-y-auto"
+          style={{ animation: menuAnim }}
+        >
+          <Image
+            src="/assets/ui/game-logo.png"
+            alt="Germix — Microbiology Card Game"
+            width={800}
+            height={300}
+            className="w-[min(440px,76vw)] h-auto pointer-events-none drop-shadow-[2px_4px_10px_rgba(0,0,0,0.6)]"
+            priority
+          />
+          <div className="flex flex-col items-center gap-3 w-full max-w-xs">
+            {menuContent}
+          </div>
+        </div>
+
+        {/* ── LANDSCAPE PHONE layout: logo left, menu right ── */}
+        <div
+          className="absolute inset-0 hidden [@media(max-height:500px)]:flex items-center justify-center gap-6 z-10 px-6 pt-12 pb-3"
+          style={{ animation: menuAnim }}
+        >
+          <Image
+            src="/assets/ui/game-logo.png"
+            alt="Germix — Microbiology Card Game"
+            width={800}
+            height={300}
+            className="w-[28vw] h-auto pointer-events-none shrink-0 drop-shadow-[2px_4px_10px_rgba(0,0,0,0.6)]"
+            priority
+          />
+          <div className="flex flex-col items-center gap-2 shrink-0">
+            {menuContent}
+          </div>
         </div>
 
         {showPosttestPopup && posttestPeriod && (

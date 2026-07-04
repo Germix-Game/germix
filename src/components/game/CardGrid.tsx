@@ -51,7 +51,7 @@ export function CardGrid({
 
       <div
         ref={dropTargetRef}
-        className="h-[32vh]"
+        className="h-[25vh] [@media(min-height:801px)]:h-[32vh]"
         style={{ aspectRatio: "1429 / 2000" }}
       >
         {pendingMicrobeName ? (

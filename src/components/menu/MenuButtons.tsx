@@ -15,7 +15,7 @@ export function MenuButtons({
   onPlayClick?: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2.5 w-[240px]">
+    <div className="flex flex-col items-center gap-2.5 w-full max-w-60 min-w-45">
       {posttestRequired ? (
         <button
           onClick={onPlayClick}

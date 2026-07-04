@@ -18,7 +18,7 @@ export default function HowToPlayPage() {
 
   return (
     <div
-      className={`${alice.className} min-h-screen w-full bg-cover bg-center px-4 py-8`}
+      className={`${alice.className} min-h-screen w-full bg-cover bg-center px-4 pt-20 pb-8`}
       style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
     >
       <Link

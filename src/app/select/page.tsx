@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { LandscapeGuard } from "@/components/LandscapeGuard";
 
 export default function LevelSelectPage() {
   const router = useRouter();
@@ -45,6 +46,7 @@ export default function LevelSelectPage() {
         className="relative h-screen w-screen overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
       >
+      <LandscapeGuard />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/assets/game-selection/germix-graphic-game-26.png"

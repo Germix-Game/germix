@@ -56,13 +56,13 @@ export default function AuthPage() {
         width={800}
         height={300}
         priority
-        className="mb-6 h-auto w-[500px] drop-shadow-[2px_4px_10px_rgba(0,0,0,0.6)]"
+        className="mb-6 h-auto w-[min(500px,80vw)] drop-shadow-[2px_4px_10px_rgba(0,0,0,0.6)]"
         style={{ animation: "menu-fade-in 500ms ease-out both" }}
       />
 
       <form
         onSubmit={handleSubmit}
-        className="relative w-[360px] overflow-hidden rounded-3xl border border-[#7a4a1e] bg-[#1a0a04]/90 p-7 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85)] backdrop-blur-sm"
+        className="relative w-[min(360px,92vw)] overflow-hidden rounded-3xl border border-[#7a4a1e] bg-[#1a0a04]/90 p-7 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85)] backdrop-blur-sm"
         style={{ animation: "menu-fade-in 500ms ease-out 120ms both" }}
       >
         {/* subtle gold accent line */}
