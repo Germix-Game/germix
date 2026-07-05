@@ -755,7 +755,7 @@ export default function PlayPage() {
 
         <div className="pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 -translate-y-[42%]">
           <img
-            src={`/assets/ui/round-${round}.png`}
+            src={`/assets/ui/round-${6 - round}.png`}
             alt={`Round ${round} of 5`}
             className="h-[15vh] w-auto max-w-[85vw] object-contain select-none pointer-events-none"
             draggable={false}
@@ -1327,8 +1327,18 @@ function EndScreen({
   }, [score]);
 
   return (
-    <div className="end-screen-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="end-screen-panel flex flex-col w-full max-w-7xl max-h-[85vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
+    <div className="end-screen-overlay fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-black/60 p-4">
+
+      {/* ── Standalone headline — stands ALONE above the pop-up, not inside it ── */}
+      <h1
+        className={`text-6xl sm:text-7xl font-extrabold uppercase tracking-wider text-center select-none drop-shadow-[0_4px_14px_rgba(0,0,0,0.7)] ${
+          won ? "text-[#ffd42a]" : "text-[#ff3b3b]"
+        }`}
+      >
+        {won ? "You Win" : "Game Over"}
+      </h1>
+
+      <div className="end-screen-panel flex flex-col w-full max-w-7xl max-h-[78vh] bg-[#f0d9a8] rounded-2xl border border-[#c4a870] shadow-2xl overflow-hidden">
 
         {/* ── Title + score ─────────────────────────────────────── */}
         <div className="relative flex items-center justify-between px-8 py-5 flex-shrink-0 border-b border-[#c4a870]">
@@ -1340,10 +1350,7 @@ function EndScreen({
             ✕
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-[#5c2a0e]">
-              {won ? "You Win!" : "Game Over"}
-            </h1>
-            <p className="font-mono text-[#3a2010] text-lg tabular-nums mt-0.5">
+            <p className="font-mono text-[#3a2010] text-lg tabular-nums">
               Final score: {String(displayScore).padStart(4, "0")}
             </p>
           </div>
