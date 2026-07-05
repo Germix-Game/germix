@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { createSessionSchema } from '@/lib/schemas/sessions'
 import { TOTAL_MICROBES, formatSession } from '@/lib/sessions'
-import { PostTestPeriod } from '@prisma/client'
+import { getActivePosttestPeriod } from '@/lib/posttest'
 
 function shuffle<T>(array: T[]): T[] {
   const arr = [...array]
@@ -19,16 +19,14 @@ export async function POST(request: NextRequest) {
     const player = await requireAuth()
 
     // ── Posttest Lockout Security Check ──────────────────────────────────────
+    // Server-side enforcement of the same date-driven gate the home page uses:
+    // while an exam window is active, a player who has not submitted cannot
+    // start a session.
     const configs = await prisma.config.findMany()
     const configMap = new Map(configs.map(c => [c.key, c.value]))
-    const posttestEnabledVal = configMap.get('posttest_enabled')
-    const posttestPeriodVal = configMap.get('posttest_period')
+    const period = getActivePosttestPeriod(configMap)
 
-    if (posttestEnabledVal === 'true' && posttestPeriodVal) {
-      const period = posttestPeriodVal.toUpperCase() === 'FINAL'
-        ? PostTestPeriod.FINAL
-        : PostTestPeriod.MIDTERM
-
+    if (period) {
       const submission = await prisma.postTest.findUnique({
         where: { playerId_period: { playerId: player.id, period } },
       })

@@ -1,9 +1,10 @@
 import { NextRequest } from 'next/server'
-import { Prisma, PostTestPeriod } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import type { AnswerOption } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { submitPostTestSchema } from '@/lib/schemas/posttest'
+import { getActivePosttestPeriod } from '@/lib/posttest'
 
 export async function GET() {
   try {
@@ -12,16 +13,11 @@ export async function GET() {
     const configs = await prisma.config.findMany()
     const configMap = new Map(configs.map(c => [c.key, c.value]))
 
-    const posttestEnabledVal = configMap.get('posttest_enabled')
-    const posttestPeriodVal = configMap.get('posttest_period')
+    const period = getActivePosttestPeriod(configMap)
 
-    if (posttestEnabledVal !== 'true' || !posttestPeriodVal) {
+    if (!period) {
       return Response.json({ enabled: false, questions: [] })
     }
-
-    const period = posttestPeriodVal.toUpperCase() === 'FINAL'
-      ? PostTestPeriod.FINAL
-      : PostTestPeriod.MIDTERM
 
     const submission = await prisma.postTest.findUnique({
       where: { playerId_period: { playerId: player.id, period } },
