@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -168,21 +168,30 @@ describe('POST /api/posttest', () => {
 })
 
 describe('GET /api/posttest', () => {
+  // Frozen clock sits inside the active midterm window below.
+  const NOW = new Date('2026-10-06T00:00:00+07:00')
+
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.useFakeTimers()
+    vi.setSystemTime(NOW)
     vi.mocked(requireAuth).mockResolvedValue(mockPlayer as never)
     vi.mocked(prisma.config.findMany).mockResolvedValue([
-      { key: 'posttest_enabled', value: 'true' },
-      { key: 'posttest_period', value: 'midterm' },
+      { key: 'posttest_start_midterm', value: '2026-10-05 00:00' },
+      { key: 'posttest_end_midterm', value: '2026-10-07 23:59' },
     ])
     vi.mocked(prisma.postTestQuestion.findMany).mockResolvedValue(mockQuestions as never)
     vi.mocked(prisma.postTest.findUnique).mockResolvedValue(null)
   })
 
-  it('returns disabled when config posttest_enabled is false', async () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('returns disabled when no post-test window is active', async () => {
     vi.mocked(prisma.config.findMany).mockResolvedValue([
-      { key: 'posttest_enabled', value: 'false' },
-      { key: 'posttest_period', value: 'midterm' },
+      { key: 'posttest_start_midterm', value: '2020-10-05 00:00' },
+      { key: 'posttest_end_midterm', value: '2020-10-07 23:59' },
     ])
 
     const res = await GET()

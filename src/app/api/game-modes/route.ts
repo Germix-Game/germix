@@ -1,6 +1,7 @@
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { PostTestPeriod } from '@prisma/client'
+import { getActivePosttestPeriod } from '@/lib/posttest'
 
 export async function GET() {
   try {
@@ -10,9 +11,10 @@ export async function GET() {
     const configs = await prisma.config.findMany()
     const configMap = new Map(configs.map(c => [c.key, c.value]))
 
-    // ── Posttest DB Config ─────────────────────────────────────────────────────
-    const posttestEnabledVal = configMap.get('posttest_enabled')
-    const posttestPeriodVal = configMap.get('posttest_period')
+    // ── Posttest window check ──────────────────────────────────────────────────
+    // Date-driven (spec §10/§16): active only while today is inside an exam
+    // window. If active, the player is required to submit before playing.
+    const period = getActivePosttestPeriod(configMap, now)
 
     let posttestRequired = false
     let posttest: {
@@ -20,11 +22,7 @@ export async function GET() {
       submitted: boolean
     } | null = null
 
-    if (posttestEnabledVal === 'true' && posttestPeriodVal) {
-      const period = posttestPeriodVal.toUpperCase() === 'FINAL'
-        ? PostTestPeriod.FINAL
-        : PostTestPeriod.MIDTERM
-
+    if (period) {
       const submission = await prisma.postTest.findUnique({
         where: { playerId_period: { playerId: player.id, period } },
       })
