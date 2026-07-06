@@ -5,7 +5,9 @@ import { useState, useEffect } from "react";
 interface Question {
   id: string;
   body: string;
+  bodyImageUrl?: string[];
   options: string[];
+  optionImages?: Record<"A" | "B" | "C" | "D" | "E", string[]>;
 }
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -15,6 +17,28 @@ function shuffleArray<T>(array: T[]): T[] {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
+}
+
+function resolvePostTestImageSrc(url: string | null | undefined): string {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+
+  let cleanUrl = url.trim();
+
+  // If it starts with a leading slash, strip it to simplify joining
+  if (cleanUrl.startsWith("/")) {
+    cleanUrl = cleanUrl.slice(1);
+  }
+
+  // If the path already has public/assets/ or assets/, normalize it
+  if (cleanUrl.startsWith("public/assets/")) {
+    cleanUrl = cleanUrl.substring("public/assets/".length);
+  } else if (cleanUrl.startsWith("assets/")) {
+    cleanUrl = cleanUrl.substring("assets/".length);
+  }
+
+  // Prepend /assets/ since Next.js serves public/assets at root /assets/
+  return `/assets/${cleanUrl}`;
 }
 
 export function PostTestPopup({
@@ -27,7 +51,7 @@ export function PostTestPopup({
   onClose: () => void;
 }) {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<Record<string, "A" | "B" | "C" | "D">>({});
+  const [answers, setAnswers] = useState<Record<string, "A" | "B" | "C" | "D" | "E">>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,30 +159,63 @@ export function PostTestPopup({
             <div className="space-y-6">
               {questions.map((q, i) => (
                 <div key={q.id} className="rounded-xl border border-[#c4a870] bg-[#e8cd94] p-5 space-y-4">
-                  <p className="text-[#3a2010] font-semibold text-base">
-                    Question {i + 1}: {q.body}
-                  </p>
+                  <div className="space-y-3">
+                    <p className="text-[#3a2010] font-semibold text-base">
+                      Question {i + 1}: {q.body}
+                    </p>
+                    {q.bodyImageUrl && q.bodyImageUrl.length > 0 && (
+                      <div className="flex flex-wrap gap-2.5 mt-1">
+                        {q.bodyImageUrl.map((url, imgIdx) => (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            key={imgIdx}
+                            src={resolvePostTestImageSrc(url)}
+                            alt={`Question illustration ${imgIdx + 1}`}
+                            className="max-h-48 w-auto rounded-lg border border-[#c4a870] object-contain bg-white shadow-sm"
+                            onError={(e) => { e.currentTarget.style.display = "none"; }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {q.options.map((opt, optIndex) => {
-                      const letter = ["A", "B", "C", "D"][optIndex] as "A" | "B" | "C" | "D";
+                      const letter = ["A", "B", "C", "D", "E"][optIndex] as "A" | "B" | "C" | "D" | "E";
                       const isSelected = answers[q.id] === letter;
+                      const optImages = q.optionImages?.[letter] || [];
                       
                       return (
                         <button
                           key={letter}
                           onClick={() => setAnswers({ ...answers, [q.id]: letter })}
-                          className={`flex items-center gap-3 rounded-lg border p-3.5 text-left transition-all duration-150 ${
+                          className={`flex items-start gap-3 rounded-lg border p-3.5 text-left transition-all duration-150 ${
                             isSelected
                               ? "border-[#5c2a0e] bg-[#5c2a0e] text-[#f5e6c8]"
                               : "border-[#c4a870] bg-[#f5e6c8]/50 text-[#3a2010] hover:bg-[#f5e6c8]/80 hover:scale-[1.01]"
                           }`}
                         >
-                          <span className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-bold transition-colors ${
+                          <span className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-bold transition-colors flex-shrink-0 mt-0.5 ${
                             isSelected ? "border-[#f5e6c8] bg-[#f5e6c8] text-[#5c2a0e]" : "border-[#c4a870] bg-[#e8cd94]"
                           }`}>
                             {letter}
                           </span>
-                          <span className="text-sm font-medium">{opt}</span>
+                          <div className="flex flex-col gap-2 w-full">
+                            <span className="text-sm font-medium leading-snug">{opt}</span>
+                            {optImages.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 mt-1">
+                                {optImages.map((url, imgIdx) => (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    key={imgIdx}
+                                    src={resolvePostTestImageSrc(url)}
+                                    alt={`Option ${letter} illustration ${imgIdx + 1}`}
+                                    className="max-h-24 w-auto rounded border border-[#c4a870]/40 object-contain bg-white shadow-sm"
+                                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </button>
                       );
                     })}

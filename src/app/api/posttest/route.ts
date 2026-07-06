@@ -27,10 +27,8 @@ export async function GET() {
     const questions = await prisma.postTestQuestion.findMany({
       where: { period },
       orderBy: { sortOrder: 'asc' },
-      select: {
-        id: true,
-        body: true,
-        options: true,
+      include: {
+        optionImages: true,
       },
     })
 
@@ -38,11 +36,24 @@ export async function GET() {
       enabled: true,
       period,
       submitted,
-      questions: questions.map(q => ({
-        id: q.id,
-        body: q.body,
-        options: q.options,
-      })),
+      questions: questions.map(q => {
+        const optionImagesMap: Record<string, string[]> = {
+          A: [], B: [], C: [], D: [], E: []
+        }
+        q.optionImages.forEach(img => {
+          if (optionImagesMap[img.option]) {
+            optionImagesMap[img.option].push(img.imageUrl)
+          }
+        })
+
+        return {
+          id: q.id,
+          body: q.body,
+          bodyImageUrl: q.bodyImageUrl,
+          options: q.options,
+          optionImages: optionImagesMap,
+        }
+      }),
     })
   } catch (e) {
     if (e instanceof Response) return e

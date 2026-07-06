@@ -24,9 +24,9 @@ const mockPlayer = { id: PLAYER_ID }
 
 // 3 questions: Q1 correct=A, Q2 correct=B, Q3 correct=C
 const mockQuestions = [
-  { id: 'q1', correctOption: AnswerOption.A },
-  { id: 'q2', correctOption: AnswerOption.B },
-  { id: 'q3', correctOption: AnswerOption.C },
+  { id: 'q1', correctOption: AnswerOption.A, body: 'Q1', options: ['A', 'B', 'C', 'D', 'E'], bodyImageUrl: [], optionImages: [] },
+  { id: 'q2', correctOption: AnswerOption.B, body: 'Q2', options: ['A', 'B', 'C', 'D', 'E'], bodyImageUrl: [], optionImages: [] },
+  { id: 'q3', correctOption: AnswerOption.C, body: 'Q3', options: ['A', 'B', 'C', 'D', 'E'], bodyImageUrl: [], optionImages: [] },
 ]
 
 const allCorrectAnswers = { q1: AnswerOption.A, q2: AnswerOption.B, q3: AnswerOption.C }
