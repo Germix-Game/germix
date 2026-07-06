@@ -159,13 +159,24 @@ model PostTest {
 }
 
 model PostTestQuestion {
-  id            String         @id @default(cuid())
+  id            String                @id @default(cuid())
   period        PostTestPeriod
   body          String
+  bodyImageUrl  String[]
   options       String[]
+  optionImages  PostTestOptionImage[]
   correctOption AnswerOption
   sortOrder     Int
 }
+
+model PostTestOptionImage {
+  id         String           @id @default(cuid())
+  questionId String
+  option     AnswerOption
+  imageUrl   String
+  question   PostTestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
 
 model Config {
   key   String @id
