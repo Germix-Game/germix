@@ -1,0 +1,233 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model ApprovedUsername {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  importedAt   DateTime  @default(now())
+  registeredAt DateTime?
+  player       Player?
+}
+
+model Player {
+  id               String                  @id
+  username         String                  @unique
+  totalScore       Int                     @default(0)
+  gamesPlayed      Int                     @default(0)
+  createdAt        DateTime                @default(now())
+  sessions         GameSession[]
+  approvedUsername ApprovedUsername        @relation(fields: [username], references: [username])
+  unlockedMicrobes PlayerMicrobeUnlocked[]
+  postTests        PostTest[]
+  scores           Score[]
+
+  @@index([totalScore(sort: Desc)])
+}
+
+model AdminUser {
+  id        String   @id // Supabase Auth UID
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model GameSession {
+  id           String           @id @default(cuid())
+  playerId     String
+  gameMode     GameMode
+  currentRound Int              @default(1)
+  totalScore   Int              @default(0)
+  totalTime    Int              @default(0)
+  heartsLeft   Int              @default(3)
+  completed    Boolean          @default(false)
+  abandoned    Boolean          @default(false)
+  startedAt    DateTime         @default(now())
+  completedAt  DateTime?
+  player       Player           @relation(fields: [playerId], references: [id])
+  scores       Score[]
+  microbes     SessionMicrobe[]
+
+  @@index([playerId, startedAt(sort: Desc)])
+  @@index([completed, completedAt])
+}
+
+model SessionMicrobe {
+  sessionId     String
+  roundNumber   Int
+  microbeId     String
+  revealedSlots Int[]       @default([])
+  microbe       Microbe     @relation(fields: [microbeId], references: [id])
+  session       GameSession @relation(fields: [sessionId], references: [id])
+
+  @@id([sessionId, roundNumber])
+  @@unique([sessionId, microbeId])
+}
+
+model Score {
+  id                String      @id @default(cuid())
+  sessionId         String
+  playerId          String
+  microbeId         String
+  answeredMicrobeId String?
+  roundNumber       Int
+  correct           Boolean
+  cardSlotsOpened   Int[]
+  heartsLeft        Int
+  roundScore        Int
+  timeTaken         Int
+  createdAt         DateTime    @default(now())
+  answeredMicrobe   Microbe?    @relation("AnsweredMicrobe", fields: [answeredMicrobeId], references: [id])
+  microbe           Microbe     @relation("CorrectMicrobe", fields: [microbeId], references: [id])
+  player            Player      @relation(fields: [playerId], references: [id])
+  session           GameSession @relation(fields: [sessionId], references: [id])
+
+  @@index([sessionId, roundNumber])
+  @@index([playerId, createdAt(sort: Desc)])
+  @@index([microbeId])
+}
+
+model Microbe {
+  id               String                  @id @default(cuid())
+  name             String                  @unique
+  shortName        String
+  answerImageUrl   String
+  gameMode         GameMode
+  gramType         GramType
+  tags             MicrobeTag[]
+  starRating       Float
+  clues            MicrobeClue[]
+  unlockedBy       PlayerMicrobeUnlocked[]
+  scoresAsAnswered Score[]                 @relation("AnsweredMicrobe")
+  scoresAsCorrect  Score[]                 @relation("CorrectMicrobe")
+  sessionMicrobes  SessionMicrobe[]
+
+  @@index([gameMode])
+  @@index([tags], type: Gin)
+}
+
+model ClueCard {
+  id       String        @id @default(cuid())
+  category CardCategory
+  label    String
+  imageUrl String
+  microbes MicrobeClue[]
+
+  @@index([category])
+}
+
+model MicrobeClue {
+  microbeId  String
+  clueCardId String
+  sortOrder  Int
+  clueCard   ClueCard @relation(fields: [clueCardId], references: [id])
+  microbe    Microbe  @relation(fields: [microbeId], references: [id])
+
+  @@id([microbeId, clueCardId])
+  @@index([clueCardId])
+}
+
+model PlayerMicrobeUnlocked {
+  playerId        String
+  microbeId       String
+  cardSlotsOpened Int[]
+  firstUnlockedAt DateTime @default(now())
+  microbe         Microbe  @relation(fields: [microbeId], references: [id])
+  player          Player   @relation(fields: [playerId], references: [id])
+
+  @@id([playerId, microbeId])
+}
+
+model PostTest {
+  id          String         @id @default(cuid())
+  playerId    String
+  period      PostTestPeriod
+  answers     AnswerOption[]
+  score       Int
+  submittedAt DateTime       @default(now())
+  player      Player         @relation(fields: [playerId], references: [id])
+
+  @@unique([playerId, period])
+}
+
+model PostTestQuestion {
+  id            String                @id @default(cuid())
+  period        PostTestPeriod
+  body          String
+  bodyImageUrl  String[]
+  options       String[]
+  optionImages  PostTestOptionImage[]
+  correctOption AnswerOption
+  sortOrder     Int
+}
+
+model PostTestOptionImage {
+  id         String           @id @default(cuid())
+  questionId String
+  option     AnswerOption
+  imageUrl   String
+  question   PostTestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+
+model Config {
+  key   String @id
+  value String
+}
+
+enum GameMode {
+  BACTERIA
+  FUNGI
+  PARASITE
+  VIRUS
+}
+
+enum GramType {
+  POSITIVE
+  NEGATIVE
+  ACID_FAST
+  NONE
+  PROTOZOA
+  PLATYHEMINTH
+  NEMATODE
+}
+
+enum CardCategory {
+  GRAM_STAIN
+  VIRULENCE_FACTOR
+  TRANSMISSION
+  MORPHOLOGY
+  LAB_CHARACTERISTIC
+  SPECIAL_TRAIT
+  CLINICAL_MANIFESTATION
+}
+
+enum MicrobeTag {
+  ANAEROBE
+  AEROBE
+  FACULTATIVE_ANAEROBE
+  SPORE_FORMER
+  ENCAPSULATED
+  INTRACELLULAR
+}
+
+enum PostTestPeriod {
+  MIDTERM
+  FINAL
+}
+
+enum AnswerOption {
+  A
+  B
+  C
+  D
+  E
+}

@@ -128,3 +128,275 @@
     @apply font-sans;
   }
 }
+
+/* ─── Shared smooth easing ──────────────────────────────────── */
+/* iOS-style deceleration: fast start, glides to rest */
+:root { --ease-out-spring: cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* ─── End screen ────────────────────────────────────────────── */
+@keyframes end-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes end-panel-in {
+  0%   { opacity: 0; transform: translateY(36px) scale(0.95); }
+  55%  { opacity: 1; transform: translateY(-6px)  scale(1.015); }
+  78%  { transform: translateY(3px)  scale(0.998); }
+  100% { transform: translateY(0)    scale(1); }
+}
+
+@keyframes end-item-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.end-screen-overlay {
+  animation: end-overlay-in 320ms ease both;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.end-screen-panel {
+  animation: end-panel-in 480ms var(--ease-out-spring) both;
+}
+
+.end-screen-panel > *:nth-child(1) { animation: end-item-in 260ms var(--ease-out-spring) both 180ms; }
+.end-screen-panel > *:nth-child(2) { animation: end-item-in 260ms var(--ease-out-spring) both 240ms; }
+.end-screen-panel > *:nth-child(3) { animation: end-item-in 260ms var(--ease-out-spring) both 295ms; }
+.end-screen-panel > *:nth-child(4) { animation: end-item-in 260ms var(--ease-out-spring) both 350ms; }
+
+/* ─── Score earned popup ────────────────────────────────────── */
+@keyframes score-expand {
+  0%   { transform: translate(-50%, -50%) scale(0.1);  opacity: 0; }
+  38%  { transform: translate(-50%, -50%) scale(1.35); opacity: 1; }
+  56%  { transform: translate(-50%, -50%) scale(0.92); opacity: 1; }
+  72%  { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.0);  opacity: 1; }
+}
+
+.score-expand {
+  animation: score-expand 680ms var(--ease-out-spring) both;
+}
+
+/* ─── Score bar pulse when points land ──────────────────────── */
+@keyframes score-bar-pulse {
+  0%   { transform: scale(1);    filter: brightness(1);   }
+  30%  { transform: scale(1.2);  filter: brightness(1.7); }
+  60%  { transform: scale(0.95); filter: brightness(1.1); }
+  100% { transform: scale(1);    filter: brightness(1);   }
+}
+
+.score-bar-pulse {
+  animation: score-bar-pulse 420ms var(--ease-out-spring) both;
+  display: inline-block;
+}
+
+/* ─── Toast notification (drop-blocked message) ─────────────── */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.94); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0)      scale(1);   }
+}
+
+.popup-toast {
+  animation: toast-in 300ms var(--ease-out-spring) both;
+}
+
+/* ─── Feedback bar (wrong answer, etc.) ─────────────────────── */
+@keyframes bar-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.popup-bar {
+  animation: bar-in 300ms var(--ease-out-spring) both;
+}
+
+.balatro-btn {
+  box-shadow: 0 5px 0 #8b6030, 0 8px 20px rgba(0,0,0,0.35);
+  transition: transform 70ms ease, box-shadow 70ms ease;
+}
+
+.balatro-btn:hover {
+  filter: brightness(1.08);
+}
+
+.balatro-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #8b6030, 0 3px 8px rgba(0,0,0,0.25);
+}
+
+/* ─── Heart damage flash (Minecraft-style) ──────────────────── */
+@keyframes heart-flash {
+  0%,  24%, 48%, 72% { filter: brightness(1) saturate(1); }
+  12%, 36%, 60%, 84% { filter: brightness(12) saturate(0); }
+  100%               { filter: brightness(1) saturate(1); }
+}
+
+.heart-flash {
+  animation: heart-flash 800ms steps(1, end) both;
+}
+
+/* ─── Card tilt (Balatro-style) ─────────────────────────────── */
+.card-tilt {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.card-shine {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.75rem;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 10;
+  transition: opacity 200ms ease;
+}
+
+/* ─── Card 3D flip ──────────────────────────────────────────── */
+.card-wrapper {
+  perspective: 1000px;
+  position: relative;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 220ms ease-out;
+  transform-style: preserve-3d;
+}
+
+.card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.card-face-front {
+  transform: rotateY(180deg);
+}
+
+/* ─── Clue card point-loss pop ─────────────────────────────── */
+@keyframes point-pop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  18%  { opacity: 1; transform: translate(-50%, -62%)  scale(1.35); }
+  50%  { opacity: 1; transform: translate(-50%, -125%) scale(1.05); }
+  100% { opacity: 0; transform: translate(-50%, -195%) scale(0.9);  }
+}
+
+.point-pop {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 20;
+  color: #ef4444;
+  font-size: 1.6rem;
+  font-weight: 900;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.55), 0 0 12px rgba(239,68,68,0.5);
+  animation: point-pop 1100ms var(--ease-out-spring) forwards;
+}
+
+/* ─── Card idle bobbing (Balatro-style) ────────────────────── */
+@keyframes card-idle {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  40%       { transform: translateY(-7px) rotate(0.8deg); }
+  80%       { transform: translateY(-3px) rotate(-0.5deg); }
+}
+
+.card-idle {
+  animation: card-idle 2.8s ease-in-out infinite;
+  animation-delay: var(--card-idle-delay, 0s);
+}
+
+/* ─── Main menu hover spring ────────────────────────────────── */
+.menu-btn {
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 150ms ease,
+              border-color 150ms ease;
+}
+.menu-btn:hover  { transform: scale(1.07); }
+.menu-btn:active { transform: scale(0.97); transition-duration: 80ms; }
+
+.menu-bg-card {
+  transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.menu-bg-card:hover { transform: scale(1.18); }
+
+/* ─── Main menu animations ──────────────────────────────────── */
+@keyframes card-float-sm {
+  0%, 100% { transform: translateY(0px)   rotate(0deg);   }
+  30%       { transform: translateY(-7px)  rotate(0.9deg); }
+  70%       { transform: translateY(-3px)  rotate(-0.6deg);}
+}
+@keyframes card-float-md {
+  0%, 100% { transform: translateY(0px)    rotate(0deg);   }
+  35%       { transform: translateY(-10px)  rotate(1.2deg); }
+  72%       { transform: translateY(-5px)   rotate(-0.8deg);}
+}
+@keyframes card-float-lg {
+  0%, 100% { transform: translateY(0px)    rotate(0deg);   }
+  40%       { transform: translateY(-13px)  rotate(1.5deg); }
+  75%       { transform: translateY(-6px)   rotate(-1.1deg);}
+}
+@keyframes menu-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes loading-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
+  40% { transform: translateY(-10px); opacity: 1; }
+}
+
+/* ─── Credits page (minimal staggered fade-in) ──────────────── */
+@keyframes credit-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.credit-in {
+  animation: credit-in 520ms var(--ease-out-spring) both;
+  animation-delay: var(--credit-delay, 0ms);
+}
+
+/* Background artwork reveal */
+@keyframes credit-bg-in {
+  from { opacity: 0; transform: scale(1.03); }
+  to   { opacity: 1; transform: scale(1);    }
+}
+.credit-bg-in { animation: credit-bg-in 700ms var(--ease-out-spring) both; }
+
+/* Back button slide-in */
+@keyframes credit-back-in {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+.credit-back-in { animation: credit-back-in 520ms var(--ease-out-spring) both 250ms; }
+
+/* Loading screen fade-out once assets are ready */
+@keyframes credit-loader-out {
+  to { opacity: 0; visibility: hidden; }
+}
+.credit-loader-out { animation: credit-loader-out 500ms ease forwards; }
+
+/* Loading dots */
+.credit-dot {
+  animation: loading-bounce 1.4s ease-in-out infinite both;
+  animation-delay: var(--dot-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .credit-in,
+  .credit-bg-in,
+  .credit-back-in { animation: none; }
+  .credit-dot { animation: none; opacity: 0.7; }
+}
