@@ -218,4 +218,5 @@ enum AnswerOption {
   B
   C
   D
+  E
 }

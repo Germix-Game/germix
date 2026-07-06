@@ -27,7 +27,7 @@ export function PostTestPopup({
   onClose: () => void;
 }) {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<Record<string, "A" | "B" | "C" | "D">>({});
+  const [answers, setAnswers] = useState<Record<string, "A" | "B" | "C" | "D" | "E">>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -140,7 +140,7 @@ export function PostTestPopup({
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {q.options.map((opt, optIndex) => {
-                      const letter = ["A", "B", "C", "D"][optIndex] as "A" | "B" | "C" | "D";
+                      const letter = ["A", "B", "C", "D", "E"][optIndex] as "A" | "B" | "C" | "D" | "E";
                       const isSelected = answers[q.id] === letter;
                       
                       return (
