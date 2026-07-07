@@ -169,7 +169,7 @@ export default function LeaderboardPage() {
       <div
         className="absolute inset-0"
         style={{
-          backgroundImage: "url('/assets/leaderboard/leaderboard_bg.png')",
+          backgroundImage: "url('/assets/Leaderboard/leaderboard_bg.png')",
           backgroundSize: "auto 100%",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
@@ -191,7 +191,7 @@ export default function LeaderboardPage() {
           }}
         >
           <Image
-            src="/assets/leaderboard/leaderboard_ui.png"
+            src="/assets/Leaderboard/leaderboard_ui.png"
             alt=""
             fill
             priority
