@@ -3,7 +3,7 @@ import { z } from 'zod'
 const usernameSchema = z
   .string()
   .min(1, 'Username is required')
-  .max(10, 'Username must be 1-10 characters')
+  .max(50, 'Username must be 1-50 characters')
   .regex(/^\S+$/, 'Username cannot contain whitespace')
 
 const passwordSchema = z
