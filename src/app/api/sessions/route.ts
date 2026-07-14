@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { createSessionSchema } from '@/lib/schemas/sessions'
-import { TOTAL_MICROBES, formatSession } from '@/lib/sessions'
+import { TOTAL_MICROBES, FORCED_CLUE_SLOT, formatSession } from '@/lib/sessions'
 import { getActivePosttestPeriod } from '@/lib/posttest'
 
 function shuffle<T>(array: T[]): T[] {
@@ -71,6 +71,11 @@ export async function POST(request: NextRequest) {
           create: selected.map((microbe, i) => ({
             roundNumber: i + 1,
             microbeId: microbe.id,
+            // Force the clinical-manifestation card open from the start of every
+            // round. Seeding it here (rather than only on the client) means the
+            // server counts it toward the score exactly like the client shows it,
+            // so the two never disagree on how many cards were opened.
+            revealedSlots: [FORCED_CLUE_SLOT],
           })),
         },
       },
