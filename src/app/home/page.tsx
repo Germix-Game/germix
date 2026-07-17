@@ -65,13 +65,15 @@ const PRELOAD_ASSETS = [
   ...HOME_CRITICAL_ASSETS,
   ...CARDS.map((c) => c.src),
 ];
-
+//for localstorage
+const MOTION_STORAGE_KEY = "germix-motion-enabled";
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
   const [loaded, setLoaded] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [motionEnabled, setMotionEnabled] = useState(true);
   const router = useRouter();
 
   const [posttestRequired, setPosttestRequired] = useState(false);
@@ -101,6 +103,33 @@ export default function HomePage() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      const savedPreference = localStorage.getItem(MOTION_STORAGE_KEY);
+
+      if (savedPreference === "true" || savedPreference === "false") {
+        setMotionEnabled(savedPreference === "true");
+        return;
+      }
+
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      setMotionEnabled(!prefersReducedMotion);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, []);
+
+  function handleMotionToggle() {
+    setMotionEnabled((currentlyEnabled) => {
+      const nextValue = !currentlyEnabled;
+      localStorage.setItem(MOTION_STORAGE_KEY, String(nextValue));
+      return nextValue;
+    });
+  }
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -132,7 +161,7 @@ export default function HomePage() {
     <>
       {/* Main content */}
       <div
-        className="relative h-screen w-screen overflow-hidden bg-cover bg-center"
+        className={`relative h-screen w-screen overflow-hidden bg-cover bg-center ${motionEnabled ? "" : "home-motion-off"}`}
         style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
       >
         {/* Scattered floating card decorations */}
@@ -152,7 +181,7 @@ export default function HomePage() {
             <div className="menu-bg-card">
               <div
                 style={{
-                  animation: loaded
+                  animation: loaded && motionEnabled
                     ? `${card.float} ${card.dur}ms ease-in-out ${card.delay + 600}ms infinite both`
                     : "none",
                 }}
@@ -233,18 +262,30 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Logout button — pinned to top-right */}
-        {username && (
-          <div
-            className="absolute top-4 right-4 z-20"
-            style={{
-              animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
-            }}
+        {/* Motion and logout controls — pinned to top-right */}
+        <div
+          className="absolute top-4 right-4 z-20 flex items-center gap-2"
+          style={{
+            animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
+          }}
+        >
+          <button
+            type="button"
+            onClick={handleMotionToggle}
+            aria-pressed={motionEnabled}
+            className="flex h-11 items-center gap-2 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#f5e6c8] shadow transition-colors hover:bg-[#3d1a0a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a]"
+            title={motionEnabled ? "Stop background motion" : "Enable background motion"}
           >
+            <span aria-hidden="true">{motionEnabled ? "⏸" : "▶"}</span>
+            <span>{motionEnabled ? "Stop motion" : "Enable motion"}</span>
+          </button>
+
+          {username && (
             <button
+              type="button"
               onClick={handleLogout}
               disabled={loggingOut}
-              className="flex h-11 items-center gap-2 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex h-11 items-center gap-2 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:cursor-not-allowed disabled:opacity-50"
               title="Log out"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -254,8 +295,8 @@ export default function HomePage() {
               </svg>
               <span>{loggingOut ? "..." : "Logout"}</span>
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Menu button group + POST TEST below */}
         <div
