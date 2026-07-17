@@ -34,6 +34,7 @@ const mockSessionMicrobe = {
   sessionId: SESSION_ID,
   roundNumber: 1,
   microbeId: MICROBE_ID,
+  revealedSlots: [0, 1, 2, 3, 4],
 }
 
 const mockClueCards = [
@@ -77,6 +78,24 @@ describe('GET /api/sessions/:id/cards', () => {
       'Catalase+',
       'Tumbling',
       'Abscess',
+    ])
+  })
+
+  it('returns null for unrevealed slots', async () => {
+    vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
+      ...mockSessionMicrobe,
+      revealedSlots: [4],
+    } as never)
+
+    const res = await GET(new Request('http://localhost'), ctx)
+    const body = await res.json()
+
+    expect(body.cards).toEqual([
+      null,
+      null,
+      null,
+      null,
+      mockClueCards[4].clueCard,
     ])
   })
 

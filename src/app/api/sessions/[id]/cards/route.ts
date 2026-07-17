@@ -32,11 +32,13 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
     const roundClues = await getRoundClues(sessionMicrobe.microbeId)
 
-    const cards = roundClues.map((mc) =>
-      mc
-        ? { category: mc.clueCard.category, 
-          label: mc.clueCard.label, 
-          imageUrl: mc.clueCard.imageUrl }
+    const cards = roundClues.map((mc, slotIndex) =>
+      mc && sessionMicrobe.revealedSlots.includes(slotIndex)
+        ? {
+            category: mc.clueCard.category,
+            label: mc.clueCard.label,
+            imageUrl: mc.clueCard.imageUrl,
+          }
         : null,
     )
 
