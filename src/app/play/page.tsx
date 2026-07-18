@@ -145,6 +145,10 @@ export default function PlayPage() {
   const [pendingMicrobeId, setPendingMicrobeId] = useState<string | null>(null);
   const [dropBlockedMsg, setDropBlockedMsg] = useState<string | null>(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  // Phone-only: lets the player collapse the microbe answer panel so it stops
+  // covering the clue cards. The toggle button that flips this is hidden on
+  // desktop/iPad via CSS, so this can only ever become true on a phone.
+  const [answerPanelHidden, setAnswerPanelHidden] = useState(false);
   const scoreBarRef = useRef<HTMLDivElement>(null);
   const pointsPillRef = useRef<HTMLDivElement>(null);
   const [scorePop, setScorePop] = useState<{ points: number; startX: number; startY: number } | null>(null);
@@ -853,8 +857,24 @@ export default function PlayPage() {
         )}
       </div>
 
+      {/* Phone-only: collapses the microbe answer panel below so it stops
+          covering the clue cards. Hidden on desktop/iPad — see
+          .answer-panel-toggle in globals.css. */}
+      <button
+        type="button"
+        onClick={() => setAnswerPanelHidden((h) => !h)}
+        aria-expanded={!answerPanelHidden}
+        aria-controls="answer-panel"
+        className="answer-panel-toggle hidden w-full items-center justify-center gap-1.5 border-y border-[#c4a870] bg-[#e8cd94] py-1.5 text-xs font-bold uppercase tracking-wide text-[#5c2a0e] active:bg-[#dcc186]"
+      >
+        {answerPanelHidden ? "▲ Show microbe cards" : "▼ Hide microbe cards"}
+      </button>
+
       {/* ── Parchment area (bottom zone: filters + microbe answer panel) ── */}
-      <div className="flex flex-col bg-[#f0d9a8] flex-1 basis-1/2 min-h-0 overflow-y-auto">
+      <div
+        id="answer-panel"
+        className={`flex flex-col bg-[#f0d9a8] flex-1 basis-1/2 min-h-0 overflow-y-auto${answerPanelHidden ? " answer-panel-hidden" : ""}`}
+      >
 
         {/* Filter bar — gram type checkboxes, search, and biological tag checkboxes */}
         <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3 border-b border-[#c4a870] bg-[#f0d9a8] flex-shrink-0">

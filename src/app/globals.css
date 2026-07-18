@@ -568,6 +568,14 @@
   .answer-confirm-btn {
     min-height: 44px !important;
   }
+
+  /* Collapse handle for the microbe answer panel — only reachable (and
+     therefore only ever meaningful) on a phone, so gating the hide effect
+     in the same query means it can never leave the panel stuck hidden if
+     the viewport later stops matching (e.g. rotate, or resize on a
+     foldable). */
+  .answer-panel-toggle { display: flex !important; }
+  .answer-panel-hidden { display: none !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
