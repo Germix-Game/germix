@@ -331,6 +331,13 @@
 }
 .menu-bg-card:hover { transform: scale(1.18); }
 
+.home-motion-off .menu-bg-card {
+  transition: none;
+}
+
+.home-motion-off .menu-bg-card:hover {
+  transform: none;
+}
 /* ─── Main menu animations ──────────────────────────────────── */
 @keyframes card-float-sm {
   0%, 100% { transform: translateY(0px)   rotate(0deg);   }

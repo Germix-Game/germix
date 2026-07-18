@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MenuButtons } from "@/components/menu/MenuButtons";
 import { createClient } from "@/utils/supabase/client";
 import { HOME_CRITICAL_ASSETS } from "@/lib/preload-images";
 import { PostTestPopup } from "@/components/menu/PostTestPopup";
+import { getMotionPreference } from "@/lib/motion-preference";
 
 // ─── Card layout data ─────────────────────────────────────────────────────────
 // Positions are percentages of the 1280×720 reference canvas used in the original
@@ -65,14 +65,12 @@ const PRELOAD_ASSETS = [
   ...HOME_CRITICAL_ASSETS,
   ...CARDS.map((c) => c.src),
 ];
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
   const [loaded, setLoaded] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
-  const [loggingOut, setLoggingOut] = useState(false);
-  const router = useRouter();
+  const [motionEnabled, setMotionEnabled] = useState(true);
 
   const [posttestRequired, setPosttestRequired] = useState(false);
   const [posttestPeriod, setPosttestPeriod] = useState<string | null>(null);
@@ -102,11 +100,13 @@ export default function HomePage() {
     });
   }, []);
 
-  async function handleLogout() {
-    setLoggingOut(true);
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
-  }
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      setMotionEnabled(getMotionPreference());
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -132,7 +132,7 @@ export default function HomePage() {
     <>
       {/* Main content */}
       <div
-        className="relative h-screen w-screen overflow-hidden bg-cover bg-center"
+        className={`relative h-screen w-screen overflow-hidden bg-cover bg-center ${motionEnabled ? "" : "home-motion-off"}`}
         style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
       >
         {/* Scattered floating card decorations */}
@@ -152,7 +152,7 @@ export default function HomePage() {
             <div className="menu-bg-card">
               <div
                 style={{
-                  animation: loaded
+                  animation: loaded && motionEnabled
                     ? `${card.float} ${card.dur}ms ease-in-out ${card.delay + 600}ms infinite both`
                     : "none",
                 }}
@@ -230,30 +230,6 @@ export default function HomePage() {
               </svg>
               <span>{username}</span>
             </div>
-          </div>
-        )}
-
-        {/* Logout button — pinned to top-right */}
-        {username && (
-          <div
-            className="absolute top-4 right-4 z-20"
-            style={{
-              animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
-            }}
-          >
-            <button
-              onClick={handleLogout}
-              disabled={loggingOut}
-              className="flex h-11 items-center gap-2 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Log out"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              <span>{loggingOut ? "..." : "Logout"}</span>
-            </button>
           </div>
         )}
 

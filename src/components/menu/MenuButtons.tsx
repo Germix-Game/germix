@@ -4,6 +4,7 @@ const NAV_LINKS = [
   { label: "HOW TO PLAY",          href: "/how-to-play"  },
   { label: "LEADERBOARD",          href: "/leaderboard"  },
   { label: "PATHOGEN BOOK",        href: "/pathogen-book"},
+  { label: "SETTINGS",             href: "/settings"     },
   { label: "CREDITS & REFERENCES", href: "/credits"      },
 ] as const;
 
