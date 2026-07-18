@@ -173,8 +173,8 @@ export default function HomePage() {
                   src={card.src}
                   alt=""
                   aria-hidden="true"
-                  width={card.width ?? 150}
                   style={{
+                    width: `clamp(70px, ${((card.width ?? 150) / 1280) * 100}vw, ${card.width ?? 150}px)`,
                     filter:
                       "drop-shadow(4px 8px 14px rgba(0,0,0,0.65)) drop-shadow(1px 2px 4px rgba(0,0,0,0.40))",
                   }}
@@ -229,7 +229,7 @@ export default function HomePage() {
         {/* Username chip — pinned to top-left */}
         {username && (
           <div
-            className="absolute top-4 left-4 z-20"
+            className="absolute safe-top safe-left z-20"
             style={{
               animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
             }}
@@ -247,7 +247,7 @@ export default function HomePage() {
         {/* Settings icon + logout — pinned to top-right */}
         {username && (
           <div
-            className="absolute top-4 right-4 z-20 flex items-center gap-2"
+            className="absolute safe-top safe-right z-20 flex items-center gap-2"
             style={{
               animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
             }}
@@ -258,7 +258,7 @@ export default function HomePage() {
               aria-label="Settings"
               aria-haspopup="dialog"
               title="Settings"
-              className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 text-[#f5e6c8] shadow transition-colors hover:bg-[#3d1a0a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a]"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 text-[#f5e6c8] shadow transition-colors hover:bg-[#3d1a0a]"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="3" />
@@ -285,7 +285,7 @@ export default function HomePage() {
 
         {/* Menu button group + POST TEST below */}
         <div
-          className="absolute left-1/2 z-10 flex flex-col items-center gap-3"
+          className="home-menu-cluster absolute left-1/2 z-10 flex flex-col items-center gap-3"
           style={{
             top: "75%",
             transform: "translate(-50%, -50%)",

@@ -21,7 +21,7 @@ export default function LogoutConfirmPage() {
       className="flex h-screen w-screen items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
     >
-      <div className="w-[340px] rounded-2xl border border-[#6b3520] bg-[#1a0a04]/90 p-6 text-center shadow-xl">
+      <div className="w-[min(340px,92vw)] rounded-2xl border border-[#6b3520] bg-[#1a0a04]/90 p-6 text-center shadow-xl">
         <h1 className="mb-2 text-lg font-bold text-[#f5e6c8]">Log out?</h1>
         <p className="mb-5 text-sm text-[#c8a060]">
           Are you sure you want to log out?
@@ -29,13 +29,13 @@ export default function LogoutConfirmPage() {
         <div className="flex gap-3">
           <button
             onClick={() => router.push("/home")} // Cancel → back to the menu
-            className="flex-1 rounded-lg border border-[#6b3520] py-2.5 font-semibold text-[#c8a060] transition-colors hover:bg-[#2a1208]"
+            className="tap-min flex-1 rounded-lg border border-[#6b3520] py-2.5 font-semibold text-[#c8a060] transition-colors hover:bg-[#2a1208]"
           >
             Cancel
           </button>
           <button
             onClick={confirmLogout} // Confirm → log out
-            className="flex-1 rounded-lg bg-[#3a7d20] py-2.5 font-semibold text-white transition-colors hover:bg-[#4da030]"
+            className="tap-min flex-1 rounded-lg bg-[#3a7d20] py-2.5 font-semibold text-white transition-colors hover:bg-[#4da030]"
           >
             Log out
           </button>

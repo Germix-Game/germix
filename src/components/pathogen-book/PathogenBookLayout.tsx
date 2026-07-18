@@ -123,7 +123,7 @@ function MicrobeCard({
       onClick={microbe.unlocked ? onClick : undefined}
       disabled={!microbe.unlocked}
       aria-label={microbe.unlocked ? microbe.name : "Locked microbe"}
-      className={`relative flex flex-col items-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a] ${
+      className={`relative flex flex-col items-center transition-all ${
         selected ? "scale-105 ring-2 ring-[#c8873a]" : ""
       } ${!microbe.unlocked ? "cursor-default" : "cursor-pointer"}`}
     >
@@ -340,7 +340,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
       {/* ── Back button ── */}
       <Link
         href="/home"
-        className="absolute left-4 top-4 z-30 flex h-9 items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
+        className="tap-min safe-top safe-left absolute z-30 flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
       >
         ← Back
       </Link>
@@ -407,25 +407,35 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
         ) : (
           <>
             {/* Fixed header — microbe card + name + rating */}
-            <div className="flex items-start gap-4 pr-12 pb-3 shrink-0">
+            <div
+              className="flex items-start shrink-0"
+              style={{ gap: "clamp(0.5rem, 1.6vw, 1rem)", paddingRight: "clamp(1rem, 4vw, 3rem)", paddingBottom: "clamp(0.4rem, 1.2vh, 0.75rem)" }}
+            >
               <img
                 src={resolveImageSrc(selectedMicrobe.answerImageUrl)}
                 alt={selectedMicrobe.name}
-                className="w-52 shrink-0 object-contain"
-                style={{ aspectRatio: "1 / 1" }}
+                className="shrink-0 object-contain"
+                style={{ width: "clamp(88px, 18vw, 208px)", aspectRatio: "1 / 1" }}
                 draggable={false}
               />
-              <div className="flex flex-col gap-2 pt-1">
-                <h2 className="text-2xl font-semibold italic leading-snug text-[#2a1208]">
+              <div className="flex flex-col pt-1" style={{ gap: "clamp(0.25rem, 0.8vh, 0.5rem)" }}>
+                <h2
+                  className="font-semibold italic leading-snug text-[#2a1208]"
+                  style={{ fontSize: "clamp(1rem, 2.4vw, 1.5rem)" }}
+                >
                   {selectedMicrobe.name}
                 </h2>
-                <p className="text-[12px] uppercase tracking-wider text-[#7a5a30]">
+                <p
+                  className="uppercase tracking-wider text-[#7a5a30]"
+                  style={{ fontSize: "clamp(0.55rem, 1vw, 0.75rem)" }}
+                >
                   Clinical Relevance Rating
                 </p>
                 <img
                   src={starSrc(selectedMicrobe.starRating)}
                   alt={`${Math.round(selectedMicrobe.starRating)} stars`}
-                  className="h-8 w-auto self-start object-contain"
+                  className="w-auto self-start object-contain"
+                  style={{ height: "clamp(20px, 3.5vw, 32px)" }}
                   draggable={false}
                 />
               </div>
@@ -433,8 +443,8 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
 
             {/* Scrollable clue section — scrollbar hidden, scrolling still works */}
             <div
-              className="overflow-y-auto pr-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              style={{ msOverflowStyle: "none" }}
+              className="overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              style={{ msOverflowStyle: "none", paddingRight: "clamp(1rem, 4vw, 3rem)" }}
             >
               {cluesLoading ? (
                 <ClueSectionSkeleton />

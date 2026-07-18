@@ -68,7 +68,7 @@ function PasswordForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-[340px] rounded-2xl border border-[#6b3520] bg-[#1a0a04]/90 p-6 shadow-xl"
+      className="w-[min(340px,92vw)] rounded-2xl border border-[#6b3520] bg-[#1a0a04]/90 p-6 shadow-xl"
     >
       <h1 className="mb-1 text-lg font-bold text-[#f5e6c8]">
         {mode === "login" ? "Welcome back" : "Create your account"}
@@ -97,7 +97,7 @@ function PasswordForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="mt-5 w-full rounded-lg bg-[#3a7d20] py-2.5 font-semibold text-white transition-colors hover:bg-[#4da030] disabled:opacity-60"
+        className="tap-min mt-5 w-full rounded-lg bg-[#3a7d20] py-2.5 font-semibold text-white transition-colors hover:bg-[#4da030] disabled:opacity-60"
       >
         {submitting ? "Please wait…" : mode === "login" ? "Log In" : "Sign Up"}
       </button>
