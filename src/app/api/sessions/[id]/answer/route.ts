@@ -56,7 +56,7 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
             const correctCount = await tx.score.count({ where: { sessionId: id, correct: true } })
             const currentPosition = correctCount + 1
 
-            const [existingCorrect, sessionMicrobe, hadWrongAttempt] = await Promise.all([
+            const [existingCorrect, sessionMicrobe] = await Promise.all([
               // Idempotency: prevent re-submitting a microbe that was already answered correctly
               tx.score.findFirst({
                 where: { sessionId: id, roundNumber: currentPosition, correct: true },
@@ -68,10 +68,6 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
                   revealedSlots: true,
                   microbe: { select: { id: true, name: true, shortName: true, answerImageUrl: true } },
                 },
-              }),
-              // Any previous wrong attempt on this question means 0 pts even if now correct
-              tx.score.findFirst({
-                where: { sessionId: id, roundNumber: currentPosition, correct: false },
               }),
             ])
 
@@ -96,7 +92,10 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
             const correct = answeredMicrobeId === sessionMicrobe.microbeId
             const newHeartsLeft = correct ? session.heartsLeft : session.heartsLeft - 1
 
-            const roundScore = correct && !hadWrongAttempt
+            // A wrong attempt no longer zeroes the round: the player keeps the
+            // card-count-based score whenever they eventually answer correctly.
+            // Only an outright wrong answer (correct === false) scores 0.
+            const roundScore = correct
               ? calculateRoundScore(revealedSlots.length, true)
               : 0
 
