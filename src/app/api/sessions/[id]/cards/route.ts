@@ -34,9 +34,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
     const cards = roundClues.map((mc) =>
       mc
-        ? { category: mc.clueCard.category, 
-          label: mc.clueCard.label, 
-          imageUrl: mc.clueCard.imageUrl }
+        ? { category: mc.clueCard.category, imageUrl: mc.clueCard.imageUrl }
         : null,
     )
 
