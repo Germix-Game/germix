@@ -188,14 +188,27 @@ describe('POST /api/sessions/:id/answer', () => {
       expect(body.session.heartsLeft).toBe(3)
     })
 
-    it('returns 60 score when 3 cards were opened before correct answer', async () => {
+    it('returns 75 score when 3 cards were opened before correct answer', async () => {
       vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
         ...mockSessionMicrobe,
         revealedSlots: [0, 1, 2],
       } as never)
       const res = await POST(makeRequest({ answeredMicrobeId: MICROBE_ID }), ctx)
       const body = await res.json()
-      expect(body.roundScore).toBe(60)
+      expect(body.roundScore).toBe(75)
+    })
+
+    it('still awards the full score after a previous wrong attempt on this round', async () => {
+      // A wrong guess earlier this round must NOT zero the score any more — the
+      // player keeps the card-count-based points once they answer correctly.
+      wrongAttemptScore = { id: 'earlier-wrong' }
+      vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
+        ...mockSessionMicrobe,
+        revealedSlots: [0, 1],
+      } as never)
+      const res = await POST(makeRequest({ answeredMicrobeId: MICROBE_ID }), ctx)
+      const body = await res.json()
+      expect(body.roundScore).toBe(100)
     })
 
     it('upserts PlayerMicrobeUnlocked on correct answer', async () => {
