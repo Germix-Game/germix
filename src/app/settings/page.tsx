@@ -51,17 +51,12 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-bold">Settings</h1>
 
         <div className="mt-6 flex items-center justify-between gap-6 rounded-xl border border-[#6b3520] bg-[#0d0500]/70 p-4">
-          <div>
-            <h2 className="font-semibold">Background motion</h2>
-            <p className="mt-1 text-sm text-[#c8a060]">
-              Move the decorative cards on the main menu.
-            </p>
-          </div>
+          <h2 className="font-semibold">Floating card animation</h2>
 
           <button
             type="button"
             onClick={handleMotionToggle}
-            aria-label="Background motion"
+            aria-label="Floating card animation"
             aria-pressed={motionEnabled}
             className={`relative h-8 w-14 shrink-0 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a] ${
               motionEnabled
@@ -77,10 +72,6 @@ export default function SettingsPage() {
             />
           </button>
         </div>
-
-        <p className="mt-3 text-right text-sm font-semibold text-[#d4a96a]">
-          Motion is {motionEnabled ? "on" : "off"}
-        </p>
 
         <button
           type="button"
