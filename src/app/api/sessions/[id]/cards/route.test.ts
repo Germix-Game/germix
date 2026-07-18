@@ -118,7 +118,7 @@ describe('GET /api/sessions/:id/cards', () => {
     expect(prisma.microbeClue.findMany).toHaveBeenCalledWith({
       where: { microbeId: MICROBE_ID },
       orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }],
-      include: { clueCard: true },
+      include: { clueCard: { select: { id: true, category: true, imageUrl: true } } },
     })
   })
 })

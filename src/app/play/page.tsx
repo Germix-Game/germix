@@ -1445,7 +1445,7 @@ function ClueCardThumb({ card }: { card: ClueCard }) {
       <span className="text-[0.7rem] uppercase tracking-wide text-[#9a7850] text-center leading-tight w-full">
         {card.category.replace(/_/g, " ")}
       </span>
-      {/* Real image overlay if URL is provided (the clue is the image, not text) */}
+      {/* Real image overlay if URL is provided */}
       {card.imageUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img

@@ -32,10 +32,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
     const roundClues = await getRoundClues(sessionMicrobe.microbeId)
 
-    // Label is deliberately omitted: this route pre-fetches all five cards at
-    // once, so sending the clue text here would let a player read every clue
-    // from the network response without opening a card (and without paying the
-    // score cost). The image alone conveys the clue once a card is opened.
+    // Label withheld so the bulk prefetch can't leak every clue before a card is opened.
     const cards = roundClues.map((mc) =>
       mc
         ? { category: mc.clueCard.category, imageUrl: mc.clueCard.imageUrl }

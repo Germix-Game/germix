@@ -48,7 +48,7 @@ export async function getRoundClues(microbeId: string) {
     // in a slot — making the card revealed differ from the card shown. Both routes
     // MUST use this exact ordering to stay in lockstep.
     orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }],
-    include: { clueCard: true },
+    include: { clueCard: { select: { id: true, category: true, imageUrl: true } } },
   })
 
   return selectSlotClues(all)
@@ -61,7 +61,6 @@ export type BookSlot = {
   slotIndex: number
   category: CardCategory
   opened: boolean
-  // No `label` — the clue text is never exposed by the API; the image is the clue.
   card: { id: string; category: CardCategory; imageUrl: string } | null
 }
 
@@ -73,7 +72,7 @@ export async function getBookSlots(microbeId: string, openedSlots: number[]): Pr
   const all = await prisma.microbeClue.findMany({
     where: { microbeId },
     orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }],
-    include: { clueCard: true },
+    include: { clueCard: { select: { id: true, category: true, imageUrl: true } } },
   })
 
   const opened = new Set(openedSlots)

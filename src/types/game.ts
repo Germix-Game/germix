@@ -17,10 +17,7 @@ export type MicrobeTag =
 
 export interface ClueCard {
   category: CardCategory;
-  // The clue text is intentionally NOT sent by the API any more — the clue is
-  // conveyed by the card image. Kept optional only so older/demo data still
-  // type-checks; the game UI never renders it.
-  label?: string;
+  label?: string; // not sent by the API; clue is conveyed by the image
   imageUrl: string;
 }
 

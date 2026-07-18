@@ -56,7 +56,7 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
           // same clue the /cards route showed the player. sortOrder is not unique,
           // so dropping the clueCardId tiebreaker lets the two queries disagree on
           // ties and reveal the wrong card.
-          include: { clues: { orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }], include: { clueCard: true } } },
+          include: { clues: { orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }], include: { clueCard: { select: { id: true, category: true, imageUrl: true } } } } },
         },
       },
     })
@@ -99,8 +99,6 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
     }
 
     return Response.json({
-      // Label omitted on purpose — the clue is shown via the card image, and
-      // the API never exposes the clue text (see /cards route for the rationale).
       card: {
         category: clueCard.category,
         imageUrl: clueCard.imageUrl,

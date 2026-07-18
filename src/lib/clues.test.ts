@@ -93,10 +93,10 @@ describe('getRoundClues', () => {
     expect(prisma.microbeClue.findMany).toHaveBeenCalledWith({
       where: { microbeId: 'microbe-1' },
       orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }],
-      include: { clueCard: true },
+      include: { clueCard: { select: { id: true, category: true, imageUrl: true } } },
     })
-    expect(result[0]?.clueCard.label).toBe('Gram +')
-    expect(result[4]?.clueCard.label).toBe('Abscess')
+    expect(result[0]?.clueCard.imageUrl).toBe('/Gram +.png')
+    expect(result[4]?.clueCard.imageUrl).toBe('/Abscess.png')
   })
 
   it('breaks sortOrder ties using clueCardId, so duplicate sortOrders still resolve deterministically', async () => {
@@ -113,7 +113,7 @@ describe('getRoundClues', () => {
 
     const result = await getRoundClues('microbe-1')
 
-    expect(result[0]?.clueCard.label).toBe('Gram +')
+    expect(result[0]?.clueCard.category).toBe('GRAM_STAIN')
   })
 })
 
