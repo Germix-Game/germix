@@ -16,9 +16,10 @@ interface CardSlotProps {
   onReveal: (index: number) => void;
   disabled?: boolean;
   revealedCount?: number;
+  motionEnabled?: boolean;
 }
 
-export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCount = 0 }: CardSlotProps) {
+export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCount = 0, motionEnabled = true }: CardSlotProps) {
   const tiltRef = useRef<HTMLDivElement>(null);
   const shineRef = useRef<HTMLDivElement>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -69,7 +70,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
       if (tiltRef.current) {
         tiltRef.current.style.transform = "";
         tiltRef.current.style.transition = "";
-        if (tiltRef.current.dataset.revealed !== "true") {
+        if (tiltRef.current.dataset.revealed !== "true" && motionEnabled) {
           tiltRef.current.classList.add("card-idle");
         }
       }
@@ -80,7 +81,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
   return (
     <div
       ref={tiltRef}
-      className={`card-tilt h-[32vh]${!revealed && !disabled ? " card-idle" : ""}`}
+      className={`card-tilt h-[32vh]${!revealed && !disabled && motionEnabled ? " card-idle" : ""}`}
       data-revealed={revealed ? "true" : "false"}
       style={{
         aspectRatio: "1429 / 2000",

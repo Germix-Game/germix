@@ -174,7 +174,7 @@ export default function HomePage() {
                   alt=""
                   aria-hidden="true"
                   style={{
-                    width: `clamp(70px, ${((card.width ?? 150) / 1280) * 100}vw, ${card.width ?? 150}px)`,
+                    width: `clamp(90px, ${((card.width ?? 190) / 1280) * 100}vw, ${card.width ?? 190}px)`,
                     filter:
                       "drop-shadow(4px 8px 14px rgba(0,0,0,0.65)) drop-shadow(1px 2px 4px rgba(0,0,0,0.40))",
                   }}
