@@ -55,14 +55,53 @@ const EMPTY_SLOTS: CardSlotState[] = Array.from({ length: 5 }, (_, i) => ({
   card: null,       // no clue assigned yet
 }));
 
-// Build a fresh set of 5 slots for a new round with the forced clinical-
-// manifestation card (FORCED_CLUE_SLOT) already flipped open. `forcedCard` is
-// that slot's clue: pass the demo card in demo mode, or null in real mode —
-// where fetchCards() fills it in from the pre-fetched round data.
-function makeInitialSlots(forcedCard: ClueCard | null = null): CardSlotState[] {
-  return EMPTY_SLOTS.map((s) =>
-    s.index === FORCED_CLUE_SLOT ? { ...s, revealed: true, card: forcedCard } : s,
+const CLINICAL_MANIFESTATION_SLOT = 4;
+
+// Build the 5 clue slots with the clinical-manifestation slot pre-revealed
+// (optionally with a card already assigned, e.g. demo mode's hardcoded card).
+function makeInitialSlots(card: ClueCard | null = null): CardSlotState[] {
+  return EMPTY_SLOTS.map((slot) =>
+    slot.index === CLINICAL_MANIFESTATION_SLOT ? { ...slot, revealed: true, card } : { ...slot },
   );
+}
+
+// Randomize only the visual order. Each slot keeps its original `index`, which
+// is the canonical server slot used by /cards and /reveal. This lets the UI move
+// cards around without changing what the backend records for scoring/unlocks.
+function shuffleSlots(slots: CardSlotState[]): CardSlotState[] {
+  const shuffled = slots.map((slot) => ({ ...slot }));
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+// Put the requested canonical clue into the visual position the player picked.
+// On the first reveal this swaps the picked slot with the clinical slot; the
+// canonical indexes travel with the slots, so later server requests stay valid.
+function revealAtPickedPosition(
+  slots: CardSlotState[],
+  pickedIndex: number,
+  revealedIndex: number,
+  card: ClueCard | null = null,
+): CardSlotState[] {
+  const pickedPosition = slots.findIndex((slot) => slot.index === pickedIndex);
+  const revealedPosition = slots.findIndex((slot) => slot.index === revealedIndex);
+  if (pickedPosition < 0 || revealedPosition < 0) return slots;
+
+  if (pickedPosition === revealedPosition) {
+    return slots.map((slot) =>
+      slot.index === revealedIndex ? { ...slot, revealed: true, card: card ?? slot.card } : slot,
+    );
+  }
+
+  const next = [...slots];
+  const pickedSlot = slots[pickedPosition];
+  const revealedSlot = slots[revealedPosition];
+  next[pickedPosition] = { ...revealedSlot, revealed: true, card: card ?? revealedSlot.card };
+  next[revealedPosition] = { ...pickedSlot, revealed: false, card: null };
+  return next;
 }
 
 // DEMO MODE clue cards — shown when ?demo=true is in the URL.
@@ -136,6 +175,7 @@ export default function PlayPage() {
   const dropTargetRef = useRef<HTMLDivElement>(null);
   const prefetchedCardsRef = useRef<(ClueCard | null)[]>([null, null, null, null, null]);
   const cardsFetchRef = useRef<{ id: string; promise: Promise<{ cards?: unknown } | null> } | null>(null);
+  const isFirstRevealRef = useRef(true);
   // Guards the bootstrap effect so it runs exactly once. Without it, React
   // StrictMode (on by default in dev) double-invokes the mount effect and
   // creates TWO sessions — the player then sees one session's cards while
@@ -197,6 +237,7 @@ export default function PlayPage() {
     if (params.get("demo") === "true") {
       // DEMO MODE branch — skip backend, use hardcoded data
       setIsDemo(true);
+      setSlots(shuffleSlots(EMPTY_SLOTS));
       setMicrobes(DEMO_MICROBES);
       setMicrobesLoading(false);
       setCardsReady(true);
@@ -258,7 +299,9 @@ export default function PlayPage() {
       setHeartsLeft(session.heartsLeft);
       setScore(session.totalScore);
       setRound(session.currentRound);
-      setSlots(session.slots ?? EMPTY_SLOTS);                       // `??` = "use right side if left is null/undefined"
+      const sessionSlots: CardSlotState[] = session.slots ?? EMPTY_SLOTS;
+      isFirstRevealRef.current = !sessionSlots.some((slot) => slot.revealed);
+      setSlots(shuffleSlots(sessionSlots));                         // shuffle display order; each slot keeps its server index
       setGameMode(session.gameMode ?? "BACTERIA");
       setPhase("playing");
       void fetchMicrobes(session.gameMode ?? "BACTERIA");
@@ -312,7 +355,7 @@ export default function PlayPage() {
       const data = await startCardsFetch(id);
       if (!data) return;
       if (Array.isArray(data.cards)) {
-        const cards = data.cards as ClueCard[];
+        const cards = data.cards as (ClueCard | null)[];
         prefetchedCardsRef.current = cards;
         // After a page refresh, session slots arrive with revealed:true but no card data.
         // Fill them in now so the skeleton doesn't get stuck.
@@ -340,78 +383,56 @@ export default function PlayPage() {
       // Only allow reveal during active play
       if (phase !== "playing") return;
 
+      // Face-down cards are visually interchangeable. Whichever one is picked
+      // first receives the clinical-manifestation clue; later picks use their
+      // own canonical slot indexes normally.
+      const wasFirstReveal = isFirstRevealRef.current;
+      const revealIndex = wasFirstReveal ? CLINICAL_MANIFESTATION_SLOT : index;
+      isFirstRevealRef.current = false;
+
       // DEMO MODE — just flip the card using hardcoded data
       if (isDemo) {
         // setSlots(prev => ...) → use the "function form" of setState.
         // `prev` is the current array; we return a new array with one slot updated.
         // .map() creates a new array (immutable update — React requires new references for re-render).
-        setSlots((prev) =>
-          prev.map((s) =>
-            // If this is the slot we're flipping, return a new object with revealed=true and the card filled in
-            s.index === index ? { ...s, revealed: true, card: DEMO_CARDS[index] } : s,
-            // `{ ...s, revealed: true }` → spread the old slot's fields, then override `revealed`
-          ),
-        );
+        setSlots((prev) => revealAtPickedPosition(prev, index, revealIndex, DEMO_CARDS[revealIndex]));
         return;
       }
 
-      // REAL MODE — use pre-fetched card for instant reveal; track server-side in background
+      // REAL MODE — use a pre-fetched card when available; otherwise fetch it
+      // from /reveal and fill the loading card when the response arrives.
       if (!sessionId) return;
 
-      const preCard = prefetchedCardsRef.current[index] ?? null;
+      const preCard = prefetchedCardsRef.current[revealIndex] ?? null;
       if (preCard) {
-        setSlots((prev) =>
-          prev.map((s) => (s.index === index ? { ...s, revealed: true, card: preCard } : s)),
-        );
-        // Track this reveal so answer submission waits for the server to record
-        // it. /answer reads revealed slots straight from the DB, so answering
-        // before this lands would score/unlock without this card counted.
+        setSlots((prev) => revealAtPickedPosition(prev, index, revealIndex, preCard));
         setPendingRevealCount((n) => n + 1);
         void fetch(`/api/sessions/${sessionId}/reveal`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slotIndex: index }),
+          body: JSON.stringify({ slotIndex: revealIndex }),
         }).finally(() => {
-          // Decrement in finally so a network failure still re-enables the UI.
           setPendingRevealCount((n) => n - 1);
         });
         return;
       }
 
-      // Fallback: pre-fetch not ready yet — flip immediately, fill card when server responds
-      setSlots((prev) =>
-        prev.map((s) => (s.index === index ? { ...s, revealed: true } : s)),
-      );
-      // Same reveal-in-flight guard as the pre-fetched path above.
+      setSlots((prev) => revealAtPickedPosition(prev, index, revealIndex));
       setPendingRevealCount((n) => n + 1);
       try {
         const res = await fetch(`/api/sessions/${sessionId}/reveal`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slotIndex: index }),
+          body: JSON.stringify({ slotIndex: revealIndex }),
         });
-        if (!res.ok) {
-          // Pre-fetch may have arrived during the round-trip — use it if available
-          const lateCard = prefetchedCardsRef.current[index] ?? null;
-          if (lateCard) setSlots((prev) =>
-            prev.map((s) => (s.index === index ? { ...s, card: lateCard } : s)),
-          );
-          return; // card stays revealed either way — never flip back
-        }
+        if (!res.ok) return;
         const data = await res.json();
         setSlots((prev) =>
-          prev.map((s) => (s.index === index ? { ...s, card: data.card } : s)),
+          prev.map((s) => (s.index === revealIndex ? { ...s, card: data.card } : s)),
         );
       } catch {
-        // Pre-fetch may have arrived during the round-trip — use it if available
-        const lateCard = prefetchedCardsRef.current[index] ?? null;
-        if (lateCard) setSlots((prev) =>
-          prev.map((s) => (s.index === index ? { ...s, card: lateCard } : s)),
-        );
-        // card stays revealed either way — never flip back
+        // The card stays revealed with its loading face if the request fails.
       } finally {
-        // Decrement in finally so a network failure still re-enables the UI,
-        // and the early `return` on a non-OK response is covered too.
         setPendingRevealCount((n) => n - 1);
       }
     },
@@ -564,10 +585,8 @@ export default function PlayPage() {
 
   // Reset round-specific state (called when starting a new question)
   function resetRound() {
-    // Next round starts with the clinical-manifestation card already open. In
-    // demo we have the card data on hand; in real mode we leave it null and let
-    // fetchCards() fill it from the pre-fetched round data.
-    setSlots(makeInitialSlots(isDemo ? DEMO_CARDS[FORCED_CLUE_SLOT] : null));
+    setSlots(shuffleSlots(EMPTY_SLOTS));
+    isFirstRevealRef.current = true;
     setSelectedMicrobeId(null);
     setCorrectMicrobe(null);
     setPendingMicrobeId(null);
@@ -582,12 +601,12 @@ export default function PlayPage() {
   // player never flipped during play, so they can review the full answer.
   function buildFullSlots(): CardSlotState[] {
     if (isDemo) {
-      return DEMO_CARDS.map((card, i) => ({ index: i, revealed: true, card }));
+      return slots.map((s) => ({ ...s, revealed: true, card: s.card ?? DEMO_CARDS[s.index] }));
     }
-    return slots.map((s, i) => ({
+    return slots.map((s) => ({
       ...s,
       revealed: true,
-      card: s.card ?? prefetchedCardsRef.current[i],
+      card: s.card ?? prefetchedCardsRef.current[s.index],
     }));
   }
 
