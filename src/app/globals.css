@@ -358,6 +358,56 @@
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+@keyframes settings-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ─── Settings volume sliders ───────────────────────────────── */
+.settings-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+}
+.settings-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #f5e6c8;
+  border: 2px solid #80d040;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.settings-slider:disabled::-webkit-slider-thumb {
+  border-color: #6b3520;
+  cursor: not-allowed;
+}
+.settings-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+.settings-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #f5e6c8;
+  border: 2px solid #80d040;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.settings-slider:disabled::-moz-range-thumb {
+  border-color: #6b3520;
+  cursor: not-allowed;
+}
+.settings-slider::-moz-range-thumb:hover {
+  transform: scale(1.12);
+}
+.settings-slider::-moz-range-track {
+  background: transparent;
+}
 
 @keyframes loading-bounce {
   0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }

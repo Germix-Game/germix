@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MenuButtons } from "@/components/menu/MenuButtons";
 import { createClient } from "@/utils/supabase/client";
 import { HOME_CRITICAL_ASSETS } from "@/lib/preload-images";
 import { PostTestPopup } from "@/components/menu/PostTestPopup";
+import { SettingsModal } from "@/components/menu/SettingsModal";
 import { getMotionPreference } from "@/lib/motion-preference";
 
 // ─── Card layout data ─────────────────────────────────────────────────────────
@@ -71,6 +73,9 @@ export default function HomePage() {
   const [loaded, setLoaded] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [motionEnabled, setMotionEnabled] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const router = useRouter();
 
   const [posttestRequired, setPosttestRequired] = useState(false);
   const [posttestPeriod, setPosttestPeriod] = useState<string | null>(null);
@@ -107,6 +112,12 @@ export default function HomePage() {
 
     return () => window.cancelAnimationFrame(frameId);
   }, []);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/");
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -233,6 +244,45 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* Settings icon + logout — pinned to top-right */}
+        {username && (
+          <div
+            className="absolute top-4 right-4 z-20 flex items-center gap-2"
+            style={{
+              animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setShowSettings(true)}
+              aria-label="Settings"
+              aria-haspopup="dialog"
+              title="Settings"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 text-[#f5e6c8] shadow transition-colors hover:bg-[#3d1a0a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a]"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="flex h-11 items-center gap-2 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:cursor-not-allowed disabled:opacity-50"
+              title="Log out"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span>{loggingOut ? "..." : "Logout"}</span>
+            </button>
+          </div>
+        )}
+
         {/* Menu button group + POST TEST below */}
         <div
           className="absolute left-1/2 z-10 flex flex-col items-center gap-3"
@@ -265,6 +315,14 @@ export default function HomePage() {
               setPosttestRequired(false);
             }}
             onClose={() => setShowPosttestPopup(false)}
+          />
+        )}
+
+        {showSettings && (
+          <SettingsModal
+            motionEnabled={motionEnabled}
+            onMotionToggle={setMotionEnabled}
+            onClose={() => setShowSettings(false)}
           />
         )}
       </div>
