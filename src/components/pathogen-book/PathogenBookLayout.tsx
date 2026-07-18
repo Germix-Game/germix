@@ -252,7 +252,7 @@ function ClueSection({ slots }: { slots: BookSlot[] }) {
   const sorted = [...slots].sort((a, b) => a.slotIndex - b.slotIndex);
 
   return (
-    <div className="grid grid-cols-3 gap-2" style={{ zoom: 0.68, width: "85%" }}>
+    <div className="grid grid-cols-4 gap-2" style={{ zoom: 0.68, width: "85%" }}>
       {sorted.map((slot) => (
         <div key={slot.slotIndex} className="flex-shrink-0">
           {slot.opened && slot.card ? (
