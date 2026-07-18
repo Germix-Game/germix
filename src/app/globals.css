@@ -516,6 +516,21 @@
   }
 }
 
+/* ─── /select page — iPhone landscape only ────────────────────────────
+   Short landscape height distinguishes phones from iPads/desktop here
+   (large phones can exceed 768px in width, so width alone isn't enough). */
+@media (orientation: landscape) and (pointer: coarse) and (max-height: 500px) {
+  .select-bacteria-card {
+    width: 34vw !important;
+    top: 0% !important;
+    left: 8% !important;
+  }
+  .select-parasite-card {
+    width: 34vw !important;
+    bottom: 0% !important;
+  }
+}
+
 /* ─── Home page menu cluster — short landscape phones (iPhone) ───────
    At top:75% + translateY(-50%), the 5-button stack overflows the
    bottom edge on short viewports and gets clipped by overflow-hidden.

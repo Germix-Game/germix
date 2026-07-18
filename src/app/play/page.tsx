@@ -760,8 +760,9 @@ export default function PlayPage() {
         ref={containerRef}
         className="relative flex flex-col px-6 pt-[7vh] pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
       >
-        {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen */}
-        <div className="absolute top-2 inset-x-6 z-20 flex items-center justify-between">
+        {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen.
+            safe-top/-left/-right keep it clear of the iPhone notch / iPad rounded corners in landscape. */}
+        <div className="absolute safe-top safe-left safe-right z-20 flex items-center justify-between">
           <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
           <button
             onClick={() => setShowExitConfirm(true)}
@@ -793,7 +794,14 @@ export default function PlayPage() {
           </div>
         )}
 
-        <div className="flex items-center justify-center gap-3 w-full">
+        {/* contentRef + scale: shrinks the hearts/card row to fit narrower landscape
+            viewports (iPhone/iPad) without changing anything once it already fits —
+            scale is capped at 1, so desktop/tablet-wide layouts render unchanged. */}
+        <div
+          ref={contentRef}
+          className="flex items-center justify-center gap-3 self-center"
+          style={{ transform: `scale(${scale})`, transformOrigin: "center" }}
+        >
           <div className="flex-shrink-0">
             <HeartsBar heartsLeft={heartsLeft} vertical />
           </div>
