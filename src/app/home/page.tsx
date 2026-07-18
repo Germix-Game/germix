@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MenuButtons } from "@/components/menu/MenuButtons";
 import { createClient } from "@/utils/supabase/client";
 import { HOME_CRITICAL_ASSETS } from "@/lib/preload-images";
 import { PostTestPopup } from "@/components/menu/PostTestPopup";
+import { getMotionPreference } from "@/lib/motion-preference";
 
 // ─── Card layout data ─────────────────────────────────────────────────────────
 // Positions are percentages of the 1280×720 reference canvas used in the original
@@ -65,16 +65,12 @@ const PRELOAD_ASSETS = [
   ...HOME_CRITICAL_ASSETS,
   ...CARDS.map((c) => c.src),
 ];
-//for localstorage
-const MOTION_STORAGE_KEY = "germix-motion-enabled";
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
   const [loaded, setLoaded] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
-  const [loggingOut, setLoggingOut] = useState(false);
   const [motionEnabled, setMotionEnabled] = useState(true);
-  const router = useRouter();
 
   const [posttestRequired, setPosttestRequired] = useState(false);
   const [posttestPeriod, setPosttestPeriod] = useState<string | null>(null);
@@ -106,36 +102,11 @@ export default function HomePage() {
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
-      const savedPreference = localStorage.getItem(MOTION_STORAGE_KEY);
-
-      if (savedPreference === "true" || savedPreference === "false") {
-        setMotionEnabled(savedPreference === "true");
-        return;
-      }
-
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      ).matches;
-
-      setMotionEnabled(!prefersReducedMotion);
+      setMotionEnabled(getMotionPreference());
     });
 
     return () => window.cancelAnimationFrame(frameId);
   }, []);
-
-  function handleMotionToggle() {
-    setMotionEnabled((currentlyEnabled) => {
-      const nextValue = !currentlyEnabled;
-      localStorage.setItem(MOTION_STORAGE_KEY, String(nextValue));
-      return nextValue;
-    });
-  }
-
-  async function handleLogout() {
-    setLoggingOut(true);
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
-  }
 
   useEffect(() => {
     let cancelled = false;
@@ -261,42 +232,6 @@ export default function HomePage() {
             </div>
           </div>
         )}
-
-        {/* Motion and logout controls — pinned to top-right */}
-        <div
-          className="absolute top-4 right-4 z-20 flex items-center gap-2"
-          style={{
-            animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleMotionToggle}
-            aria-pressed={motionEnabled}
-            className="flex h-11 items-center gap-2 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#f5e6c8] shadow transition-colors hover:bg-[#3d1a0a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a]"
-            title={motionEnabled ? "Stop background motion" : "Enable background motion"}
-          >
-            <span aria-hidden="true">{motionEnabled ? "⏸" : "▶"}</span>
-            <span>{motionEnabled ? "Stop motion" : "Enable motion"}</span>
-          </button>
-
-          {username && (
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={loggingOut}
-              className="flex h-11 items-center gap-2 rounded-lg border border-[#6b3520] bg-[#1a0a04]/80 px-4 text-sm font-semibold tracking-wide text-[#c8873a] shadow transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:cursor-not-allowed disabled:opacity-50"
-              title="Log out"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              <span>{loggingOut ? "..." : "Logout"}</span>
-            </button>
-          )}
-        </div>
 
         {/* Menu button group + POST TEST below */}
         <div
