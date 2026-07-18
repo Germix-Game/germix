@@ -167,7 +167,7 @@ export default function PlayPage() {
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]); // recap of every round played
   const [won, setWon] = useState(false);                               // did the player win or lose?
 
-  const { containerRef, contentRef, scale } = useScaleToFit();
+  const { containerRef, contentRef, scale } = useScaleToFit(1, 16);
   const router = useRouter();
 
   // Warm up the route the player will land on when they exit (back button,
@@ -663,7 +663,7 @@ export default function PlayPage() {
   if (phase === "loading") {
     return (
       <div
-        className="relative flex h-screen w-screen flex-col items-center justify-center overflow-hidden"
+        className="relative flex h-dvh w-screen flex-col items-center justify-center overflow-hidden"
         style={{
           backgroundImage: "url('/assets/ui/wood-bg.png')",
           backgroundSize: "cover",
@@ -712,7 +712,7 @@ export default function PlayPage() {
   // ─── ERROR SCREEN ───────────────────────────────────────────
   if (phase === "error") {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-[#5c2a0e]">
+      <div className="flex h-dvh w-screen flex-col items-center justify-center gap-4 bg-[#5c2a0e]">
         <p className="text-[#f5e6c8] text-lg">No active session found.</p>
         {/* <a href> here does a FULL page navigation. Use <Link> from "next/link" for client-side nav (faster). */}
         <a
@@ -730,7 +730,7 @@ export default function PlayPage() {
   return (
     // Full-screen layout, two zones: wood area (top) + parchment area (bottom)
     // overflow-hidden → prevent scrollbars on the outer container
-    <div className="flex flex-col h-screen w-full overflow-hidden">
+    <div className="flex flex-col h-dvh w-full overflow-hidden">
       {scorePop !== null && (
         <ScorePopup
           points={scorePop.points}
@@ -763,7 +763,16 @@ export default function PlayPage() {
         {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen.
             safe-top/-left/-right keep it clear of the iPhone notch / iPad rounded corners in landscape. */}
         <div className="absolute safe-top safe-left safe-right z-20 flex items-center justify-between">
-          <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
+          <div className="flex items-center gap-3">
+            <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
+            {/* Mobile-only: a copy of the hearts bar, shown here instead of in the
+                card row on narrow iPhone landscape — see .game-hearts-topbar in
+                globals.css. Kept out of the scaled content row so it stays a
+                fixed, legible size instead of shrinking along with the cards. */}
+            <div className="game-hearts-topbar hidden items-center">
+              <HeartsBar heartsLeft={heartsLeft} />
+            </div>
+          </div>
           <button
             onClick={() => setShowExitConfirm(true)}
             className="flex items-center gap-2 rounded-lg border border-[#6b3520] bg-[#2a1208]/80 px-4 py-1.5 text-xl font-bold text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
@@ -802,7 +811,7 @@ export default function PlayPage() {
           className="flex items-center justify-center gap-3 self-center"
           style={{ transform: `scale(${scale})`, transformOrigin: "center" }}
         >
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 game-hearts-inline">
             <HeartsBar heartsLeft={heartsLeft} vertical />
           </div>
           <CardGrid

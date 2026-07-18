@@ -523,7 +523,7 @@
   .select-bacteria-card {
     width: 34vw !important;
     top: 0% !important;
-    left: 8% !important;
+    right: 8% !important;
   }
   .select-parasite-card {
     width: 34vw !important;
@@ -549,6 +549,24 @@
   .menu-btn-nav {
     height: clamp(28px, 5.6vh, 44px) !important;
     font-size: clamp(10px, 1.9vh, 14px) !important;
+  }
+}
+
+/* ─── /play page — iPhone landscape (narrow, touch) ───────────────────
+   The hearts bar normally lives inside the card row, which is scaled
+   down by useScaleToFit() to keep the 5 cards + answer slot from
+   overflowing a narrow viewport — that also shrinks the hearts to the
+   point of being hard to read. Below, swap to a fixed-size copy that
+   lives in the top bar instead (unaffected by that scale), and free up
+   width in the card row so it needs to shrink less to begin with.
+   Confirm/Cancel also get a guaranteed 44px tap target here — at the
+   card row's shrunk scale they can end up too small to hit reliably. ── */
+@media (orientation: landscape) and (pointer: coarse) and (max-width: 896px) {
+  .game-hearts-inline { display: none !important; }
+  .game-hearts-topbar { display: flex !important; }
+  .answer-cancel-btn,
+  .answer-confirm-btn {
+    min-height: 44px !important;
   }
 }
 
