@@ -26,7 +26,7 @@ type BookSlot = {
   slotIndex: number;
   category: string;
   opened: boolean;
-  card: { id: string; category: string; label: string; imageUrl: string } | null;
+  card: { id: string; category: string; imageUrl: string } | null;
 };
 
 type GameMode = "BACTERIA" | "FUNGI" | "PARASITES" | "VIRUS";
@@ -260,16 +260,16 @@ function ClueSection({ slots }: { slots: BookSlot[] }) {
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={resolveImageSrc(slot.card.imageUrl)}
-                alt={slot.card.label}
+                alt={CATEGORY_LABEL[slot.card.category] ?? ""}
                 className="w-full rounded shadow"
                 draggable={false}
               />
             ) : (
               <div
-                className="flex w-full items-center justify-center rounded bg-[#f5e6c8] p-1 text-[8px] italic text-[#7a5a30] shadow"
+                className="flex w-full items-center justify-center rounded bg-[#f5e6c8] p-1 text-[8px] uppercase tracking-wide text-[#7a5a30] shadow"
                 style={{ aspectRatio: "1429/2000" }}
               >
-                {slot.card.label}
+                {CATEGORY_LABEL[slot.card.category] ?? ""}
               </div>
             )
           ) : (

@@ -133,9 +133,9 @@ describe('getBookSlots', () => {
 
     const byIndex = Object.fromEntries(slots.map((s) => [s.slotIndex, s]))
     expect(byIndex[0].opened).toBe(true)
-    expect(byIndex[0].card?.label).toBe('Gram +')
+    expect(byIndex[0].card?.imageUrl).toBe('/Gram +.png')
     expect(byIndex[2].opened).toBe(true)
-    expect(byIndex[2].card?.label).toBe('Catalase+')
+    expect(byIndex[2].card?.imageUrl).toBe('/Catalase+.png')
     // Unopened slots exist as placeholders but carry NO card data (no leak).
     expect(byIndex[1].opened).toBe(false)
     expect(byIndex[1].card).toBeNull()
@@ -149,7 +149,7 @@ describe('getBookSlots', () => {
     vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(fullClues as never)
     const slots = await getBookSlots('microbe-1', [2])
     const lab = slots.find((s) => s.slotIndex === 2)
-    expect(lab?.card?.label).toBe('Catalase+')
+    expect(lab?.card?.imageUrl).toBe('/Catalase+.png')
     expect(lab?.category).toBe('LAB_CHARACTERISTIC')
   })
 

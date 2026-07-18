@@ -156,19 +156,22 @@ describe('POST /api/sessions/:id/reveal', () => {
       expect(res.status).toBe(200)
 
       const body = await res.json()
-      expect(body.card).toEqual(mockClueCards[0].clueCard)
+      // Label is never sent — the response is category + image only.
+      expect(body.card).toEqual({ category: 'GRAM_STAIN', imageUrl: '/g.png' })
+      expect(body.card).not.toHaveProperty('label')
       expect(body.session.cardsOpened).toBe(1)
       expect(body.session.heartsLeft).toBe(3)
     })
 
     it('maps each slot to the same card the cards route would show', async () => {
-      // slot index → expected clue label, per selectSlotClues' fixed layout.
-      const expected = ['Gram +', 'Capsule', 'Catalase+', 'Tumbling', 'Abscess']
+      // slot index → expected clue image, per selectSlotClues' fixed layout.
+      // (Identity checked via imageUrl since the label is no longer returned.)
+      const expected = ['/g.png', '/v.png', '/l.png', '/s.png', '/c.png']
       for (let slotIndex = 0; slotIndex < expected.length; slotIndex++) {
         vi.mocked(prisma.$queryRaw).mockResolvedValue([{ revealedSlots: [slotIndex] }] as never)
         const res = await POST(makeRequest({ slotIndex }), ctx)
         const body = await res.json()
-        expect(body.card.label).toBe(expected[slotIndex])
+        expect(body.card.imageUrl).toBe(expected[slotIndex])
       }
     })
 
@@ -229,7 +232,7 @@ describe('POST /api/sessions/:id/reveal', () => {
 
       const res = await POST(makeRequest({ slotIndex: 0 }), ctx)
       const body = await res.json()
-      expect(body.card.label).toBe('Gram +')
+      expect(body.card.imageUrl).toBe('/g.png')
     })
   })
 })

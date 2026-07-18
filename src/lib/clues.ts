@@ -61,7 +61,8 @@ export type BookSlot = {
   slotIndex: number
   category: CardCategory
   opened: boolean
-  card: { id: string; category: CardCategory; label: string; imageUrl: string } | null
+  // No `label` — the clue text is never exposed by the API; the image is the clue.
+  card: { id: string; category: CardCategory; imageUrl: string } | null
 }
 
 // Build the per-slot Pathogen Book view for one microbe and one player's opened
@@ -86,7 +87,7 @@ export async function getBookSlots(microbeId: string, openedSlots: number[]): Pr
       category: clueCard.category,
       opened: isOpen,
       card: isOpen
-        ? { id: clueCard.id, category: clueCard.category, label: clueCard.label, imageUrl: clueCard.imageUrl }
+        ? { id: clueCard.id, category: clueCard.category, imageUrl: clueCard.imageUrl }
         : null,
     }]
   })

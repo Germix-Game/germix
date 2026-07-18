@@ -1445,15 +1445,12 @@ function ClueCardThumb({ card }: { card: ClueCard }) {
       <span className="text-[0.7rem] uppercase tracking-wide text-[#9a7850] text-center leading-tight w-full">
         {card.category.replace(/_/g, " ")}
       </span>
-      <span className="text-[0.85rem] text-[#3a2010] text-center leading-snug italic line-clamp-5">
-        {card.label}
-      </span>
-      {/* Real image overlay if URL is provided */}
+      {/* Real image overlay if URL is provided (the clue is the image, not text) */}
       {card.imageUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={resolveImageSrc(card.imageUrl)}
-          alt={card.label}
+          alt={card.category.replace(/_/g, " ")}
           className="absolute inset-0 h-full w-full object-contain rounded-lg"
           onError={(e) => { e.currentTarget.style.display = "none"; }}
         />

@@ -99,9 +99,10 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
     }
 
     return Response.json({
+      // Label omitted on purpose — the clue is shown via the card image, and
+      // the API never exposes the clue text (see /cards route for the rationale).
       card: {
         category: clueCard.category,
-        label: clueCard.label,
         imageUrl: clueCard.imageUrl,
       },
       session: {

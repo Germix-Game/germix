@@ -131,12 +131,9 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
           )}
           {card && (
             <>
-              {/* Text fallback shown while/if image is absent */}
+              {/* Category heading — the clue itself is conveyed by the image only. */}
               <span className="text-[0.55rem] uppercase tracking-wider text-[#9a7850] text-center leading-tight">
                 {card.category.replace(/_/g, " ")}
-              </span>
-              <span className="text-[0.7rem] text-[#3a2010] text-center italic leading-snug line-clamp-4">
-                {card.label}
               </span>
 
               {/*
@@ -155,7 +152,7 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={resolveImageSrc(card.imageUrl)}
-                  alt={card.label}
+                  alt={card.category.replace(/_/g, " ")}
                   className="absolute inset-0 w-full h-full object-contain"
                   onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
