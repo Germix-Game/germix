@@ -57,6 +57,14 @@ const EMPTY_SLOTS: CardSlotState[] = Array.from({ length: 5 }, (_, i) => ({
 
 const CLINICAL_MANIFESTATION_SLOT = 4;
 
+// Build the 5 clue slots with the clinical-manifestation slot pre-revealed
+// (optionally with a card already assigned, e.g. demo mode's hardcoded card).
+function makeInitialSlots(card: ClueCard | null = null): CardSlotState[] {
+  return EMPTY_SLOTS.map((slot) =>
+    slot.index === CLINICAL_MANIFESTATION_SLOT ? { ...slot, revealed: true, card } : { ...slot },
+  );
+}
+
 // Randomize only the visual order. Each slot keeps its original `index`, which
 // is the canonical server slot used by /cards and /reveal. This lets the UI move
 // cards around without changing what the backend records for scoring/unlocks.
