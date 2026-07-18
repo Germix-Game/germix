@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveMotionPreference } from "@/lib/motion-preference";
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 function SpeakerIcon({ muted }: { muted: boolean }) {
   return (
@@ -53,7 +56,7 @@ function VolumeSlider({
           onClick={onToggleMute}
           aria-label={muted ? `Unmute ${label.toLowerCase()}` : `Mute ${label.toLowerCase()}`}
           aria-pressed={muted}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#f5e6c8]/80 transition-colors hover:bg-[#3d1a0a] hover:text-[#f5e6c8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a]"
+          className="tap-min flex shrink-0 items-center justify-center rounded-full text-[#f5e6c8]/80 transition-colors hover:bg-[#3d1a0a] hover:text-[#f5e6c8]"
         >
           <SpeakerIcon muted={muted} />
         </button>
@@ -93,13 +96,45 @@ export function SettingsModal({
   const [sfxMuted, setSfxMuted] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const router = useRouter();
+  const dialogRef = useRef<HTMLElement>(null);
 
+  // Focus trap + return focus to the triggering element on close, and lock
+  // background scrolling for the duration the dialog is open.
   useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const dialog = dialogRef.current;
+    const focusables = () =>
+      dialog ? Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)) : [];
+    focusables()[0]?.focus();
+
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const els = focusables();
+      if (els.length === 0) return;
+      const first = els[0];
+      const last = els[els.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+      previouslyFocused?.focus?.();
+    };
   }, [onClose]);
 
   useEffect(() => {
@@ -142,6 +177,7 @@ export function SettingsModal({
       }}
     >
       <section
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-modal-title"
@@ -156,7 +192,7 @@ export function SettingsModal({
             type="button"
             onClick={onClose}
             aria-label="Close settings"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[#f5e6c8]/70 transition-colors hover:bg-[#3d1a0a] hover:text-[#f5e6c8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a]"
+            className="tap-min flex items-center justify-center rounded-full text-[#f5e6c8]/70 transition-colors hover:bg-[#3d1a0a] hover:text-[#f5e6c8]"
           >
             ✕
           </button>
@@ -197,7 +233,7 @@ export function SettingsModal({
               onClick={handleMotionToggle}
               aria-label="Floating card animation"
               aria-pressed={motionEnabled}
-              className={`relative h-8 w-14 shrink-0 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a] ${
+              className={`relative h-8 w-14 shrink-0 rounded-full border transition-colors ${
                 motionEnabled
                   ? "border-[#80d040] bg-[#3a7d20]"
                   : "border-[#6b3520] bg-[#2a1208]"
@@ -220,7 +256,7 @@ export function SettingsModal({
               onClick={handleFullscreenToggle}
               aria-label="Fullscreen mode"
               aria-pressed={fullscreen}
-              className={`relative h-8 w-14 shrink-0 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a] ${
+              className={`relative h-8 w-14 shrink-0 rounded-full border transition-colors ${
                 fullscreen
                   ? "border-[#80d040] bg-[#3a7d20]"
                   : "border-[#6b3520] bg-[#2a1208]"
@@ -240,7 +276,7 @@ export function SettingsModal({
           type="button"
           onClick={handleLogout}
           disabled={loggingOut}
-          className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#6b3520] bg-[#2a1208] px-4 text-sm font-semibold tracking-wide text-[#c8873a] transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c8873a] disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#6b3520] bg-[#2a1208] px-4 text-sm font-semibold tracking-wide text-[#c8873a] transition-colors hover:border-[#c8873a] hover:text-[#f5e6c8] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <svg
             width="16"

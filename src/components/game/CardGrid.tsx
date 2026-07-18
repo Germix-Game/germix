@@ -85,7 +85,7 @@ export function CardGrid({
             <div className="absolute bottom-0 inset-x-0 flex">
               <button
                 onClick={onCancelPending}
-                className="flex-1 py-2 bg-[#4a3020]/90 text-[#d4a96a] hover:bg-[#5a4030] font-bold text-sm transition-colors"
+                className="answer-cancel-btn flex-1 flex items-center justify-center py-2 bg-[#4a3020]/90 text-[#d4a96a] hover:bg-[#5a4030] font-bold text-sm transition-colors"
                 aria-label="Cancel"
               >
                 ✕
@@ -93,7 +93,7 @@ export function CardGrid({
               <button
                 onClick={onConfirm}
                 disabled={isSubmitting}
-                className="flex-1 py-2 bg-[#4a7c3f]/90 text-white hover:bg-[#5a8c4f] font-bold text-sm transition-colors disabled:opacity-50"
+                className="answer-confirm-btn flex-1 flex items-center justify-center py-2 bg-[#4a7c3f]/90 text-white hover:bg-[#5a8c4f] font-bold text-sm transition-colors disabled:opacity-50"
                 aria-label="Confirm answer"
               >
                 {isSubmitting ? "…" : "✓"}

@@ -67,7 +67,7 @@ export default function LevelSelectPage() {
         alt="Bacteria"
         draggable={false}
         onClick={() => handleSelect("BACTERIA")}
-        className={`absolute select-none transition-transform duration-200 ${
+        className={`select-bacteria-card absolute select-none transition-transform duration-200 ${
           starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
         }`}
         style={{ top: "2%", left: "12%", width: "37vw" }}
@@ -80,7 +80,7 @@ export default function LevelSelectPage() {
         alt="Parasites"
         draggable={false}
         onClick={() => handleSelect("PARASITE")}
-        className={`absolute select-none transition-transform duration-200 ${
+        className={`select-parasite-card absolute select-none transition-transform duration-200 ${
           starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
         }`}
         style={{ bottom: "2%", right: "12%", width: "37vw" }}
@@ -89,7 +89,7 @@ export default function LevelSelectPage() {
       {/* Back button — top-left */}
       <button
         onClick={() => router.push("/home")}
-        className="absolute left-6 top-[18px] rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+        className="tap-min safe-top safe-left absolute rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
         style={{
           background: "rgba(42, 20, 0, 0.9)",
           borderColor: "rgba(122, 64, 16, 0.8)",

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fredoka } from "next/font/google";
 import "./globals.css";
 import { NavigationLoader } from "@/components/NavigationLoader";
+import { PortraitGuard } from "@/components/PortraitGuard";
 
 const fredoka = Fredoka({
   subsets: ["latin"],
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -27,7 +29,7 @@ export default function RootLayout({
     <html lang="en" className={`${fredoka.className} h-full w-full antialiased`}>
       <body className="min-h-full w-full flex flex-col">
         <NavigationLoader />
-        {children}
+        <PortraitGuard>{children}</PortraitGuard>
       </body>
     </html>
   );

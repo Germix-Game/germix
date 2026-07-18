@@ -185,6 +185,10 @@ export default function PlayPage() {
   const [pendingMicrobeId, setPendingMicrobeId] = useState<string | null>(null);
   const [dropBlockedMsg, setDropBlockedMsg] = useState<string | null>(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  // Phone-only: lets the player collapse the microbe answer panel so it stops
+  // covering the clue cards. The toggle button that flips this is hidden on
+  // desktop/iPad via CSS, so this can only ever become true on a phone.
+  const [answerPanelHidden, setAnswerPanelHidden] = useState(false);
   const scoreBarRef = useRef<HTMLDivElement>(null);
   const pointsPillRef = useRef<HTMLDivElement>(null);
   const [scorePop, setScorePop] = useState<{ points: number; startX: number; startY: number } | null>(null);
@@ -207,7 +211,7 @@ export default function PlayPage() {
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]); // recap of every round played
   const [won, setWon] = useState(false);                               // did the player win or lose?
 
-  const { containerRef, contentRef, scale } = useScaleToFit();
+  const { containerRef, contentRef, scale } = useScaleToFit(1, 16);
   const router = useRouter();
 
   // Warm up the route the player will land on when they exit (back button,
@@ -682,7 +686,7 @@ export default function PlayPage() {
   if (phase === "loading") {
     return (
       <div
-        className="relative flex h-screen w-screen flex-col items-center justify-center overflow-hidden"
+        className="relative flex h-dvh w-screen flex-col items-center justify-center overflow-hidden"
         style={{
           backgroundImage: "url('/assets/ui/wood-bg.png')",
           backgroundSize: "cover",
@@ -731,7 +735,7 @@ export default function PlayPage() {
   // ─── ERROR SCREEN ───────────────────────────────────────────
   if (phase === "error") {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-[#5c2a0e]">
+      <div className="flex h-dvh w-screen flex-col items-center justify-center gap-4 bg-[#5c2a0e]">
         <p className="text-[#f5e6c8] text-lg">No active session found.</p>
         {/* <a href> here does a FULL page navigation. Use <Link> from "next/link" for client-side nav (faster). */}
         <a
@@ -749,7 +753,7 @@ export default function PlayPage() {
   return (
     // Full-screen layout, two zones: wood area (top) + parchment area (bottom)
     // overflow-hidden → prevent scrollbars on the outer container
-    <div className="flex flex-col h-screen w-full overflow-hidden">
+    <div className="flex flex-col h-dvh w-full overflow-hidden">
       {scorePop !== null && (
         <ScorePopup
           points={scorePop.points}
@@ -779,9 +783,19 @@ export default function PlayPage() {
         ref={containerRef}
         className="relative flex flex-col px-6 pt-[7vh] pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
       >
-        {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen */}
-        <div className="absolute top-2 inset-x-6 z-20 flex items-center justify-between">
-          <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
+        {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen.
+            safe-top/-left/-right keep it clear of the iPhone notch / iPad rounded corners in landscape. */}
+        <div className="absolute safe-top safe-left safe-right z-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
+            {/* Mobile-only: a copy of the hearts bar, shown here instead of in the
+                card row on narrow iPhone landscape — see .game-hearts-topbar in
+                globals.css. Kept out of the scaled content row so it stays a
+                fixed, legible size instead of shrinking along with the cards. */}
+            <div className="game-hearts-topbar hidden items-center">
+              <HeartsBar heartsLeft={heartsLeft} />
+            </div>
+          </div>
           <button
             onClick={() => setShowExitConfirm(true)}
             className="flex items-center gap-2 rounded-lg border border-[#6b3520] bg-[#2a1208]/80 px-4 py-1.5 text-xl font-bold text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
@@ -812,8 +826,15 @@ export default function PlayPage() {
           </div>
         )}
 
-        <div className="flex items-center justify-center gap-3 w-full">
-          <div className="flex-shrink-0">
+        {/* contentRef + scale: shrinks the hearts/card row to fit narrower landscape
+            viewports (iPhone/iPad) without changing anything once it already fits —
+            scale is capped at 1, so desktop/tablet-wide layouts render unchanged. */}
+        <div
+          ref={contentRef}
+          className="flex items-center justify-center gap-3 self-center"
+          style={{ transform: `scale(${scale})`, transformOrigin: "center" }}
+        >
+          <div className="flex-shrink-0 game-hearts-inline">
             <HeartsBar heartsLeft={heartsLeft} vertical />
           </div>
           <CardGrid
@@ -855,8 +876,24 @@ export default function PlayPage() {
         )}
       </div>
 
+      {/* Phone-only: collapses the microbe answer panel below so it stops
+          covering the clue cards. Hidden on desktop/iPad — see
+          .answer-panel-toggle in globals.css. */}
+      <button
+        type="button"
+        onClick={() => setAnswerPanelHidden((h) => !h)}
+        aria-expanded={!answerPanelHidden}
+        aria-controls="answer-panel"
+        className="answer-panel-toggle hidden w-full items-center justify-center gap-1.5 border-y border-[#c4a870] bg-[#e8cd94] py-1.5 text-xs font-bold uppercase tracking-wide text-[#5c2a0e] active:bg-[#dcc186]"
+      >
+        {answerPanelHidden ? "▲ Show microbe cards" : "▼ Hide microbe cards"}
+      </button>
+
       {/* ── Parchment area (bottom zone: filters + microbe answer panel) ── */}
-      <div className="flex flex-col bg-[#f0d9a8] flex-1 basis-1/2 min-h-0 overflow-y-auto">
+      <div
+        id="answer-panel"
+        className={`flex flex-col bg-[#f0d9a8] flex-1 basis-1/2 min-h-0 overflow-y-auto${answerPanelHidden ? " answer-panel-hidden" : ""}`}
+      >
 
         {/* Filter bar — gram type checkboxes, search, and biological tag checkboxes */}
         <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3 border-b border-[#c4a870] bg-[#f0d9a8] flex-shrink-0">
