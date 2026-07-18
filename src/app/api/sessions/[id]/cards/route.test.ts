@@ -71,20 +71,34 @@ describe('GET /api/sessions/:id/cards', () => {
     expect(res.status).toBe(200)
 
     const body = await res.json()
-    expect(body.cards.map((c: { label: string } | null) => c?.label)).toEqual([
-      'Gram +',
-      'Capsule',
-      'Catalase+',
-      'Tumbling',
-      'Abscess',
+    expect(body.cards.map((c: { imageUrl: string } | null) => c?.imageUrl)).toEqual([
+      '/g.png',
+      '/v.png',
+      '/l.png',
+      '/s.png',
+      '/c.png',
     ])
+  })
+
+  it('never includes the clue label in the response', async () => {
+    const res = await GET(new Request('http://localhost'), ctx)
+    const body = await res.json()
+    body.cards.forEach((c: Record<string, unknown> | null) => {
+      if (c) expect(c).not.toHaveProperty('label')
+    })
   })
 
   it('returns null for slots whose category the microbe lacks', async () => {
     vi.mocked(prisma.microbeClue.findMany).mockResolvedValue([mockClueCards[0]] as never)
     const res = await GET(new Request('http://localhost'), ctx)
     const body = await res.json()
-    expect(body.cards).toEqual([mockClueCards[0].clueCard, null, null, null, null])
+    expect(body.cards).toEqual([
+      { category: 'GRAM_STAIN', imageUrl: '/g.png' },
+      null,
+      null,
+      null,
+      null,
+    ])
   })
 
   it('computes round position from correctly-answered scores only', async () => {
@@ -103,7 +117,7 @@ describe('GET /api/sessions/:id/cards', () => {
     expect(prisma.microbeClue.findMany).toHaveBeenCalledWith({
       where: { microbeId: MICROBE_ID },
       orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }],
-      include: { clueCard: true },
+      include: { clueCard: { select: { id: true, category: true, imageUrl: true } } },
     })
   })
 })

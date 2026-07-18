@@ -27,7 +27,8 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
 
   useEffect(() => {
     if (!revealed) return;
-    setPopLabel(revealedCount <= 1 ? "-0" : "-20");
+    // First 2 open cards are free; each card beyond the 2nd costs 25 points.
+    setPopLabel(revealedCount <= 2 ? "-0" : "-25");
     setShowPop(true);
     const t = setTimeout(() => setShowPop(false), 1100);
     return () => clearTimeout(t);

@@ -314,13 +314,16 @@ describe('Demo mode — answer submission', () => {
     })
   })
 
-  it('correct answer resets all card slots to face-down', async () => {
+  it('correct answer resets the non-forced card slots to face-down', async () => {
     await renderDemo()
     await revealThenDouble(/aureus/i)
     await waitFor(() => {
       const revealButtons = screen.getAllByRole('button', { name: /reveal clue card/i })
       expect(revealButtons).toHaveLength(5)
-      revealButtons.forEach(btn => expect(btn).not.toBeDisabled())
+      // The clinical-manifestation card (slot 4) is force-opened each round, so
+      // its reveal button stays disabled; the other four reset to face-down.
+      const enabled = revealButtons.filter(btn => !(btn as HTMLButtonElement).disabled)
+      expect(enabled).toHaveLength(4)
     })
   })
 

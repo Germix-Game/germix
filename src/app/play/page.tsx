@@ -19,6 +19,9 @@ import { HeartsBar } from "@/components/game/HeartsBar";
 import { ScoreBar } from "@/components/game/ScoreBar";
 import { useScaleToFit } from "@/hooks/useScaleToFit";
 import { HOME_CRITICAL_ASSETS, preloadImages } from "@/lib/preload-images";
+// FORCED_CLUE_SLOT is the clue slot force-opened at the start of every round
+// (slot 4 = clinical manifestation). Shared with the server so both sides agree.
+import { FORCED_CLUE_SLOT } from "@/lib/sessions";
 
 // `import type` → imports ONLY TypeScript types (erased at build time, zero runtime cost)
 // These types describe the shape of game data — defined in src/types/game.ts
@@ -146,7 +149,7 @@ export default function PlayPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);   // backend session ID (null until loaded)
   const [isDemo, setIsDemo] = useState(false);                       // true if URL has ?demo=true
   const [phase, setPhase] = useState<Phase>("loading");              // current game phase (see Phase type above)
-  const [slots, setSlots] = useState<CardSlotState[]>(EMPTY_SLOTS);  // the 5 clue card slots
+  const [slots, setSlots] = useState<CardSlotState[]>(() => makeInitialSlots());  // 5 clue slots — clinical manifestation starts open
   const [heartsLeft, setHeartsLeft] = useState(3);                   // lives remaining (start at 3)
   const [score, setScore] = useState(0);                             // total score across all rounds
   const [round, setRound] = useState(1);                             // current round number (1-indexed)
@@ -230,6 +233,8 @@ export default function PlayPage() {
       setMicrobes(DEMO_MICROBES);
       setMicrobesLoading(false);
       setCardsReady(true);
+      // Force the clinical-manifestation clue open from the start (demo card data).
+      setSlots(makeInitialSlots(DEMO_CARDS[FORCED_CLUE_SLOT]));
       setPhase("playing");
       return; // exit early — don't try to load a real session
     }
@@ -463,8 +468,9 @@ export default function PlayPage() {
         const demoCorrect = { id: "1", name: "Staphylococcus aureus", shortName: "S. aureus", imageUrl: "" };
 
         if (correct) {
-          // Score is 0 if the player had any wrong attempt on this question
-          const roundScore = questionHasWrong ? 0 : Math.max(0, 100 - (revealedCount - 1) * 20);
+          // First 2 open cards = 100; -25 for each card beyond the 2nd. A wrong
+          // attempt no longer zeroes the score (matches the server rule).
+          const roundScore = Math.max(0, 100 - Math.max(0, revealedCount - 2) * 25);
           const result: RoundResult = { roundNumber: round, correct: true, roundScore, correctMicrobe: demoCorrect, openedSlots: buildFullSlots() };
           setRoundResults((prev) => [...prev, result]);
           setCorrectMicrobe(demoCorrect);
@@ -791,7 +797,7 @@ export default function PlayPage() {
             <div ref={pointsPillRef} className="flex items-baseline gap-1.5 px-4 py-1 rounded-full bg-[#2a1208]/85 border border-[#d4a96a]/50 shadow-lg">
               <span className="text-[#d4a96a] text-[0.65rem] font-semibold uppercase tracking-wider">Answer now for</span>
               <span className="text-[#f5e6c8] text-base font-black tabular-nums">
-                {questionHasWrong ? 0 : Math.max(0, 100 - Math.max(0, revealedCount - 1) * 20)}
+                {Math.max(0, 100 - Math.max(0, revealedCount - 2) * 25)}
               </span>
               <span className="text-[#d4a96a] text-[0.65rem] font-semibold">pts</span>
             </div>
@@ -835,7 +841,7 @@ export default function PlayPage() {
           <div className="popup-bar mt-4 flex items-center gap-3 rounded-xl border border-[#6b3520] bg-[#3d1a0a]/70 px-4 py-2.5">
             <span className="text-red-400 font-black text-lg leading-none">✕</span>
             <p className="text-[#f5e6c8] text-sm font-medium">
-              Wrong attempt — 0 pts for this microbe. Keep trying!
+              Wrong answer — you keep your points. Keep trying!
             </p>
           </div>
         )}

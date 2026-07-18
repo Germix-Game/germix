@@ -8,7 +8,7 @@ const alice = Alice({ weight: "400", subsets: ["latin"] });
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type GramType = "POSITIVE" | "NEGATIVE" | "ACID_FAST" | "OTHER";
+type GramType = "POSITIVE" | "NEGATIVE" | "ACID_FAST" | "NONE" | "PROTOZOA" | "PLATYHEMINTH" | "NEMATODE";
 
 type MicrobeEntry = {
   id: string;
@@ -86,6 +86,24 @@ function GramBadge({ gramType }: { gramType: GramType }) {
         AF
       </span>
     );
+  if (gramType === "PROTOZOA")
+    return (
+      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white shadow">
+        PZ
+      </span>
+    );
+  if (gramType === "PLATYHEMINTH")
+    return (
+      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-purple-500 text-[9px] font-bold text-white shadow">
+        PH
+      </span>
+    );
+  if (gramType === "NEMATODE")
+    return (
+      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-teal-500 text-[9px] font-bold text-white shadow">
+        NM
+      </span>
+    );
   return null;
 }
 
@@ -111,6 +129,7 @@ function MicrobeCard({
     >
       {microbe.unlocked ? (
         <>
+          <GramBadge gramType={microbe.gramType} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={resolveImageSrc(microbe.answerImageUrl)}
@@ -185,7 +204,7 @@ function ClueSectionSkeleton() {
   return (
     <>
       <style>{SHIMMER_CSS}</style>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 gap-2" style={{ zoom: 0.78, width: "75%" }}>
         {Array.from({ length: 8 }).map((_, i) => (
           <ShimmerCard key={i} base="rgba(160,130,90,0.22)" sheen="rgba(185,155,110,0.32)" />
         ))}
@@ -233,7 +252,7 @@ function ClueSection({ slots }: { slots: BookSlot[] }) {
   const sorted = [...slots].sort((a, b) => a.slotIndex - b.slotIndex);
 
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-3 gap-2" style={{ zoom: 0.68, width: "85%" }}>
       {sorted.map((slot) => (
         <div key={slot.slotIndex} className="flex-shrink-0">
           {slot.opened && slot.card ? (
@@ -412,8 +431,11 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
               </div>
             </div>
 
-            {/* Scrollable clue section */}
-            <div className="overflow-y-auto pr-12">
+            {/* Scrollable clue section — scrollbar hidden, scrolling still works */}
+            <div
+              className="overflow-y-auto pr-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              style={{ msOverflowStyle: "none" }}
+            >
               {cluesLoading ? (
                 <ClueSectionSkeleton />
               ) : slots && slots.length > 0 ? (
