@@ -17,6 +17,7 @@ interface CardGridProps {
   pendingMicrobeImage: string | null;
   onConfirm: () => void;
   onCancelPending: () => void;
+  motionEnabled?: boolean;
 }
 
 export function CardGrid({
@@ -32,6 +33,7 @@ export function CardGrid({
   pendingMicrobeImage,
   onConfirm,
   onCancelPending,
+  motionEnabled = true,
 }: CardGridProps) {
   const revealedCount = slots.filter((s) => s.revealed).length;
 
@@ -46,6 +48,7 @@ export function CardGrid({
           onReveal={onReveal}
           disabled={locked}
           revealedCount={revealedCount}
+          motionEnabled={motionEnabled}
         />
       ))}
 

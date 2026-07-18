@@ -17,8 +17,10 @@ import { createAnimatable, spring } from "animejs";
 import { CardGrid } from "@/components/game/CardGrid";
 import { HeartsBar } from "@/components/game/HeartsBar";
 import { ScoreBar } from "@/components/game/ScoreBar";
+import { SettingsModal } from "@/components/menu/SettingsModal";
 import { useScaleToFit } from "@/hooks/useScaleToFit";
 import { HOME_CRITICAL_ASSETS, preloadImages } from "@/lib/preload-images";
+import { getMotionPreference } from "@/lib/motion-preference";
 // FORCED_CLUE_SLOT is the clue slot force-opened at the start of every round
 // (slot 4 = clinical manifestation). Shared with the server so both sides agree.
 import { FORCED_CLUE_SLOT } from "@/lib/sessions";
@@ -185,6 +187,8 @@ export default function PlayPage() {
   const [pendingMicrobeId, setPendingMicrobeId] = useState<string | null>(null);
   const [dropBlockedMsg, setDropBlockedMsg] = useState<string | null>(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [motionEnabled, setMotionEnabled] = useState(true);
   // Phone-only: lets the player collapse the microbe answer panel so it stops
   // covering the clue cards. The toggle button that flips this is hidden on
   // desktop/iPad via CSS, so this can only ever become true on a phone.
@@ -221,6 +225,15 @@ export default function PlayPage() {
     router.prefetch("/home");
     preloadImages(HOME_CRITICAL_ASSETS);
   }, [router]);
+
+  // Read the saved motion preference after mount (avoids SSR/hydration mismatch,
+  // matching the pattern used on the home screen).
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      setMotionEnabled(getMotionPreference());
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, []);
 
   // ── bootstrap ────────────────────────────────────────────────────────────
   // useEffect runs AFTER the component renders. With `[]` deps, it runs ONCE on mount.
@@ -796,14 +809,36 @@ export default function PlayPage() {
               <HeartsBar heartsLeft={heartsLeft} />
             </div>
           </div>
-          <button
-            onClick={() => setShowExitConfirm(true)}
-            className="flex items-center gap-2 rounded-lg border border-[#6b3520] bg-[#2a1208]/80 px-4 py-1.5 text-xl font-bold text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
-          >
-            <span className="text-xl leading-none">✕</span>
-            Exit
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSettings(true)}
+              aria-label="Settings"
+              aria-haspopup="dialog"
+              title="Settings"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#6b3520] bg-[#2a1208]/80 text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setShowExitConfirm(true)}
+              className="flex items-center gap-2 rounded-lg border border-[#6b3520] bg-[#2a1208]/80 px-4 py-1.5 text-xl font-bold text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
+            >
+              <span className="text-xl leading-none">✕</span>
+              Exit
+            </button>
+          </div>
         </div>
+
+        {showSettings && (
+          <SettingsModal
+            motionEnabled={motionEnabled}
+            onMotionToggle={setMotionEnabled}
+            onClose={() => setShowSettings(false)}
+          />
+        )}
 
         <div className="pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 -translate-y-[42%]">
           <img
@@ -863,6 +898,7 @@ export default function PlayPage() {
               setPendingMicrobeId(null);
             }}
             onCancelPending={() => setPendingMicrobeId(null)}
+            motionEnabled={motionEnabled}
           />
         </div>
 
@@ -995,6 +1031,7 @@ export default function PlayPage() {
                   onDropRejected={handleDropRejected}
                   onDragStateChange={setIsDraggingOver}
                   isWrong={wrongMicrobeIds.has(microbe.id)}
+                  motionEnabled={motionEnabled}
                 />
               ))}
             </div>
@@ -1052,6 +1089,7 @@ function DraggableMicrobeCard({
   onDragStateChange,
   index,
   isWrong,
+  motionEnabled = true,
 }: {
   microbe: Microbe;
   selected: boolean;
@@ -1062,6 +1100,7 @@ function DraggableMicrobeCard({
   onDragStateChange: (isOver: boolean) => void;
   index: number;
   isWrong: boolean;
+  motionEnabled?: boolean;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const tiltRef = useRef<HTMLDivElement>(null);
@@ -1098,7 +1137,7 @@ function DraggableMicrobeCard({
       if (tiltRef.current) {
         tiltRef.current.style.transform = "";
         tiltRef.current.style.transition = "";
-        tiltRef.current.classList.add("card-idle");
+        if (motionEnabled) tiltRef.current.classList.add("card-idle");
       }
       leaveTimer.current = null;
     }, 500);
@@ -1229,7 +1268,7 @@ function DraggableMicrobeCard({
   return (
     <div
       ref={tiltRef}
-      className="card-tilt card-idle w-full"
+      className={`card-tilt w-full${motionEnabled ? " card-idle" : ""}`}
       style={{
         aspectRatio: "3/4",
         "--card-idle-delay": `${(index % 9) * 0.18}s`,
