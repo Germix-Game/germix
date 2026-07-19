@@ -2,9 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Patrick_Hand } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { ReferenceTable } from "./ReferenceTable";
+
+// Handwritten "student notes" style — used only for the reference-table heading.
+const patrickHand = Patrick_Hand({ subsets: ["latin"], weight: "400" });
 
 // Overlaid credit elements, in filename order (1_ → 6_).
 // offsetY nudges an individual element vertically (marginTop).
@@ -26,7 +31,6 @@ const ELEMENTS: CreditElement[] = [
   { src: "3_game_advisor.png", alt: "Advisors", width: 1755, height: 471, offsetY: "-1rem" },
   { src: "4_game_dev.png", alt: "Game Developers", width: 1784, height: 983, offsetY: "-1rem", raise: "0%" },
   { src: "5_designer.png", alt: "Designers", width: 1801, height: 915, offsetY: "-1rem", raise: "-25%" },
-  { src: "6_reference_table.png", alt: "References", width: 1249, height: 4505, maxW: "58rem", offsetY: "-1rem", raise: "-5%" },
 ];
 
 // Every image that must be loaded before we reveal the page.
@@ -144,6 +148,64 @@ export default function CreditsPage() {
               />
             </div>
           ))}
+
+          {/* Reference table heading — also pulls the table + copyright notice
+              below it up, since they follow in normal document flow. */}
+          <div
+            className={`flex w-full justify-center px-4 text-center ${ready ? "credit-in" : "opacity-0"}`}
+            style={
+              {
+                marginTop: "calc(-1rem - 150px)",
+                "--credit-delay": `${ELEMENTS.length * 110}ms`,
+              } as React.CSSProperties
+            }
+          >
+            <h2
+              className={`${patrickHand.className} text-4xl text-black sm:text-5xl md:text-6xl`}
+            >
+              In-Game Card Photo Credit
+            </h2>
+          </div>
+
+          {/* References table — real, clickable links instead of a flat image */}
+          <div
+            className={`flex w-full justify-center ${ready ? "credit-in" : "opacity-0"}`}
+            style={
+              {
+                marginTop: "0.5rem",
+                "--credit-delay": `${(ELEMENTS.length + 1) * 110}ms`,
+              } as React.CSSProperties
+            }
+          >
+            <ReferenceTable />
+          </div>
+
+          {/* Copyright notice */}
+          <div
+            className={`flex w-full justify-center px-4 pb-12 text-center ${ready ? "credit-in" : "opacity-0"}`}
+            style={
+              {
+                marginTop: "0.5rem",
+                "--credit-delay": `${(ELEMENTS.length + 2) * 110}ms`,
+              } as React.CSSProperties
+            }
+          >
+            <p className="max-w-3xl text-sm leading-relaxed text-black">
+              <span className="font-semibold">Copyright Notice:</span> Images
+              used in this project were selected from sources that permit
+              educational reuse and have been appropriately attributed where
+              required. If you are the copyright owner of any image and would
+              like it removed or its attribution corrected, please contact us
+              via Email (
+              <a
+                href="mailto:chonticha.nom@student.mahidol.ac.th"
+                className="text-[#1a56db] underline hover:text-[#153fa8]"
+              >
+                chonticha.nom@student.mahidol.ac.th
+              </a>
+              )
+            </p>
+          </div>
         </div>
       </div>
 
