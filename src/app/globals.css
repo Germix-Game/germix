@@ -531,6 +531,30 @@
   }
 }
 
+/* ─── /select page — phone portrait ────────────────────────────────────
+   Base 37vw reads small on a narrow portrait phone screen; bump it up
+   a bit so the cards are easier to tap and read. ──────────────────── */
+@media (orientation: portrait) and (pointer: coarse) and (max-width: 640px) {
+  .select-bacteria-card {
+    width: 46vw !important;
+  }
+  .select-parasite-card {
+    width: 46vw !important;
+  }
+}
+
+/* ─── /select page — iPad portrait ─────────────────────────────────────
+   Same idea, slightly smaller bump since iPad's larger viewport already
+   renders the base size bigger in absolute terms. ─────────────────── */
+@media (orientation: portrait) and (pointer: coarse) and (min-width: 641px) and (max-width: 1366px) {
+  .select-bacteria-card {
+    width: 42vw !important;
+  }
+  .select-parasite-card {
+    width: 42vw !important;
+  }
+}
+
 /* ─── Home page menu cluster — short landscape phones (iPhone) ───────
    At top:75% + translateY(-50%), the 5-button stack overflows the
    bottom edge on short viewports and gets clipped by overflow-hidden.
@@ -553,17 +577,12 @@
 }
 
 /* ─── /play page — iPhone landscape (narrow, touch) ───────────────────
-   The hearts bar normally lives inside the card row, which is scaled
-   down by useScaleToFit() to keep the 5 cards + answer slot from
-   overflowing a narrow viewport — that also shrinks the hearts to the
-   point of being hard to read. Below, swap to a fixed-size copy that
-   lives in the top bar instead (unaffected by that scale), and free up
-   width in the card row so it needs to shrink less to begin with.
-   Confirm/Cancel also get a guaranteed 44px tap target here — at the
-   card row's shrunk scale they can end up too small to hit reliably. ── */
+   Hearts stay inline at the left of the card row (same spot as the
+   original/desktop design) and keep their full "big" heart-icon size —
+   only Confirm/Cancel and the answer-panel collapse get phone-specific
+   treatment here. Confirm/Cancel get a guaranteed 44px tap target — at
+   the card row's shrunk scale they can end up too small to hit reliably. */
 @media (orientation: landscape) and (pointer: coarse) and (max-width: 896px) {
-  .game-hearts-inline { display: none !important; }
-  .game-hearts-topbar { display: flex !important; }
   .answer-cancel-btn,
   .answer-confirm-btn {
     min-height: 44px !important;
@@ -576,6 +595,53 @@
      foldable). */
   .answer-panel-toggle { display: flex !important; }
   .answer-panel-hidden { display: none !important; }
+}
+
+/* ─── /play page — phone only (both orientations) ─────────────────────
+   The Confirm/Cancel controls normally overlay the bottom of the
+   pending-microbe card so they line up with the card art on tablet/
+   desktop. On a phone that overlay covers a meaningful chunk of the
+   (already small) card, making it hard to see what was dropped. Detach
+   the pair from the card and place them as a vertical tick/cross stack
+   just outside its right edge instead — out of the way of the card art,
+   thumb-reachable, and still visually attached to the card it belongs
+   to. .pending-card-shell switches to overflow:visible so the stack can
+   sit outside the card's rounded bounds without being clipped. Gated to
+   touch + phone-sized viewports so iPad/desktop keep the original
+   overlaid layout untouched. ──────────────────────────────────────── */
+@media (pointer: coarse) and (max-width: 500px),
+       (orientation: landscape) and (pointer: coarse) and (max-width: 896px) {
+  .pending-card-shell {
+    overflow: visible !important;
+  }
+  .answer-confirm-row {
+    position: absolute !important;
+    left: calc(100% + 10px) !important;
+    right: auto !important;
+    bottom: auto !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    flex-direction: column !important;
+    width: 52px !important;
+    height: auto !important;
+    border-radius: 9999px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45) !important;
+    z-index: 40 !important;
+  }
+  /* Tick (confirm) on top, cross (cancel) below. */
+  .answer-confirm-row .answer-confirm-btn {
+    order: 1 !important;
+  }
+  .answer-confirm-row .answer-cancel-btn {
+    order: 2 !important;
+  }
+  .answer-confirm-row .answer-cancel-btn,
+  .answer-confirm-row .answer-confirm-btn {
+    width: 52px !important;
+    aspect-ratio: 1 / 1 !important;
+    min-height: 0 !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
