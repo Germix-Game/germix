@@ -801,13 +801,6 @@ export default function PlayPage() {
         <div className="absolute safe-top safe-left safe-right z-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
-            {/* Mobile-only: a copy of the hearts bar, shown here instead of in the
-                card row on narrow iPhone landscape — see .game-hearts-topbar in
-                globals.css. Kept out of the scaled content row so it stays a
-                fixed, legible size instead of shrinking along with the cards. */}
-            <div className="game-hearts-topbar hidden items-center">
-              <HeartsBar heartsLeft={heartsLeft} />
-            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -932,19 +925,19 @@ export default function PlayPage() {
       >
 
         {/* Filter bar — gram type checkboxes, search, and biological tag checkboxes */}
-        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3 border-b border-[#c4a870] bg-[#f0d9a8] flex-shrink-0">
+        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-1.5 border-b border-[#c4a870] bg-[#f0d9a8] flex-shrink-0">
 
           {/* GRAM-TYPE FILTERS — rendered from a tuple array using .map() */}
           {/* `as const` → tells TypeScript these are literal types, not generic strings */}
           {filterOptions.map(([value, label, accentClass]) => (
-            <label key={value} className="flex cursor-pointer items-center gap-1.5 select-none">
+            <label key={value} className="flex cursor-pointer items-center gap-1 select-none">
               <input
                 type="checkbox"
                 checked={gramFilter === value}
                 onChange={() => toggleGram(value)}
-                className={`${accentClass} h-3.5 w-3.5`}
+                className={`${accentClass} h-3 w-3`}
               />
-              <span className="text-[#3a2010] text-base font-semibold">{label}</span>
+              <span className="text-[#3a2010] text-xs font-semibold">{label}</span>
             </label>
           ))}
 
@@ -954,7 +947,7 @@ export default function PlayPage() {
             {/* Search icon (inline SVG) */}
             {/* pointer-events-none → click goes through to the input behind it */}
             <svg
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#9a7850]"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-[#9a7850]"
               fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
               aria-hidden="true"
             >
@@ -966,13 +959,13 @@ export default function PlayPage() {
               value={searchQuery}                                                // controlled
               onChange={(e) => setSearchQuery(e.target.value)}                   // sync state on every keystroke
               placeholder="Search…"
-              className="h-8 w-full rounded-full border border-[#c4a870] bg-white/60 pl-9 pr-8 text-sm text-[#3a2010] placeholder-[#9a7850] focus:outline-none focus:ring-2 focus:ring-[#5c2a0e]/30"
+              className="h-7 w-full rounded-full border border-[#c4a870] bg-white/60 pl-9 pr-8 text-xs text-[#3a2010] placeholder-[#9a7850] focus:outline-none focus:ring-2 focus:ring-[#5c2a0e]/30"
             />
             {/* "×" clear button — only renders when there's text to clear */}
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9a7850] hover:text-[#5c2a0e] text-base leading-none"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9a7850] hover:text-[#5c2a0e] text-sm leading-none"
                 aria-label="Clear search"
               >
                 ×
@@ -985,14 +978,14 @@ export default function PlayPage() {
             ([
               ["ANAEROBE", "ANAEROBE"],
             ] as const).map(([value, label]) => (
-              <label key={value} className="flex cursor-pointer items-center gap-1.5 select-none">
+              <label key={value} className="flex cursor-pointer items-center gap-1 select-none">
                 <input
                   type="checkbox"
                   checked={tagFilters.has(value)}
                   onChange={() => toggleTag(value)}
-                  className="accent-[#5c2a0e] h-3.5 w-3.5"
+                  className="accent-[#5c2a0e] h-3 w-3"
                 />
-                <span className="text-[#3a2010] text-base font-semibold">{label}</span>
+                <span className="text-[#3a2010] text-xs font-semibold">{label}</span>
               </label>
             ))}
         </div>
