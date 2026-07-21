@@ -582,7 +582,7 @@
    only Confirm/Cancel and the answer-panel collapse get phone-specific
    treatment here. Confirm/Cancel get a guaranteed 44px tap target — at
    the card row's shrunk scale they can end up too small to hit reliably. */
-@media (orientation: landscape) and (pointer: coarse) and (max-width: 896px) {
+@media (orientation: landscape) and (pointer: coarse) and (max-width: 960px) {
   .answer-cancel-btn,
   .answer-confirm-btn {
     min-height: 44px !important;
@@ -610,7 +610,7 @@
    touch + phone-sized viewports so iPad/desktop keep the original
    overlaid layout untouched. ──────────────────────────────────────── */
 @media (pointer: coarse) and (max-width: 500px),
-       (orientation: landscape) and (pointer: coarse) and (max-width: 896px) {
+       (orientation: landscape) and (pointer: coarse) and (max-width: 960px) {
   .pending-card-shell {
     overflow: visible !important;
   }
