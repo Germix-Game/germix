@@ -152,7 +152,7 @@ export default function CreditsPage() {
           {/* Reference table heading — also pulls the table + copyright notice
               below it up, since they follow in normal document flow. */}
           <div
-            className={`flex w-full justify-center px-4 text-center ${ready ? "credit-in" : "opacity-0"}`}
+            className={`credit-heading-wrap flex w-full justify-center px-4 text-center ${ready ? "credit-in" : "opacity-0"}`}
             style={
               {
                 marginTop: "calc(-1rem - 150px)",
@@ -161,7 +161,7 @@ export default function CreditsPage() {
             }
           >
             <h2
-              className={`${patrickHand.className} text-4xl text-black sm:text-5xl md:text-6xl`}
+              className={`${patrickHand.className} text-2xl text-black sm:text-5xl md:text-6xl`}
             >
               In-Game Card Photo Credit
             </h2>

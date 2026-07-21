@@ -644,6 +644,51 @@
   }
 }
 
+/* ─── /pathogen-book — phone landscape only ───────────────────────────
+   The right-page header (microbe thumbnail + name + rating) uses the
+   same clamp() sizing on every viewport, so its floor values (88px
+   thumbnail, 1rem name, etc.) don't shrink further on a narrow phone
+   screen — they end up too large for the 40%-wide right page and eat
+   into the room the clue-card grid below needs. Shrink just the floor
+   here; tablet/desktop sizing is untouched. ───────────────────────── */
+@media (orientation: landscape) and (pointer: coarse) and (max-width: 960px) {
+  .pb-detail-thumb {
+    width: clamp(50px, 12vw, 88px) !important;
+  }
+  .pb-detail-name {
+    font-size: clamp(0.75rem, 2vw, 1rem) !important;
+  }
+  .pb-detail-rating-label {
+    font-size: clamp(0.45rem, 0.8vw, 0.55rem) !important;
+  }
+  .pb-detail-stars {
+    height: clamp(14px, 2.8vw, 20px) !important;
+  }
+  .pb-detail-header {
+    gap: clamp(0.35rem, 1.2vw, 0.5rem) !important;
+  }
+
+  /* Left-page microbe grid and right-page clue grid — 4 columns reads
+     cramped on a narrow phone, so drop both to 3 here only; tablet/
+     desktop keep the original 4. */
+  .pb-microbe-grid,
+  .pb-clue-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ─── Credits page — landscape only ────────────────────────────────────
+   The "In-Game Card Photo Credit" heading's -150px pull is tuned for
+   portrait, where the background art scales down more per viewport
+   width. In landscape the art renders relatively wider, so the same
+   pull drags the heading up into the credit element above it. Ease it
+   back down here only; portrait keeps the original design untouched. ── */
+@media (orientation: landscape) {
+  .credit-heading-wrap {
+    margin-top: calc(-1rem - 60px) !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .credit-in,
   .credit-bg-in,
