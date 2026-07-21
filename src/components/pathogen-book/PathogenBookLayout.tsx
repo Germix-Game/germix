@@ -372,7 +372,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
 
       {/* ── Left page — microbe grid ── */}
       <div
-        className="absolute overflow-y-auto"
+        className="pb-left-page absolute overflow-y-auto"
         style={{ left: "22%", top: "25%", width: "30%", height: "75%" }}
       >
         {microbes === null ? (
@@ -393,7 +393,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
 
       {/* ── Right page — microbe detail ── */}
       <div
-        className="absolute flex flex-col"
+        className="pb-right-page absolute flex flex-col"
         style={{ left: "55%", top: "15%", width: "40%", height: "82%" }}
       >
         {!selectedMicrobe ? (

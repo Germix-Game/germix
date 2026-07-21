@@ -697,23 +697,34 @@
    well below what a 1366-wide page has room for. Scale both up here
    only; phone and desktop/mouse sizing are untouched. ───────────────── */
 @media (orientation: landscape) and (pointer: coarse) and (min-width: 961px) and (max-width: 1366px) {
+  /* Left page — bigger cards, 3 columns instead of 4, shifted 300px left
+     so the wider cards still have room to breathe on the page. */
+  .pb-left-page {
+    left: calc(22% - 300px) !important;
+  }
   .pb-microbe-grid {
-    zoom: 0.55 !important;
+    zoom: 0.75 !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  /* Right page — everything doubled in size and shifted 200px right. */
+  .pb-right-page {
+    left: calc(55% + 200px) !important;
   }
   .pb-clue-grid {
-    zoom: 0.85 !important;
+    zoom: 1.7 !important;
   }
   .pb-detail-thumb {
-    width: clamp(140px, 16vw, 260px) !important;
+    width: clamp(280px, 32vw, 520px) !important;
   }
   .pb-detail-name {
-    font-size: clamp(1.25rem, 2vw, 1.875rem) !important;
+    font-size: clamp(2.5rem, 4vw, 3.75rem) !important;
   }
   .pb-detail-rating-label {
-    font-size: clamp(0.7rem, 1vw, 0.9rem) !important;
+    font-size: clamp(1.4rem, 2vw, 1.8rem) !important;
   }
   .pb-detail-stars {
-    height: clamp(26px, 3.5vw, 40px) !important;
+    height: clamp(52px, 7vw, 80px) !important;
   }
 }
 
