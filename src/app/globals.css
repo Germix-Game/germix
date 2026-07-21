@@ -689,6 +689,34 @@
   }
 }
 
+/* ─── /pathogen-book — iPad landscape only ─────────────────────────────
+   .pb-microbe-grid / .pb-clue-grid use a fixed `zoom` factor, so their
+   card size is a constant physical size regardless of viewport — on a
+   big iPad page (far more room than the phone this was tuned for) that
+   reads too small. The right-page header's clamp() caps also top out
+   well below what a 1366-wide page has room for. Scale both up here
+   only; phone and desktop/mouse sizing are untouched. ───────────────── */
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 961px) and (max-width: 1366px) {
+  .pb-microbe-grid {
+    zoom: 0.55 !important;
+  }
+  .pb-clue-grid {
+    zoom: 0.85 !important;
+  }
+  .pb-detail-thumb {
+    width: clamp(140px, 16vw, 260px) !important;
+  }
+  .pb-detail-name {
+    font-size: clamp(1.25rem, 2vw, 1.875rem) !important;
+  }
+  .pb-detail-rating-label {
+    font-size: clamp(0.7rem, 1vw, 0.9rem) !important;
+  }
+  .pb-detail-stars {
+    height: clamp(26px, 3.5vw, 40px) !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .credit-in,
   .credit-bg-in,

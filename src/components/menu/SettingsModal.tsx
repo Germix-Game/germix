@@ -98,8 +98,19 @@ export function SettingsModal({
   const router = useRouter();
   const dialogRef = useRef<HTMLElement>(null);
 
+  // Caller passes a fresh onClose closure on every render (e.g. `() =>
+  // setShowSettings(false)`), which would otherwise retrigger the focus-trap
+  // effect below on every re-render — including ones caused by toggling a
+  // switch inside this dialog — yanking focus back to the first focusable
+  // element (the ✕ button) and scrolling the dialog back to the top mid-use.
+  // A ref keeps the effect's dependency array stable while still calling the
+  // latest onClose.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   // Focus trap + return focus to the triggering element on close, and lock
-  // background scrolling for the duration the dialog is open.
+  // background scrolling for the duration the dialog is open. Runs once on
+  // mount/unmount only — see onCloseRef above for why onClose isn't a dep.
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
     const prevOverflow = document.body.style.overflow;
@@ -112,7 +123,7 @@ export function SettingsModal({
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== "Tab") return;
@@ -135,7 +146,7 @@ export function SettingsModal({
       document.body.style.overflow = prevOverflow;
       previouslyFocused?.focus?.();
     };
-  }, [onClose]);
+  }, []);
 
   useEffect(() => {
     function handleFullscreenChange() {

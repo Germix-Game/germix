@@ -155,7 +155,7 @@ export default function CreditsPage() {
             className={`credit-heading-wrap flex w-full justify-center px-4 text-center ${ready ? "credit-in" : "opacity-0"}`}
             style={
               {
-                marginTop: "calc(-1rem - 150px)",
+                marginTop: "calc(-1rem - 220px)",
                 "--credit-delay": `${ELEMENTS.length * 110}ms`,
               } as React.CSSProperties
             }
