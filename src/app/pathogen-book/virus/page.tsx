@@ -25,7 +25,7 @@ export default function VirusBookPage() {
       {/* Back button */}
       <Link
         href="/home"
-        className="absolute left-4 top-4 z-30 flex h-9 items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
+        className="tap-min safe-top safe-left absolute z-30 flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
       >
         ← Back
       </Link>

@@ -148,10 +148,10 @@ export default function CreditsPage() {
       </div>
 
       {/* Back button */}
-      <div className="fixed top-4 left-4 z-20">
+      <div className="safe-top safe-left fixed z-20">
         <Link
           href="/home"
-          className={`flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 py-2 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a] ${
+          className={`tap-min flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 py-2 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a] ${
             ready ? "credit-back-in" : "opacity-0"
           }`}
         >

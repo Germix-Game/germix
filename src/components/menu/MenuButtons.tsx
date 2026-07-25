@@ -15,11 +15,11 @@ export function MenuButtons({
   onPlayClick?: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2.5 w-[240px]">
+    <div className="flex flex-col items-center gap-2.5 w-[min(240px,72vw)]">
       {posttestRequired ? (
         <button
           onClick={onPlayClick}
-          className="menu-btn flex h-[62px] w-full items-center justify-center rounded-[18px] border-2 border-[#265215] bg-[#3a7d20] text-[26px] text-white shadow-[3px_4px_8px_rgba(0,0,0,0.4)] hover:border-[#80d040] hover:bg-[#4da030] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#80d040] cursor-pointer"
+          className="menu-btn menu-btn-play flex h-[62px] w-full items-center justify-center rounded-[18px] border-2 border-[#265215] bg-[#3a7d20] text-[26px] text-white shadow-[3px_4px_8px_rgba(0,0,0,0.4)] hover:border-[#80d040] hover:bg-[#4da030] cursor-pointer"
           style={{ fontFamily: "'Impact','Arial Black',sans-serif", letterSpacing: "0.05em" }}
         >
           ▶&nbsp;&nbsp;PLAY NOW
@@ -27,7 +27,7 @@ export function MenuButtons({
       ) : (
         <Link
           href="/select"
-          className="menu-btn flex h-[62px] w-full items-center justify-center rounded-[18px] border-2 border-[#265215] bg-[#3a7d20] text-[26px] text-white shadow-[3px_4px_8px_rgba(0,0,0,0.4)] hover:border-[#80d040] hover:bg-[#4da030] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#80d040]"
+          className="menu-btn menu-btn-play flex h-[62px] w-full items-center justify-center rounded-[18px] border-2 border-[#265215] bg-[#3a7d20] text-[26px] text-white shadow-[3px_4px_8px_rgba(0,0,0,0.4)] hover:border-[#80d040] hover:bg-[#4da030]"
           style={{ fontFamily: "'Impact','Arial Black',sans-serif", letterSpacing: "0.05em" }}
         >
           ▶&nbsp;&nbsp;PLAY NOW
@@ -38,7 +38,7 @@ export function MenuButtons({
         <Link
           key={item.href}
           href={item.href}
-          className="menu-btn flex h-11 w-full items-center justify-center rounded-xl border border-[#d4a96a] bg-[#2a1208]/80 text-sm font-semibold tracking-wide text-[#f5e6c8] shadow hover:bg-[#3d1a0a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a]"
+          className="menu-btn menu-btn-nav flex h-11 w-full items-center justify-center rounded-xl border border-[#d4a96a] bg-[#2a1208]/80 text-sm font-semibold tracking-wide text-[#f5e6c8] shadow hover:bg-[#3d1a0a]"
         >
           {item.label}
         </Link>

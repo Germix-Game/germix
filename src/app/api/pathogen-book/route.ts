@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
           ? { where: { playerId }, select: { playerId: true } }
           : false,
       },
-      orderBy: { name: 'asc' },
+      orderBy: [{ gramType: 'asc' }, { name: 'asc' }],
     })
 
     const result = microbes.map(({ unlockedBy, ...m }) => ({

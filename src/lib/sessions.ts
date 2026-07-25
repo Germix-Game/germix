@@ -5,6 +5,13 @@ export const MICROBES_PER_ROUND = 1
 export const TOTAL_ROUNDS = 5
 export const TOTAL_MICROBES = TOTAL_ROUNDS * MICROBES_PER_ROUND
 
+// The clue slot that is force-opened at the start of every round. Slot 4 is the
+// CLINICAL_MANIFESTATION card (see SLOT_CATEGORIES in lib/clues.ts) — the
+// strongest single clue — so every game begins with it already revealed. Kept
+// here as one shared constant so the server (seeds revealedSlots) and the client
+// (mirrors the reveal) can never drift apart.
+export const FORCED_CLUE_SLOT = 4
+
 export function formatSession(
   session: GameSession,
   totalScores: number,

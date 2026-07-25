@@ -93,10 +93,10 @@ describe('getRoundClues', () => {
     expect(prisma.microbeClue.findMany).toHaveBeenCalledWith({
       where: { microbeId: 'microbe-1' },
       orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }],
-      include: { clueCard: true },
+      include: { clueCard: { select: { id: true, category: true, imageUrl: true } } },
     })
-    expect(result[0]?.clueCard.label).toBe('Gram +')
-    expect(result[4]?.clueCard.label).toBe('Abscess')
+    expect(result[0]?.clueCard.imageUrl).toBe('/Gram +.png')
+    expect(result[4]?.clueCard.imageUrl).toBe('/Abscess.png')
   })
 
   it('breaks sortOrder ties using clueCardId, so duplicate sortOrders still resolve deterministically', async () => {
@@ -113,7 +113,7 @@ describe('getRoundClues', () => {
 
     const result = await getRoundClues('microbe-1')
 
-    expect(result[0]?.clueCard.label).toBe('Gram +')
+    expect(result[0]?.clueCard.category).toBe('GRAM_STAIN')
   })
 })
 
@@ -133,9 +133,9 @@ describe('getBookSlots', () => {
 
     const byIndex = Object.fromEntries(slots.map((s) => [s.slotIndex, s]))
     expect(byIndex[0].opened).toBe(true)
-    expect(byIndex[0].card?.label).toBe('Gram +')
+    expect(byIndex[0].card?.imageUrl).toBe('/Gram +.png')
     expect(byIndex[2].opened).toBe(true)
-    expect(byIndex[2].card?.label).toBe('Catalase+')
+    expect(byIndex[2].card?.imageUrl).toBe('/Catalase+.png')
     // Unopened slots exist as placeholders but carry NO card data (no leak).
     expect(byIndex[1].opened).toBe(false)
     expect(byIndex[1].card).toBeNull()
@@ -149,7 +149,7 @@ describe('getBookSlots', () => {
     vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(fullClues as never)
     const slots = await getBookSlots('microbe-1', [2])
     const lab = slots.find((s) => s.slotIndex === 2)
-    expect(lab?.card?.label).toBe('Catalase+')
+    expect(lab?.card?.imageUrl).toBe('/Catalase+.png')
     expect(lab?.category).toBe('LAB_CHARACTERISTIC')
   })
 

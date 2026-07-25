@@ -8,7 +8,7 @@ const alice = Alice({ weight: "400", subsets: ["latin"] });
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type GramType = "POSITIVE" | "NEGATIVE" | "ACID_FAST" | "OTHER";
+type GramType = "POSITIVE" | "NEGATIVE" | "ACID_FAST" | "NONE" | "PROTOZOA" | "PLATYHEMINTH" | "NEMATODE";
 
 type MicrobeEntry = {
   id: string;
@@ -86,6 +86,24 @@ function GramBadge({ gramType }: { gramType: GramType }) {
         AF
       </span>
     );
+  if (gramType === "PROTOZOA")
+    return (
+      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white shadow">
+        PZ
+      </span>
+    );
+  if (gramType === "PLATYHEMINTH")
+    return (
+      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-purple-500 text-[9px] font-bold text-white shadow">
+        PH
+      </span>
+    );
+  if (gramType === "NEMATODE")
+    return (
+      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-teal-500 text-[9px] font-bold text-white shadow">
+        NM
+      </span>
+    );
   return null;
 }
 
@@ -105,12 +123,13 @@ function MicrobeCard({
       onClick={microbe.unlocked ? onClick : undefined}
       disabled={!microbe.unlocked}
       aria-label={microbe.unlocked ? microbe.name : "Locked microbe"}
-      className={`relative flex flex-col items-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a96a] ${
+      className={`relative flex flex-col items-center transition-all ${
         selected ? "scale-105 ring-2 ring-[#c8873a]" : ""
       } ${!microbe.unlocked ? "cursor-default" : "cursor-pointer"}`}
     >
       {microbe.unlocked ? (
         <>
+          <GramBadge gramType={microbe.gramType} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={resolveImageSrc(microbe.answerImageUrl)}
@@ -185,7 +204,7 @@ function ClueSectionSkeleton() {
   return (
     <>
       <style>{SHIMMER_CSS}</style>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 gap-2" style={{ zoom: 0.78, width: "75%" }}>
         {Array.from({ length: 8 }).map((_, i) => (
           <ShimmerCard key={i} base="rgba(160,130,90,0.22)" sheen="rgba(185,155,110,0.32)" />
         ))}
@@ -233,7 +252,7 @@ function ClueSection({ slots }: { slots: BookSlot[] }) {
   const sorted = [...slots].sort((a, b) => a.slotIndex - b.slotIndex);
 
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-4 gap-2" style={{ zoom: 0.68, width: "85%" }}>
       {sorted.map((slot) => (
         <div key={slot.slotIndex} className="flex-shrink-0">
           {slot.opened && slot.card ? (
@@ -321,7 +340,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
       {/* ── Back button ── */}
       <Link
         href="/home"
-        className="absolute left-4 top-4 z-30 flex h-9 items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
+        className="tap-min safe-top safe-left absolute z-30 flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
       >
         ← Back
       </Link>
@@ -388,32 +407,45 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
         ) : (
           <>
             {/* Fixed header — microbe card + name + rating */}
-            <div className="flex items-start gap-4 pr-12 pb-3 shrink-0">
+            <div
+              className="flex items-start shrink-0"
+              style={{ gap: "clamp(0.5rem, 1.6vw, 1rem)", paddingRight: "clamp(1rem, 4vw, 3rem)", paddingBottom: "clamp(0.4rem, 1.2vh, 0.75rem)" }}
+            >
               <img
                 src={resolveImageSrc(selectedMicrobe.answerImageUrl)}
                 alt={selectedMicrobe.name}
-                className="w-52 shrink-0 object-contain"
-                style={{ aspectRatio: "1 / 1" }}
+                className="shrink-0 object-contain"
+                style={{ width: "clamp(88px, 18vw, 208px)", aspectRatio: "1 / 1" }}
                 draggable={false}
               />
-              <div className="flex flex-col gap-2 pt-1">
-                <h2 className="text-2xl font-semibold italic leading-snug text-[#2a1208]">
+              <div className="flex flex-col pt-1" style={{ gap: "clamp(0.25rem, 0.8vh, 0.5rem)" }}>
+                <h2
+                  className="font-semibold italic leading-snug text-[#2a1208]"
+                  style={{ fontSize: "clamp(1rem, 2.4vw, 1.5rem)" }}
+                >
                   {selectedMicrobe.name}
                 </h2>
-                <p className="text-[12px] uppercase tracking-wider text-[#7a5a30]">
+                <p
+                  className="uppercase tracking-wider text-[#7a5a30]"
+                  style={{ fontSize: "clamp(0.55rem, 1vw, 0.75rem)" }}
+                >
                   Clinical Relevance Rating
                 </p>
                 <img
                   src={starSrc(selectedMicrobe.starRating)}
                   alt={`${Math.round(selectedMicrobe.starRating)} stars`}
-                  className="h-8 w-auto self-start object-contain"
+                  className="w-auto self-start object-contain"
+                  style={{ height: "clamp(20px, 3.5vw, 32px)" }}
                   draggable={false}
                 />
               </div>
             </div>
 
-            {/* Scrollable clue section */}
-            <div className="overflow-y-auto pr-12">
+            {/* Scrollable clue section — scrollbar hidden, scrolling still works */}
+            <div
+              className="overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              style={{ msOverflowStyle: "none", paddingRight: "clamp(1rem, 4vw, 3rem)" }}
+            >
               {cluesLoading ? (
                 <ClueSectionSkeleton />
               ) : slots && slots.length > 0 ? (

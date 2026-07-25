@@ -8,27 +8,18 @@ describe('calculateRoundScore', () => {
     expect(calculateRoundScore(5, false)).toBe(0)
   })
 
-  it('returns 100 for correct with 1 card opened', () => {
+  it('gives the full 100 for the first two opened cards', () => {
     expect(calculateRoundScore(1, true)).toBe(100)
+    expect(calculateRoundScore(2, true)).toBe(100)
   })
 
-  it('returns 80 for correct with 2 cards opened', () => {
-    expect(calculateRoundScore(2, true)).toBe(80)
+  it('deducts 25 for each card opened beyond the 2nd', () => {
+    expect(calculateRoundScore(3, true)).toBe(75)
+    expect(calculateRoundScore(4, true)).toBe(50)
+    expect(calculateRoundScore(5, true)).toBe(25)
   })
 
-  it('returns 60 for correct with 3 cards opened', () => {
-    expect(calculateRoundScore(3, true)).toBe(60)
-  })
-
-  it('returns 40 for correct with 4 cards opened', () => {
-    expect(calculateRoundScore(4, true)).toBe(40)
-  })
-
-  it('returns 20 for correct with 5 cards opened', () => {
-    expect(calculateRoundScore(5, true)).toBe(20)
-  })
-
-  it('clamps to 0 when penalty exceeds 100', () => {
+  it('clamps to 0 when the penalty would go negative', () => {
     expect(calculateRoundScore(6, true)).toBe(0)
     expect(calculateRoundScore(10, true)).toBe(0)
   })
