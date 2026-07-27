@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 export async function GET() {
   const top5Raw = await prisma.player.findMany({
     orderBy: { totalScore: 'desc' },
-    take: 5,
+    take: 10,
     select: { username: true, totalScore: true, gamesPlayed: true },
   })
 

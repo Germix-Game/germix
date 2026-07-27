@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveMotionPreference } from "@/lib/motion-preference";
+import {
+  DEFAULT_MUSIC_VOLUME,
+  getMusicPreference,
+  saveMusicPreference,
+} from "@/lib/music-preference";
 
 function SpeakerIcon({ muted }: { muted: boolean }) {
   return (
@@ -87,12 +92,27 @@ export function SettingsModal({
   onClose: () => void;
 }) {
   const [loggingOut, setLoggingOut] = useState(false);
-  const [musicVolume, setMusicVolume] = useState(70);
-  const [musicMuted, setMusicMuted] = useState(false);
+  const [musicVolume, setMusicVolume] = useState(() =>
+    typeof window === "undefined" ? DEFAULT_MUSIC_VOLUME : getMusicPreference().volume,
+  );
+  const [musicMuted, setMusicMuted] = useState(() =>
+    typeof window !== "undefined" && getMusicPreference().muted,
+  );
   const [sfxVolume, setSfxVolume] = useState(80);
   const [sfxMuted, setSfxMuted] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const router = useRouter();
+
+  function handleMusicVolumeChange(volume: number) {
+    setMusicVolume(volume);
+    saveMusicPreference({ volume, muted: musicMuted });
+  }
+
+  function handleMusicMuteToggle() {
+    const nextMuted = !musicMuted;
+    setMusicMuted(nextMuted);
+    saveMusicPreference({ volume: musicVolume, muted: nextMuted });
+  }
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -171,8 +191,8 @@ export function SettingsModal({
             label="Music Volume"
             value={musicVolume}
             muted={musicMuted}
-            onChange={setMusicVolume}
-            onToggleMute={() => setMusicMuted((m) => !m)}
+            onChange={handleMusicVolumeChange}
+            onToggleMute={handleMusicMuteToggle}
           />
 
           <VolumeSlider
