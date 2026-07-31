@@ -222,6 +222,27 @@ export function PostTestPopup({
                   </div>
                 </div>
               ))}
+
+              {/* Playtester Feedback CTA */}
+              {process.env.NEXT_PUBLIC_TESTING_PHASE_ENABLED === "true" && process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL && (
+                <div className="rounded-xl border-2 border-dashed border-[#5c2a0e]/40 bg-[#e8cd94]/40 p-6 flex flex-col items-center text-center space-y-4 shadow-inner">
+                  <span className="text-3xl animate-bounce">✨</span>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-[#5c2a0e]">Help Us Improve Germix!</h3>
+                    <p className="text-sm text-[#5c2a0e]/80 max-w-lg leading-relaxed">
+                      As a playtester, your feedback on your gameplay experience is incredibly important to us! Complete the quick feedback form to receive bonus notes, summaries, and exclusive character artwork.
+                    </p>
+                  </div>
+                  <a
+                    href={process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 rounded-xl bg-gradient-to-b from-[#b8782a] to-[#8c5015] px-6 py-3 font-semibold text-white shadow-lg transition-all hover:from-[#c9893b] hover:to-[#9c5f20] hover:scale-105 active:scale-95 text-sm"
+                  >
+                    Complete Playtester Feedback Form ↗
+                  </a>
+                </div>
+              )}
             </div>
           )}
 
@@ -234,6 +255,25 @@ export function PostTestPopup({
               <p className="text-[#5c2a0e] text-center max-w-md text-base leading-relaxed">
                 Thank you for completing the post-test. Your answers have been saved and you can now proceed to play the game!
               </p>
+
+              {/* Playtester Feedback CTA on completion */}
+              {process.env.NEXT_PUBLIC_TESTING_PHASE_ENABLED === "true" && process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL && (
+                <div className="w-full max-w-md rounded-xl border border-[#c4a870] bg-[#e8cd94]/30 p-5 flex flex-col items-center text-center space-y-3 shadow-sm">
+                  <h4 className="text-sm font-bold text-[#5c2a0e]">Got a minute?</h4>
+                  <p className="text-xs text-[#5c2a0e]/80 leading-relaxed">
+                    Please share your experience playing the game by filling out the quick feedback form!
+                  </p>
+                  <a
+                    href={process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#b8782a] hover:bg-[#c9893b] px-4 py-2 text-xs font-semibold text-white shadow transition-all hover:scale-105 active:scale-95"
+                  >
+                    Give Feedback ↗
+                  </a>
+                </div>
+              )}
+
               <button
                 onClick={onClose}
                 className="rounded-xl bg-gradient-to-b from-[#4da030] to-[#2f6e18] px-8 py-3.5 font-semibold text-white shadow-lg shadow-green-700/20 transition-all hover:from-[#5cb83a] hover:to-[#357d1c] hover:scale-105 active:scale-95"
