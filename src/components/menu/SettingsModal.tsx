@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveMotionPreference } from "@/lib/motion-preference";
+import {
+  DEFAULT_MUSIC_VOLUME,
+  getMusicPreference,
+  saveMusicPreference,
+} from "@/lib/music-preference";
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -90,8 +95,12 @@ export function SettingsModal({
   onClose: () => void;
 }) {
   const [loggingOut, setLoggingOut] = useState(false);
-  const [musicVolume, setMusicVolume] = useState(70);
-  const [musicMuted, setMusicMuted] = useState(false);
+  const [musicVolume, setMusicVolume] = useState(() =>
+    typeof window === "undefined" ? DEFAULT_MUSIC_VOLUME : getMusicPreference().volume,
+  );
+  const [musicMuted, setMusicMuted] = useState(() =>
+    typeof window !== "undefined" && getMusicPreference().muted,
+  );
   const [sfxVolume, setSfxVolume] = useState(80);
   const [sfxMuted, setSfxMuted] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
@@ -108,9 +117,17 @@ export function SettingsModal({
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
-  // Focus trap + return focus to the triggering element on close, and lock
-  // background scrolling for the duration the dialog is open. Runs once on
-  // mount/unmount only — see onCloseRef above for why onClose isn't a dep.
+  function handleMusicVolumeChange(volume: number) {
+    setMusicVolume(volume);
+    saveMusicPreference({ volume, muted: musicMuted });
+  }
+
+  function handleMusicMuteToggle() {
+    const nextMuted = !musicMuted;
+    setMusicMuted(nextMuted);
+    saveMusicPreference({ volume: musicVolume, muted: nextMuted });
+  }
+
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
     const prevOverflow = document.body.style.overflow;
@@ -218,8 +235,8 @@ export function SettingsModal({
             label="Music Volume"
             value={musicVolume}
             muted={musicMuted}
-            onChange={setMusicVolume}
-            onToggleMute={() => setMusicMuted((m) => !m)}
+            onChange={handleMusicVolumeChange}
+            onToggleMute={handleMusicMuteToggle}
           />
 
           <VolumeSlider

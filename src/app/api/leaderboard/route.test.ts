@@ -34,11 +34,11 @@ describe('GET /api/leaderboard', () => {
     expect(res.status).toBe(200)
   })
 
-  it('returns top5 array of up to 5 entries', async () => {
+  it('returns top5 array of up to 10 entries', async () => {
     const res = await GET()
     const body = await res.json()
     expect(Array.isArray(body.top5)).toBe(true)
-    expect(body.top5.length).toBeLessThanOrEqual(5)
+    expect(body.top5.length).toBeLessThanOrEqual(10)
   })
 
   it('returns null currentPlayer when unauthenticated', async () => {
@@ -120,7 +120,7 @@ describe('GET /api/leaderboard', () => {
     expect(prisma.player.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         orderBy: { totalScore: 'desc' },
-        take: 5,
+        take: 10,
       })
     )
   })
