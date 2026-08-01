@@ -306,6 +306,18 @@ export default function HomePage() {
               <span>POST TEST {posttestPeriod ? `(${posttestPeriod})` : ""}</span>
             </button>
           )}
+          {process.env.NEXT_PUBLIC_TESTING_PHASE_ENABLED === "true" && process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL && (
+            <a
+              href={process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#b8782a] bg-[#1a0a04]/85 px-4 text-xs font-bold tracking-wide text-[#f5e6c8] shadow-md hover:bg-[#b8782a] hover:text-[#1a0a04] transition-all hover:scale-105 cursor-pointer select-none"
+              title="Complete Playtester Feedback Form"
+            >
+              <span>✨</span>
+              <span>PLAYTESTER FEEDBACK ↗</span>
+            </a>
+          )}
         </div>
 
         {showPosttestPopup && posttestPeriod && (
