@@ -17,8 +17,10 @@ import { createAnimatable, spring } from "animejs";
 import { CardGrid } from "@/components/game/CardGrid";
 import { HeartsBar } from "@/components/game/HeartsBar";
 import { ScoreBar } from "@/components/game/ScoreBar";
+import { SettingsModal } from "@/components/menu/SettingsModal";
 import { useScaleToFit } from "@/hooks/useScaleToFit";
 import { HOME_CRITICAL_ASSETS, preloadImages } from "@/lib/preload-images";
+import { getMotionPreference } from "@/lib/motion-preference";
 // FORCED_CLUE_SLOT is the clue slot force-opened at the start of every round
 // (slot 4 = clinical manifestation). Shared with the server so both sides agree.
 import { FORCED_CLUE_SLOT } from "@/lib/sessions";
@@ -55,14 +57,53 @@ const EMPTY_SLOTS: CardSlotState[] = Array.from({ length: 5 }, (_, i) => ({
   card: null,       // no clue assigned yet
 }));
 
-// Build a fresh set of 5 slots for a new round with the forced clinical-
-// manifestation card (FORCED_CLUE_SLOT) already flipped open. `forcedCard` is
-// that slot's clue: pass the demo card in demo mode, or null in real mode —
-// where fetchCards() fills it in from the pre-fetched round data.
-function makeInitialSlots(forcedCard: ClueCard | null = null): CardSlotState[] {
-  return EMPTY_SLOTS.map((s) =>
-    s.index === FORCED_CLUE_SLOT ? { ...s, revealed: true, card: forcedCard } : s,
+const CLINICAL_MANIFESTATION_SLOT = 4;
+
+// Build the 5 clue slots with the clinical-manifestation slot pre-revealed
+// (optionally with a card already assigned, e.g. demo mode's hardcoded card).
+function makeInitialSlots(card: ClueCard | null = null): CardSlotState[] {
+  return EMPTY_SLOTS.map((slot) =>
+    slot.index === CLINICAL_MANIFESTATION_SLOT ? { ...slot, revealed: true, card } : { ...slot },
   );
+}
+
+// Randomize only the visual order. Each slot keeps its original `index`, which
+// is the canonical server slot used by /cards and /reveal. This lets the UI move
+// cards around without changing what the backend records for scoring/unlocks.
+function shuffleSlots(slots: CardSlotState[]): CardSlotState[] {
+  const shuffled = slots.map((slot) => ({ ...slot }));
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+// Put the requested canonical clue into the visual position the player picked.
+// On the first reveal this swaps the picked slot with the clinical slot; the
+// canonical indexes travel with the slots, so later server requests stay valid.
+function revealAtPickedPosition(
+  slots: CardSlotState[],
+  pickedIndex: number,
+  revealedIndex: number,
+  card: ClueCard | null = null,
+): CardSlotState[] {
+  const pickedPosition = slots.findIndex((slot) => slot.index === pickedIndex);
+  const revealedPosition = slots.findIndex((slot) => slot.index === revealedIndex);
+  if (pickedPosition < 0 || revealedPosition < 0) return slots;
+
+  if (pickedPosition === revealedPosition) {
+    return slots.map((slot) =>
+      slot.index === revealedIndex ? { ...slot, revealed: true, card: card ?? slot.card } : slot,
+    );
+  }
+
+  const next = [...slots];
+  const pickedSlot = slots[pickedPosition];
+  const revealedSlot = slots[revealedPosition];
+  next[pickedPosition] = { ...revealedSlot, revealed: true, card: card ?? revealedSlot.card };
+  next[revealedPosition] = { ...pickedSlot, revealed: false, card: null };
+  return next;
 }
 
 // DEMO MODE clue cards — shown when ?demo=true is in the URL.
@@ -136,6 +177,7 @@ export default function PlayPage() {
   const dropTargetRef = useRef<HTMLDivElement>(null);
   const prefetchedCardsRef = useRef<(ClueCard | null)[]>([null, null, null, null, null]);
   const cardsFetchRef = useRef<{ id: string; promise: Promise<{ cards?: unknown } | null> } | null>(null);
+  const isFirstRevealRef = useRef(true);
   // Guards the bootstrap effect so it runs exactly once. Without it, React
   // StrictMode (on by default in dev) double-invokes the mount effect and
   // creates TWO sessions — the player then sees one session's cards while
@@ -145,6 +187,12 @@ export default function PlayPage() {
   const [pendingMicrobeId, setPendingMicrobeId] = useState<string | null>(null);
   const [dropBlockedMsg, setDropBlockedMsg] = useState<string | null>(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [motionEnabled, setMotionEnabled] = useState(true);
+  // Phone-only: lets the player collapse the microbe answer panel so it stops
+  // covering the clue cards. The toggle button that flips this is hidden on
+  // desktop/iPad via CSS, so this can only ever become true on a phone.
+  const [answerPanelHidden, setAnswerPanelHidden] = useState(false);
   const scoreBarRef = useRef<HTMLDivElement>(null);
   const pointsPillRef = useRef<HTMLDivElement>(null);
   const [scorePop, setScorePop] = useState<{ points: number; startX: number; startY: number } | null>(null);
@@ -167,7 +215,7 @@ export default function PlayPage() {
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]); // recap of every round played
   const [won, setWon] = useState(false);                               // did the player win or lose?
 
-  const { containerRef, contentRef, scale } = useScaleToFit();
+  const { containerRef, contentRef, scale } = useScaleToFit(1, 16);
   const router = useRouter();
 
   // Warm up the route the player will land on when they exit (back button,
@@ -177,6 +225,15 @@ export default function PlayPage() {
     router.prefetch("/home");
     preloadImages(HOME_CRITICAL_ASSETS);
   }, [router]);
+
+  // Read the saved motion preference after mount (avoids SSR/hydration mismatch,
+  // matching the pattern used on the home screen).
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      setMotionEnabled(getMotionPreference());
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, []);
 
   // ── bootstrap ────────────────────────────────────────────────────────────
   // useEffect runs AFTER the component renders. With `[]` deps, it runs ONCE on mount.
@@ -197,6 +254,7 @@ export default function PlayPage() {
     if (params.get("demo") === "true") {
       // DEMO MODE branch — skip backend, use hardcoded data
       setIsDemo(true);
+      setSlots(shuffleSlots(EMPTY_SLOTS));
       setMicrobes(DEMO_MICROBES);
       setMicrobesLoading(false);
       setCardsReady(true);
@@ -258,7 +316,9 @@ export default function PlayPage() {
       setHeartsLeft(session.heartsLeft);
       setScore(session.totalScore);
       setRound(session.currentRound);
-      setSlots(session.slots ?? EMPTY_SLOTS);                       // `??` = "use right side if left is null/undefined"
+      const sessionSlots: CardSlotState[] = session.slots ?? EMPTY_SLOTS;
+      isFirstRevealRef.current = !sessionSlots.some((slot) => slot.revealed);
+      setSlots(shuffleSlots(sessionSlots));                         // shuffle display order; each slot keeps its server index
       setGameMode(session.gameMode ?? "BACTERIA");
       setPhase("playing");
       void fetchMicrobes(session.gameMode ?? "BACTERIA");
@@ -312,7 +372,7 @@ export default function PlayPage() {
       const data = await startCardsFetch(id);
       if (!data) return;
       if (Array.isArray(data.cards)) {
-        const cards = data.cards as ClueCard[];
+        const cards = data.cards as (ClueCard | null)[];
         prefetchedCardsRef.current = cards;
         // After a page refresh, session slots arrive with revealed:true but no card data.
         // Fill them in now so the skeleton doesn't get stuck.
@@ -340,78 +400,56 @@ export default function PlayPage() {
       // Only allow reveal during active play
       if (phase !== "playing") return;
 
+      // Face-down cards are visually interchangeable. Whichever one is picked
+      // first receives the clinical-manifestation clue; later picks use their
+      // own canonical slot indexes normally.
+      const wasFirstReveal = isFirstRevealRef.current;
+      const revealIndex = wasFirstReveal ? CLINICAL_MANIFESTATION_SLOT : index;
+      isFirstRevealRef.current = false;
+
       // DEMO MODE — just flip the card using hardcoded data
       if (isDemo) {
         // setSlots(prev => ...) → use the "function form" of setState.
         // `prev` is the current array; we return a new array with one slot updated.
         // .map() creates a new array (immutable update — React requires new references for re-render).
-        setSlots((prev) =>
-          prev.map((s) =>
-            // If this is the slot we're flipping, return a new object with revealed=true and the card filled in
-            s.index === index ? { ...s, revealed: true, card: DEMO_CARDS[index] } : s,
-            // `{ ...s, revealed: true }` → spread the old slot's fields, then override `revealed`
-          ),
-        );
+        setSlots((prev) => revealAtPickedPosition(prev, index, revealIndex, DEMO_CARDS[revealIndex]));
         return;
       }
 
-      // REAL MODE — use pre-fetched card for instant reveal; track server-side in background
+      // REAL MODE — use a pre-fetched card when available; otherwise fetch it
+      // from /reveal and fill the loading card when the response arrives.
       if (!sessionId) return;
 
-      const preCard = prefetchedCardsRef.current[index] ?? null;
+      const preCard = prefetchedCardsRef.current[revealIndex] ?? null;
       if (preCard) {
-        setSlots((prev) =>
-          prev.map((s) => (s.index === index ? { ...s, revealed: true, card: preCard } : s)),
-        );
-        // Track this reveal so answer submission waits for the server to record
-        // it. /answer reads revealed slots straight from the DB, so answering
-        // before this lands would score/unlock without this card counted.
+        setSlots((prev) => revealAtPickedPosition(prev, index, revealIndex, preCard));
         setPendingRevealCount((n) => n + 1);
         void fetch(`/api/sessions/${sessionId}/reveal`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slotIndex: index }),
+          body: JSON.stringify({ slotIndex: revealIndex }),
         }).finally(() => {
-          // Decrement in finally so a network failure still re-enables the UI.
           setPendingRevealCount((n) => n - 1);
         });
         return;
       }
 
-      // Fallback: pre-fetch not ready yet — flip immediately, fill card when server responds
-      setSlots((prev) =>
-        prev.map((s) => (s.index === index ? { ...s, revealed: true } : s)),
-      );
-      // Same reveal-in-flight guard as the pre-fetched path above.
+      setSlots((prev) => revealAtPickedPosition(prev, index, revealIndex));
       setPendingRevealCount((n) => n + 1);
       try {
         const res = await fetch(`/api/sessions/${sessionId}/reveal`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slotIndex: index }),
+          body: JSON.stringify({ slotIndex: revealIndex }),
         });
-        if (!res.ok) {
-          // Pre-fetch may have arrived during the round-trip — use it if available
-          const lateCard = prefetchedCardsRef.current[index] ?? null;
-          if (lateCard) setSlots((prev) =>
-            prev.map((s) => (s.index === index ? { ...s, card: lateCard } : s)),
-          );
-          return; // card stays revealed either way — never flip back
-        }
+        if (!res.ok) return;
         const data = await res.json();
         setSlots((prev) =>
-          prev.map((s) => (s.index === index ? { ...s, card: data.card } : s)),
+          prev.map((s) => (s.index === revealIndex ? { ...s, card: data.card } : s)),
         );
       } catch {
-        // Pre-fetch may have arrived during the round-trip — use it if available
-        const lateCard = prefetchedCardsRef.current[index] ?? null;
-        if (lateCard) setSlots((prev) =>
-          prev.map((s) => (s.index === index ? { ...s, card: lateCard } : s)),
-        );
-        // card stays revealed either way — never flip back
+        // The card stays revealed with its loading face if the request fails.
       } finally {
-        // Decrement in finally so a network failure still re-enables the UI,
-        // and the early `return` on a non-OK response is covered too.
         setPendingRevealCount((n) => n - 1);
       }
     },
@@ -564,10 +602,8 @@ export default function PlayPage() {
 
   // Reset round-specific state (called when starting a new question)
   function resetRound() {
-    // Next round starts with the clinical-manifestation card already open. In
-    // demo we have the card data on hand; in real mode we leave it null and let
-    // fetchCards() fill it from the pre-fetched round data.
-    setSlots(makeInitialSlots(isDemo ? DEMO_CARDS[FORCED_CLUE_SLOT] : null));
+    setSlots(shuffleSlots(EMPTY_SLOTS));
+    isFirstRevealRef.current = true;
     setSelectedMicrobeId(null);
     setCorrectMicrobe(null);
     setPendingMicrobeId(null);
@@ -582,12 +618,12 @@ export default function PlayPage() {
   // player never flipped during play, so they can review the full answer.
   function buildFullSlots(): CardSlotState[] {
     if (isDemo) {
-      return DEMO_CARDS.map((card, i) => ({ index: i, revealed: true, card }));
+      return slots.map((s) => ({ ...s, revealed: true, card: s.card ?? DEMO_CARDS[s.index] }));
     }
-    return slots.map((s, i) => ({
+    return slots.map((s) => ({
       ...s,
       revealed: true,
-      card: s.card ?? prefetchedCardsRef.current[i],
+      card: s.card ?? prefetchedCardsRef.current[s.index],
     }));
   }
 
@@ -663,7 +699,7 @@ export default function PlayPage() {
   if (phase === "loading") {
     return (
       <div
-        className="relative flex h-screen w-screen flex-col items-center justify-center overflow-hidden"
+        className="relative flex h-dvh w-screen flex-col items-center justify-center overflow-hidden"
         style={{
           backgroundImage: "url('/assets/ui/wood-bg.png')",
           backgroundSize: "cover",
@@ -712,7 +748,7 @@ export default function PlayPage() {
   // ─── ERROR SCREEN ───────────────────────────────────────────
   if (phase === "error") {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-[#5c2a0e]">
+      <div className="flex h-dvh w-screen flex-col items-center justify-center gap-4 bg-[#5c2a0e]">
         <p className="text-[#f5e6c8] text-lg">No active session found.</p>
         {/* <a href> here does a FULL page navigation. Use <Link> from "next/link" for client-side nav (faster). */}
         <a
@@ -730,7 +766,7 @@ export default function PlayPage() {
   return (
     // Full-screen layout, two zones: wood area (top) + parchment area (bottom)
     // overflow-hidden → prevent scrollbars on the outer container
-    <div className="flex flex-col h-screen w-full overflow-hidden">
+    <div className="flex flex-col h-dvh w-full overflow-hidden">
       {scorePop !== null && (
         <ScorePopup
           points={scorePop.points}
@@ -760,17 +796,42 @@ export default function PlayPage() {
         ref={containerRef}
         className="relative flex flex-col px-6 pt-[7vh] pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
       >
-        {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen */}
-        <div className="absolute top-2 inset-x-6 z-20 flex items-center justify-between">
-          <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
-          <button
-            onClick={() => setShowExitConfirm(true)}
-            className="flex items-center gap-2 rounded-lg border border-[#6b3520] bg-[#2a1208]/80 px-4 py-1.5 text-xl font-bold text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
-          >
-            <span className="text-xl leading-none">✕</span>
-            Exit
-          </button>
+        {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen.
+            safe-top/-left/-right keep it clear of the iPhone notch / iPad rounded corners in landscape. */}
+        <div className="absolute safe-top safe-left safe-right z-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <ScoreBar ref={scoreBarRef} score={score} flashKey={scoreFlashKey} />
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSettings(true)}
+              aria-label="Settings"
+              aria-haspopup="dialog"
+              title="Settings"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#6b3520] bg-[#2a1208]/80 text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setShowExitConfirm(true)}
+              className="flex items-center gap-2 rounded-lg border border-[#6b3520] bg-[#2a1208]/80 px-4 py-1.5 text-xl font-bold text-[#d4a96a] shadow transition-all duration-150 hover:scale-105 hover:bg-[#3d1a0a] hover:text-[#f5e6c8] active:scale-95"
+            >
+              <span className="text-xl leading-none">✕</span>
+              Exit
+            </button>
+          </div>
         </div>
+
+        {showSettings && (
+          <SettingsModal
+            motionEnabled={motionEnabled}
+            onMotionToggle={setMotionEnabled}
+            onClose={() => setShowSettings(false)}
+          />
+        )}
 
         <div className="pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 -translate-y-[42%]">
           <img
@@ -793,8 +854,15 @@ export default function PlayPage() {
           </div>
         )}
 
-        <div className="flex items-center justify-center gap-3 w-full">
-          <div className="flex-shrink-0">
+        {/* contentRef + scale: shrinks the hearts/card row to fit narrower landscape
+            viewports (iPhone/iPad) without changing anything once it already fits —
+            scale is capped at 1, so desktop/tablet-wide layouts render unchanged. */}
+        <div
+          ref={contentRef}
+          className="flex items-center justify-center gap-3 self-center"
+          style={{ transform: `scale(${scale})`, transformOrigin: "center" }}
+        >
+          <div className="flex-shrink-0 game-hearts-inline">
             <HeartsBar heartsLeft={heartsLeft} vertical />
           </div>
           <CardGrid
@@ -823,6 +891,7 @@ export default function PlayPage() {
               setPendingMicrobeId(null);
             }}
             onCancelPending={() => setPendingMicrobeId(null)}
+            motionEnabled={motionEnabled}
           />
         </div>
 
@@ -836,23 +905,39 @@ export default function PlayPage() {
         )}
       </div>
 
+      {/* Phone-only: collapses the microbe answer panel below so it stops
+          covering the clue cards. Hidden on desktop/iPad — see
+          .answer-panel-toggle in globals.css. */}
+      <button
+        type="button"
+        onClick={() => setAnswerPanelHidden((h) => !h)}
+        aria-expanded={!answerPanelHidden}
+        aria-controls="answer-panel"
+        className="answer-panel-toggle hidden w-full items-center justify-center gap-1.5 border-y border-[#c4a870] bg-[#e8cd94] py-1.5 text-xs font-bold uppercase tracking-wide text-[#5c2a0e] active:bg-[#dcc186]"
+      >
+        {answerPanelHidden ? "▲ Show microbe cards" : "▼ Hide microbe cards"}
+      </button>
+
       {/* ── Parchment area (bottom zone: filters + microbe answer panel) ── */}
-      <div className="flex flex-col bg-[#f0d9a8] flex-1 basis-1/2 min-h-0 overflow-y-auto">
+      <div
+        id="answer-panel"
+        className={`flex flex-col bg-[#f0d9a8] flex-1 basis-1/2 min-h-0 overflow-y-auto${answerPanelHidden ? " answer-panel-hidden" : ""}`}
+      >
 
         {/* Filter bar — gram type checkboxes, search, and biological tag checkboxes */}
-        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3 border-b border-[#c4a870] bg-[#f0d9a8] flex-shrink-0">
+        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-1.5 border-b border-[#c4a870] bg-[#f0d9a8] flex-shrink-0">
 
           {/* GRAM-TYPE FILTERS — rendered from a tuple array using .map() */}
           {/* `as const` → tells TypeScript these are literal types, not generic strings */}
           {filterOptions.map(([value, label, accentClass]) => (
-            <label key={value} className="flex cursor-pointer items-center gap-1.5 select-none">
+            <label key={value} className="flex cursor-pointer items-center gap-1 select-none">
               <input
                 type="checkbox"
                 checked={gramFilter === value}
                 onChange={() => toggleGram(value)}
-                className={`${accentClass} h-3.5 w-3.5`}
+                className={`${accentClass} h-3 w-3`}
               />
-              <span className="text-[#3a2010] text-base font-semibold">{label}</span>
+              <span className="text-[#3a2010] text-xs font-semibold">{label}</span>
             </label>
           ))}
 
@@ -862,7 +947,7 @@ export default function PlayPage() {
             {/* Search icon (inline SVG) */}
             {/* pointer-events-none → click goes through to the input behind it */}
             <svg
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#9a7850]"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-[#9a7850]"
               fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
               aria-hidden="true"
             >
@@ -874,13 +959,13 @@ export default function PlayPage() {
               value={searchQuery}                                                // controlled
               onChange={(e) => setSearchQuery(e.target.value)}                   // sync state on every keystroke
               placeholder="Search…"
-              className="h-8 w-full rounded-full border border-[#c4a870] bg-white/60 pl-9 pr-8 text-sm text-[#3a2010] placeholder-[#9a7850] focus:outline-none focus:ring-2 focus:ring-[#5c2a0e]/30"
+              className="h-7 w-full rounded-full border border-[#c4a870] bg-white/60 pl-9 pr-8 text-xs text-[#3a2010] placeholder-[#9a7850] focus:outline-none focus:ring-2 focus:ring-[#5c2a0e]/30"
             />
             {/* "×" clear button — only renders when there's text to clear */}
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9a7850] hover:text-[#5c2a0e] text-base leading-none"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9a7850] hover:text-[#5c2a0e] text-sm leading-none"
                 aria-label="Clear search"
               >
                 ×
@@ -893,14 +978,14 @@ export default function PlayPage() {
             ([
               ["ANAEROBE", "ANAEROBE"],
             ] as const).map(([value, label]) => (
-              <label key={value} className="flex cursor-pointer items-center gap-1.5 select-none">
+              <label key={value} className="flex cursor-pointer items-center gap-1 select-none">
                 <input
                   type="checkbox"
                   checked={tagFilters.has(value)}
                   onChange={() => toggleTag(value)}
-                  className="accent-[#5c2a0e] h-3.5 w-3.5"
+                  className="accent-[#5c2a0e] h-3 w-3"
                 />
-                <span className="text-[#3a2010] text-base font-semibold">{label}</span>
+                <span className="text-[#3a2010] text-xs font-semibold">{label}</span>
               </label>
             ))}
         </div>
@@ -939,6 +1024,7 @@ export default function PlayPage() {
                   onDropRejected={handleDropRejected}
                   onDragStateChange={setIsDraggingOver}
                   isWrong={wrongMicrobeIds.has(microbe.id)}
+                  motionEnabled={motionEnabled}
                 />
               ))}
             </div>
@@ -996,6 +1082,7 @@ function DraggableMicrobeCard({
   onDragStateChange,
   index,
   isWrong,
+  motionEnabled = true,
 }: {
   microbe: Microbe;
   selected: boolean;
@@ -1006,6 +1093,7 @@ function DraggableMicrobeCard({
   onDragStateChange: (isOver: boolean) => void;
   index: number;
   isWrong: boolean;
+  motionEnabled?: boolean;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const tiltRef = useRef<HTMLDivElement>(null);
@@ -1042,7 +1130,7 @@ function DraggableMicrobeCard({
       if (tiltRef.current) {
         tiltRef.current.style.transform = "";
         tiltRef.current.style.transition = "";
-        tiltRef.current.classList.add("card-idle");
+        if (motionEnabled) tiltRef.current.classList.add("card-idle");
       }
       leaveTimer.current = null;
     }, 500);
@@ -1173,7 +1261,7 @@ function DraggableMicrobeCard({
   return (
     <div
       ref={tiltRef}
-      className="card-tilt card-idle w-full"
+      className={`card-tilt w-full${motionEnabled ? " card-idle" : ""}`}
       style={{
         aspectRatio: "3/4",
         "--card-idle-delay": `${(index % 9) * 0.18}s`,

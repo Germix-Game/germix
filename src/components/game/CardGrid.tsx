@@ -17,6 +17,7 @@ interface CardGridProps {
   pendingMicrobeImage: string | null;
   onConfirm: () => void;
   onCancelPending: () => void;
+  motionEnabled?: boolean;
 }
 
 export function CardGrid({
@@ -32,6 +33,7 @@ export function CardGrid({
   pendingMicrobeImage,
   onConfirm,
   onCancelPending,
+  motionEnabled = true,
 }: CardGridProps) {
   const revealedCount = slots.filter((s) => s.revealed).length;
 
@@ -46,12 +48,13 @@ export function CardGrid({
           onReveal={onReveal}
           disabled={locked}
           revealedCount={revealedCount}
+          motionEnabled={motionEnabled}
         />
       ))}
 
       <div
         ref={dropTargetRef}
-        className="h-[32vh]"
+        className="h-[28vh]"
         style={{ aspectRatio: "1429 / 2000" }}
       >
         {pendingMicrobeName ? (
@@ -59,7 +62,7 @@ export function CardGrid({
              The image fills the WHOLE slot (same 1429/2000 aspect as the card slots, so it aligns),
              and the cancel/confirm buttons are overlaid at the bottom. */
           <div
-            className={`relative w-full h-full overflow-hidden rounded-3xl bg-[#f5e6c8] border-2 transition-all ${
+            className={`pending-card-shell relative w-full h-full overflow-hidden rounded-3xl bg-[#f5e6c8] border-2 transition-all ${
               isDraggingOver
                 ? "border-[#d4a96a] scale-105"
                 : "border-[#d4a96a]"
@@ -81,11 +84,13 @@ export function CardGrid({
               </span>
             )}
 
-            {/* Cancel / Confirm — overlaid at the bottom so the image fills the full slot */}
-            <div className="absolute bottom-0 inset-x-0 flex">
+            {/* Cancel / Confirm — overlaid at the bottom so the image fills the full slot.
+                On phone, .answer-confirm-row gets repositioned (see globals.css) to float
+                below the card instead of covering the microbe artwork. */}
+            <div className="answer-confirm-row absolute bottom-0 inset-x-0 flex">
               <button
                 onClick={onCancelPending}
-                className="flex-1 py-2 bg-[#4a3020]/90 text-[#d4a96a] hover:bg-[#5a4030] font-bold text-sm transition-colors"
+                className="answer-cancel-btn flex-1 flex items-center justify-center py-2 bg-[#4a3020]/90 text-[#d4a96a] hover:bg-[#5a4030] font-bold text-sm transition-colors"
                 aria-label="Cancel"
               >
                 ✕
@@ -93,7 +98,7 @@ export function CardGrid({
               <button
                 onClick={onConfirm}
                 disabled={isSubmitting}
-                className="flex-1 py-2 bg-[#4a7c3f]/90 text-white hover:bg-[#5a8c4f] font-bold text-sm transition-colors disabled:opacity-50"
+                className="answer-confirm-btn flex-1 flex items-center justify-center py-2 bg-[#4a7c3f]/90 text-white hover:bg-[#5a8c4f] font-bold text-sm transition-colors disabled:opacity-50"
                 aria-label="Confirm answer"
               >
                 {isSubmitting ? "…" : "✓"}
