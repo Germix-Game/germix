@@ -13,7 +13,7 @@ const TABS = [
 export default function FungiBookPage() {
   return (
     <div
-      className={`${alice.className} relative h-screen w-screen overflow-hidden bg-cover bg-center`}
+      className={`${alice.className} pb-page-root relative h-screen w-screen overflow-hidden bg-cover bg-center`}
       style={{
         backgroundImage:
           "url('/assets/pathogen-book/fungi.png'), url('/assets/backgrounds/main_page_background.png')",

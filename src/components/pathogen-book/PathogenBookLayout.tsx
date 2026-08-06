@@ -329,7 +329,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
 
   return (
     <div
-      className={`${alice.className} relative h-screen w-screen overflow-hidden bg-cover bg-center`}
+      className={`${alice.className} pb-page-root relative h-screen w-screen overflow-hidden bg-cover bg-center`}
       style={{
         backgroundImage: `url('${backgroundSrc}'), url('/assets/backgrounds/main_page_background.png')`,
         backgroundSize: "auto 100%, cover",

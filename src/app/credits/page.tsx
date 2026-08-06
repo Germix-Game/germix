@@ -190,7 +190,7 @@ export default function CreditsPage() {
               } as React.CSSProperties
             }
           >
-            <p className="max-w-3xl text-sm leading-relaxed text-black">
+            <p className="max-w-3xl rounded-lg bg-white px-4 py-3 text-sm leading-relaxed text-black shadow-sm">
               <span className="font-semibold">Copyright Notice:</span> Images
               used in this project were selected from sources that permit
               educational reuse and have been appropriately attributed where
