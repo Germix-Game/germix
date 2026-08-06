@@ -28,9 +28,9 @@ const GREEN_TEXT_COLOR = "#0a3010";
 
 // Bar rectangles as % of leaderboard_ui.png (1223x443), in rank order.
 const PODIUM_BARS: React.CSSProperties[] = [
-  { left: "24.5%", top: "42.4%", width: "51.1%", height: "24.6%" },
-  { left: "1.5%", top: "70%", width: "48.2%", height: "24.8%" },
-  { left: "50.9%", top: "70%", width: "48.1%", height: "24.8%" },
+  { left: "24.5%", top: "44.4%", width: "51.1%", height: "24.6%" },
+  { left: "1.5%", top: "71%", width: "48.2%", height: "24.8%" },
+  { left: "50.9%", top: "71%", width: "48.1%", height: "24.8%" },
 ];
 
 function RowText({
@@ -119,7 +119,7 @@ function GreenBar({
         username={player.username}
         totalScore={player.totalScore}
         color={GREEN_TEXT_COLOR}
-        fontSize="clamp(10px, 1.15vw, 22px)"
+        fontSize="clamp(15px, 1.725vw, 33px)"
         inset="3%"
       />
     </div>
@@ -210,7 +210,7 @@ export default function LeaderboardPage() {
                     username={player.username}
                     totalScore={player.totalScore}
                     color={PODIUM_TEXT_COLOR[i]}
-                    fontSize={i === 0 ? "clamp(12px, 1.5vw, 28px)" : "clamp(10px, 1.15vw, 22px)"}
+                    fontSize={i === 0 ? "clamp(18px, 2.25vw, 42px)" : "clamp(15px, 1.725vw, 33px)"}
                     inset="5%"
                     glow={i === 0}
                   />

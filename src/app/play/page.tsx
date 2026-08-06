@@ -766,7 +766,7 @@ export default function PlayPage() {
   return (
     // Full-screen layout, two zones: wood area (top) + parchment area (bottom)
     // overflow-hidden → prevent scrollbars on the outer container
-    <div className="flex flex-col h-dvh w-full overflow-hidden">
+    <div className="play-shell flex flex-col h-dvh w-full overflow-hidden">
       {scorePop !== null && (
         <ScorePopup
           points={scorePop.points}
@@ -794,7 +794,7 @@ export default function PlayPage() {
       {/* Arbitrary background image (Tailwind bg-[url-syntax]), bg-cover scales to fill, bg-center centers it */}
       <div
         ref={containerRef}
-        className="relative flex flex-col px-6 pt-[7vh] pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
+        className="play-wood-zone relative flex flex-col px-6 pt-[7vh] pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
       >
         {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen.
             safe-top/-left/-right keep it clear of the iPhone notch / iPad rounded corners in landscape. */}
@@ -859,7 +859,7 @@ export default function PlayPage() {
             scale is capped at 1, so desktop/tablet-wide layouts render unchanged. */}
         <div
           ref={contentRef}
-          className="flex items-center justify-center gap-3 self-center"
+          className="game-content-row flex items-center justify-center gap-3 self-center"
           style={{ transform: `scale(${scale})`, transformOrigin: "center" }}
         >
           <div className="flex-shrink-0 game-hearts-inline">

@@ -595,6 +595,24 @@
      foldable). */
   .answer-panel-toggle { display: flex !important; }
   .answer-panel-hidden { display: none !important; }
+
+  /* Once the microbe panel is collapsed (above), the wood zone has the
+     whole screen to itself — the clue cards should actually render at a
+     literal 200% (28vh -> 56vh), not just get a little bigger. useScaleToFit
+     (the inline `transform: scale(...)` on .game-content-row) would normally
+     shrink that back down to whatever fits the phone's width, quietly
+     undoing the size bump — so pin the transform to scale(1) here and let
+     the row scroll horizontally instead if it's wider than the screen,
+     rather than silently re-shrinking the cards. */
+  .play-shell:has(#answer-panel.answer-panel-hidden) .clue-card-slot {
+    height: 40vh !important;
+  }
+  .play-shell:has(#answer-panel.answer-panel-hidden) .game-content-row {
+    transform: scale(1) !important;
+  }
+  .play-shell:has(#answer-panel.answer-panel-hidden) .play-wood-zone {
+    overflow-x: auto !important;
+  }
 }
 
 /* ─── /play page — phone only (both orientations) ─────────────────────
@@ -653,7 +671,7 @@
    here; tablet/desktop sizing is untouched. ───────────────────────── */
 @media (orientation: landscape) and (pointer: coarse) and (max-width: 960px) {
   .pb-detail-thumb {
-    width: clamp(50px, 12vw, 88px) !important;
+    width: clamp(5056vhpx, 12vw, 88px) !important;
   }
   .pb-detail-name {
     font-size: clamp(0.75rem, 2vw, 1rem) !important;
