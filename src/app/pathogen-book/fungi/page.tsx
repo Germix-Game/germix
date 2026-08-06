@@ -32,7 +32,7 @@ export default function FungiBookPage() {
 
       {/* Tab overlay strip — z-20 so it stays above content */}
       <div
-        className="absolute z-20 flex flex-col"
+        className="pb-tab-nav absolute z-20 flex flex-col"
         style={{ left: "13%", top: "8%", width: "5.5vw", height: "49vh" }}
       >
         {TABS.map(({ href, label }) => (

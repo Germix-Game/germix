@@ -723,6 +723,30 @@
   .pb-page-root {
     background-size: 100% 100%, cover !important;
   }
+
+  /* Category tab strip — nudge 200px left. */
+  .pb-tab-nav {
+    left: calc(13% - 100px) !important;
+  }
+
+  /* Left page — nudge 50px left, plus 3 columns instead of the default 4 so
+     cards read bigger on iPad's larger physical screen. */
+  .pb-left-page {
+    left: calc(22% - 50px) !important;
+  }
+  .pb-microbe-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  /* Right page — nudge 50px right, and characteristic (clue) cards scaled
+     to 200% of their already-doubled size (0.68 -> 1.36 -> 2.72). */
+  .pb-right-page {
+    left: calc(55% + 50px) !important;
+  }
+  .pb-clue-grid {
+    zoom: 2.72 !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
