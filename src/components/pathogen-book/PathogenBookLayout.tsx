@@ -329,7 +329,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
 
   return (
     <div
-      className={`${alice.className} relative h-screen w-screen overflow-hidden bg-cover bg-center`}
+      className={`${alice.className} pb-page-root relative h-screen w-screen overflow-hidden bg-cover bg-center`}
       style={{
         backgroundImage: `url('${backgroundSrc}'), url('/assets/backgrounds/main_page_background.png')`,
         backgroundSize: "auto 100%, cover",
@@ -347,7 +347,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
 
       {/* ── Category tab strip — transparent overlays aligned to the book's visual sidebar ── */}
       <div
-        className="absolute z-20 flex flex-col"
+        className="pb-tab-nav absolute z-20 flex flex-col"
         style={{ left: "13%", top: "8%", width: "5.5vw", height: "49vh" }}
       >
         {TABS.map(({ mode, href, label }) => (

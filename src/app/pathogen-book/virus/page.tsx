@@ -13,7 +13,7 @@ const TABS = [
 export default function VirusBookPage() {
   return (
     <div
-      className={`${alice.className} relative h-screen w-screen overflow-hidden bg-cover bg-center`}
+      className={`${alice.className} pb-page-root relative h-screen w-screen overflow-hidden bg-cover bg-center`}
       style={{
         backgroundImage:
           "url('/assets/pathogen-book/virus.png'), url('/assets/backgrounds/main_page_background.png')",
@@ -32,7 +32,7 @@ export default function VirusBookPage() {
 
       {/* Tab overlay strip — z-20 so it stays above content */}
       <div
-        className="absolute z-20 flex flex-col"
+        className="pb-tab-nav absolute z-20 flex flex-col"
         style={{ left: "13%", top: "8%", width: "5.5vw", height: "49vh" }}
       >
         {TABS.map(({ href, label }) => (

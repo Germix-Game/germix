@@ -3,6 +3,7 @@ import { Fredoka } from "next/font/google";
 import "./globals.css";
 import { NavigationLoader } from "@/components/NavigationLoader";
 import { BackgroundMusic } from "@/components/BackgroundMusic";
+import { PortraitGuard } from "@/components/PortraitGuard";
 
 const fredoka = Fredoka({
   subsets: ["latin"],
@@ -30,7 +31,7 @@ export default function RootLayout({
       <body className="min-h-full w-full flex flex-col">
         <NavigationLoader />
         <BackgroundMusic />
-        {children}
+        <PortraitGuard>{children}</PortraitGuard>
       </body>
     </html>
   );

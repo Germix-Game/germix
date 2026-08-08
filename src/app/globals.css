@@ -524,10 +524,12 @@
     width: 34vw !important;
     top: 0% !important;
     right: 8% !important;
+    transform: translateX(20px) !important;
   }
   .select-parasite-card {
     width: 34vw !important;
     bottom: 0% !important;
+    transform: translateX(-20px) !important;
   }
 }
 
@@ -595,6 +597,24 @@
      foldable). */
   .answer-panel-toggle { display: flex !important; }
   .answer-panel-hidden { display: none !important; }
+
+  /* Once the microbe panel is collapsed (above), the wood zone has the
+     whole screen to itself — the clue cards should actually render at a
+     literal 200% (28vh -> 56vh), not just get a little bigger. useScaleToFit
+     (the inline `transform: scale(...)` on .game-content-row) would normally
+     shrink that back down to whatever fits the phone's width, quietly
+     undoing the size bump — so pin the transform to scale(1) here and let
+     the row scroll horizontally instead if it's wider than the screen,
+     rather than silently re-shrinking the cards. */
+  .play-shell:has(#answer-panel.answer-panel-hidden) .clue-card-slot {
+    height: 40vh !important;
+  }
+  .play-shell:has(#answer-panel.answer-panel-hidden) .game-content-row {
+    transform: scale(1) !important;
+  }
+  .play-shell:has(#answer-panel.answer-panel-hidden) .play-wood-zone {
+    overflow-x: auto !important;
+  }
 }
 
 /* ─── /play page — phone only (both orientations) ─────────────────────
@@ -653,7 +673,7 @@
    here; tablet/desktop sizing is untouched. ───────────────────────── */
 @media (orientation: landscape) and (pointer: coarse) and (max-width: 960px) {
   .pb-detail-thumb {
-    width: clamp(50px, 12vw, 88px) !important;
+    width: clamp(5056vhpx, 12vw, 88px) !important;
   }
   .pb-detail-name {
     font-size: clamp(0.75rem, 2vw, 1rem) !important;
@@ -689,42 +709,43 @@
   }
 }
 
-/* ─── /pathogen-book — iPad landscape only ─────────────────────────────
-   .pb-microbe-grid / .pb-clue-grid use a fixed `zoom` factor, so their
-   card size is a constant physical size regardless of viewport — on a
-   big iPad page (far more room than the phone this was tuned for) that
-   reads too small. The right-page header's clamp() caps also top out
-   well below what a 1366-wide page has room for. Scale both up here
-   only; phone and desktop/mouse sizing are untouched. ───────────────── */
+/* ─── /pathogen-book — iPad landscape only (1024x768, 1180x820, 1366x1024) ──
+   The two background layers normally use `background-size: auto 100%, cover`
+   so the book art keeps its aspect ratio and gets letterboxed on the sides.
+   On iPad widths that letterboxing shifts the art off from where the
+   left/right page overlays (percentage-positioned to match the
+   un-letterboxed art) expect it. Stretching the art to fill the box removes
+   the letterboxing, so the existing percentage-based positions land on the
+   book graphic correctly again with no extra offsets needed — every element
+   stays at its normal/default place. iPad-only; phone and desktop/mouse
+   keep the original background sizing. ─────────────────────────────────── */
 @media (orientation: landscape) and (pointer: coarse) and (min-width: 961px) and (max-width: 1366px) {
-  /* Left page — bigger cards, 3 columns instead of 4, shifted 300px left
-     so the wider cards still have room to breathe on the page. */
+  .pb-page-root {
+    background-size: 100% 100%, cover !important;
+  }
+
+  /* Category tab strip — nudge 200px left. */
+  .pb-tab-nav {
+    left: calc(13% - 100px) !important;
+  }
+
+  /* Left page — nudge 50px left, plus 3 columns instead of the default 4 so
+     cards read bigger on iPad's larger physical screen. */
   .pb-left-page {
-    left: calc(22% - 300px) !important;
+    left: calc(22% - 50px) !important;
   }
   .pb-microbe-grid {
-    zoom: 0.75 !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
 
-  /* Right page — everything doubled in size and shifted 200px right. */
+  /* Right page — nudge 50px right, and characteristic (clue) cards scaled
+     to 200% of their already-doubled size (0.68 -> 1.36 -> 2.72). */
   .pb-right-page {
-    left: calc(55% + 200px) !important;
+    left: calc(55% + 50px) !important;
   }
   .pb-clue-grid {
-    zoom: 1.7 !important;
-  }
-  .pb-detail-thumb {
-    width: clamp(280px, 32vw, 520px) !important;
-  }
-  .pb-detail-name {
-    font-size: clamp(2.5rem, 4vw, 3.75rem) !important;
-  }
-  .pb-detail-rating-label {
-    font-size: clamp(1.4rem, 2vw, 1.8rem) !important;
-  }
-  .pb-detail-stars {
-    height: clamp(52px, 7vw, 80px) !important;
+    zoom: 2.72 !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
 }
 

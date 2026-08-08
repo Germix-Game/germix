@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Alice } from "next/font/google";
 
 const alice = Alice({ weight: "400", subsets: ["latin"] });
-
-const YOUTUBE_VIDEO_ID = "dQw4w9WgXcQ";
+// https://youtu.be/pnYAGnHUo8E
+const YOUTUBE_VIDEO_ID = "pnYAGnHUo8E";
 
 const RULES = [
   { step: "1", title: "5 rounds, 1 mystery pathogen each", body: "Every round hides a different microbe. Your goal is to identify it." },
