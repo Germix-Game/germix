@@ -55,6 +55,15 @@ jobs:
           # (a collision would be skipped — the earlier run's password is unknown).
           LOAD_TEST_USER_PREFIX: loadtest-${{ github.run_id }}
 
+      - name: Fetch real microbe ids
+        # answeredMicrobeId is a foreign key to Microbe — the gameplay script
+        # needs real ids to submit, or the answer endpoint throws instead of
+        # just recording a wrong guess.
+        run: node scripts/fetch-microbe-ids.mjs
+        env:
+          DATABASE_URL: ${{ secrets.LOADTEST_DATABASE_URL }}
+          GAME_MODE: ${{ inputs.game_mode }}
+
       - uses: grafana/setup-k6-action@v1
 
       - uses: grafana/run-k6-action@v1

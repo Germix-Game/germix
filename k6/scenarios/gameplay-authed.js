@@ -6,6 +6,12 @@
 // accounts that already exist. Generate it with:
 //   node scripts/seed-load-test-accounts.mjs
 //
+// Also requires k6/data/microbes.json — a JSON array of real Microbe ids for
+// GAME_MODE. answeredMicrobeId is a foreign key to Microbe, so a made-up guess
+// string crashes the answer endpoint (FK violation) instead of just being
+// wrong. Generate it with:
+//   node --env-file=.env scripts/fetch-microbe-ids.mjs
+//
 // Login is rate-limited to 10 requests/min per source IP (src/lib/rate-limit.ts),
 // and all VUs in a load test share one source IP. Each VU logs in exactly once
 // (cached for the life of the VU), so the ramp-up stages below deliberately
@@ -27,6 +33,17 @@ const users = new SharedArray('users', function () {
   return JSON.parse(open('../data/users.json'))
 })
 
+const microbes = new SharedArray('microbes', function () {
+  return JSON.parse(open('../data/microbes.json'))
+})
+
+// Defaults to the number of provisioned accounts (one VU per account), but can
+// be raised past that to reuse accounts across multiple VUs — a Supabase JWT
+// is stateless, so concurrent VUs sharing one account's session is fine. Each
+// VU still logs in exactly once regardless, so the login-rate-limit math
+// below is unaffected by how many VUs share an account.
+const MAX_VUS = Number(__ENV.MAX_VUS || users.length)
+
 const loginErrors = new Rate('login_errors')
 const gameplayErrors = new Rate('gameplay_errors')
 const sessionDuration = new Trend('session_duration_ms')
@@ -41,9 +58,9 @@ export const options = {
       // Ramp stays under the 10 logins/min/IP limit: ~50 VUs over the first
       // 5 minutes, then holds while remaining users trickle in and log in.
       stages: [
-        { duration: '5m', target: Math.min(users.length, 50) },
-        { duration: '5m', target: users.length },
-        { duration: '5m', target: users.length },
+        { duration: '5m', target: Math.min(MAX_VUS, 50) },
+        { duration: '5m', target: MAX_VUS },
+        { duration: '5m', target: MAX_VUS },
         { duration: '1m', target: 0 },
       ],
       gracefulRampDown: '30s',
@@ -119,9 +136,14 @@ export default function () {
     if (!check(res, { 'reveal ok': (r) => r.status === 200 || r.status === 409 })) gameplayErrors.add(1)
     thinkTime()
 
+    // A random real microbe id — usually wrong (exercises the heart-loss
+    // path), occasionally right (exercises the correct/completion path).
+    // Must be a real id: answeredMicrobeId is a foreign-key column, so a
+    // made-up string throws a constraint violation instead of just losing.
+    const guess = microbes[Math.floor(Math.random() * microbes.length)]
     res = http.post(
       `${BASE_URL}/api/sessions/${sessionId}/answer`,
-      JSON.stringify({ answeredMicrobeId: `loadtest-guess-${__VU}-${__ITER}-${round}` }),
+      JSON.stringify({ answeredMicrobeId: guess }),
       JSON_HEADERS,
     )
     if (!check(res, { 'answer 200': (r) => r.status === 200 })) {
