@@ -4,20 +4,20 @@
  * Links parasite CLUE cards to their image files by setting ClueCard.imageUrl.
  *
  * BACKGROUND
- *   Clue images live in:  public/assets/cards/clues/<category-folder>/<file>.png
- *   The DB stores a RELATIVE url like "cards/clues/transmission/tsetse-fly.png"
+ *   Clue images live in:  public/assets/cards/clues/<category-folder>/<file>.webp
+ *   The DB stores a RELATIVE url like "cards/clues/transmission/tsetse-fly.webp"
  *   (the frontend's resolveImageSrc() prepends "/assets/").
  *
  *   The numeric categories are ALREADY fully linked:
- *     - MORPHOLOGY        (label is the number, e.g. "39"  -> morphology/39.png)
- *     - LAB_CHARACTERISTIC (label ends "(N)", e.g. "... (67)" -> lab-characteristic/67.png)
+ *     - MORPHOLOGY        (label is the number, e.g. "39"  -> morphology/39.webp)
+ *     - LAB_CHARACTERISTIC (label ends "(N)", e.g. "... (67)" -> lab-characteristic/67.webp)
  *
  *   The TEXT categories use CURATED shorthand filenames that a slugify of the
- *   label does NOT reproduce (e.g. "Zoonosis: tsetse fly" -> tsetse-fly.png).
+ *   label does NOT reproduce (e.g. "Zoonosis: tsetse fly" -> tsetse-fly.webp).
  *   So we use an EXPLICIT hand-verified map below, keyed by the exact DB label.
  *
  *   CLINICAL_MANIFESTATION is intentionally left alone: its parasite symptoms
- *   map to NUMBERED files (18.png..86.png) with no key, so auto-matching would
+ *   map to NUMBERED files (18.webp..86.webp) with no key, so auto-matching would
  *   be guessing. Better a text fallback than a wrong image.
  *
  * SAFETY
@@ -53,7 +53,7 @@ const CATEGORY_FOLDER: Record<string, string> = {
 };
 
 /**
- * Explicit label -> filename (without .png) map, per category.
+ * Explicit label -> filename (without .webp) map, per category.
  * Keys must match ClueCard.label EXACTLY (case-sensitive).
  * Every value below was verified to exist on disk.
  */
@@ -181,13 +181,13 @@ async function main() {
     }
 
     const folder = CATEGORY_FOLDER[c.category];
-    const diskPath = join(CLUES_DIR, folder, `${file}.png`);
+    const diskPath = join(CLUES_DIR, folder, `${file}.webp`);
     if (!existsSync(diskPath)) {
-      fileMissing.push(`[${c.category}] ${JSON.stringify(c.label)} -> ${file}.png (NOT on disk)`);
+      fileMissing.push(`[${c.category}] ${JSON.stringify(c.label)} -> ${file}.webp (NOT on disk)`);
       continue;
     }
 
-    const url = `cards/clues/${folder}/${file}.png`;
+    const url = `cards/clues/${folder}/${file}.webp`;
     console.log(`  ✅ [${c.category}] ${c.label}  →  ${url}`);
     linked++;
 
@@ -213,7 +213,7 @@ async function main() {
   console.log(`❌ File missing:       ${fileMissing.length}`);
   console.log(
     `\nNOTE: CLINICAL_MANIFESTATION (65 parasite cards) is intentionally NOT handled here — ` +
-      `its symptoms map to numbered files (18.png..86.png) with no key. Provide a label→number ` +
+      `its symptoms map to numbered files (18.webp..86.webp) with no key. Provide a label→number ` +
       `mapping and I'll extend this script.`,
   );
   console.log(WRITE ? `\n(DB updated.)\n` : `\n(No changes written — add --write to apply.)\n`);

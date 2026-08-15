@@ -33,12 +33,14 @@ type GameMode = "BACTERIA" | "FUNGI" | "PARASITES" | "VIRUS";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-// DB stores paths without the /assets/ prefix (e.g. "cards/answers/bacteria/foo.png").
+// DB stores paths without the /assets/ prefix (e.g. "cards/answers/bacteria/foo.webp").
 // Supabase Storage CDN URLs start with "https://". Both cases are handled here.
 function resolveImageSrc(url: string): string {
   if (!url) return "";
-  if (url.startsWith("http") || url.startsWith("/")) return url;
-  return `/assets/${url}`;
+  if (url.startsWith("http")) return url;
+
+  const localUrl = url.startsWith("/") ? url : `/assets/${url}`;
+  return localUrl.replace(/\.png(?=$|[?#])/i, ".webp");
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -64,7 +66,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 function starSrc(rating: number): string {
   const n = Math.min(5, Math.max(1, Math.round(rating * 2) / 2));
-  return `/assets/pathogen-book/star-${n}.png`;
+  return `/assets/pathogen-book/star-${n}.webp`;
 }
 
 function GramBadge({ gramType }: { gramType: GramType }) {
@@ -331,7 +333,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
     <div
       className={`${alice.className} pb-page-root relative h-screen w-screen overflow-hidden bg-cover bg-center`}
       style={{
-        backgroundImage: `url('${backgroundSrc}'), url('/assets/backgrounds/main_page_background.png')`,
+        backgroundImage: `url('${backgroundSrc}'), url('/assets/backgrounds/main_page_background.webp')`,
         backgroundSize: "auto 100%, cover",
         backgroundRepeat: "no-repeat, no-repeat",
         backgroundPosition: "center, center",
@@ -366,7 +368,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
       <div className="hidden" aria-hidden="true">
         {["bacteria", "fungi", "parasite", "virus"].map((bg) => (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={bg} src={`/assets/pathogen-book/${bg}.png`} alt="" />
+          <img key={bg} src={`/assets/pathogen-book/${bg}.webp`} alt="" />
         ))}
       </div>
 

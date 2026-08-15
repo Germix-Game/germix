@@ -39,11 +39,13 @@ import type {
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-// DB stores paths without the /assets/ prefix (e.g. "cards/answers/bacteria/foo.png").
+// DB stores paths without the /assets/ prefix (e.g. "cards/answers/bacteria/foo.webp").
 function resolveImageSrc(url: string | null | undefined): string {
   if (!url) return "";
-  if (url.startsWith("http") || url.startsWith("/")) return url;
-  return `/assets/${url}`;
+  if (url.startsWith("http")) return url;
+
+  const localUrl = url.startsWith("/") ? url : `/assets/${url}`;
+  return localUrl.replace(/\.png(?=$|[?#])/i, ".webp");
 }
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -701,7 +703,7 @@ export default function PlayPage() {
       <div
         className="relative flex h-dvh w-screen flex-col items-center justify-center overflow-hidden"
         style={{
-          backgroundImage: "url('/assets/ui/wood-bg.png')",
+          backgroundImage: "url('/assets/ui/wood-bg.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -711,7 +713,7 @@ export default function PlayPage() {
         <div className="relative flex flex-col items-center gap-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/assets/ui/game-logo.png"
+            src="/assets/ui/game-logo.webp"
             alt="Germix"
             width={360}
             style={{
@@ -785,16 +787,16 @@ export default function PlayPage() {
        * IMAGE SLOT H — Game background (wood texture)
        * What: Dark wood-grain texture filling the entire top area
        *       (behind cards, top bar, hearts, score).
-       * Source: /public/assets/ui/wood-bg.png (served at /assets/ui/wood-bg.png)
+       * Source: /public/assets/ui/wood-bg.webp (served at /assets/ui/wood-bg.webp)
        * Applied on the next div via Tailwind arbitrary-value bg utility + bg-cover + bg-center.
-       * To swap: drop a new file at /public/assets/ui/wood-bg.png — no code change needed.
+       * To swap: drop a new file at /public/assets/ui/wood-bg.webp — no code change needed.
        */}
       {/* ── Wood area (top zone: cards + score/hearts) ───────────────── */}
       {/* flex-shrink-0 → don't let this zone shrink when parchment grows */}
       {/* Arbitrary background image (Tailwind bg-[url-syntax]), bg-cover scales to fill, bg-center centers it */}
       <div
         ref={containerRef}
-        className="play-wood-zone relative flex flex-col px-6 pt-[7vh] pb-2 bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
+        className="play-wood-zone relative flex flex-col px-6 pt-[7vh] pb-2 bg-[url('/assets/ui/wood-bg.webp')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
       >
         {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen.
             safe-top/-left/-right keep it clear of the iPhone notch / iPad rounded corners in landscape. */}
@@ -835,7 +837,7 @@ export default function PlayPage() {
 
         <div className="pointer-events-none absolute left-1/2 top-0 z-0 -translate-x-1/2 -translate-y-[42%]">
           <img
-            src={`/assets/ui/round-${6 - round}.png`}
+            src={`/assets/ui/round-${6 - round}.webp`}
             alt={`Round ${round} of 5`}
             className="h-[15vh] w-auto max-w-[85vw] object-contain select-none pointer-events-none"
             draggable={false}
@@ -1354,8 +1356,8 @@ function MicrobeCardSkeleton({ index }: { index: number }) {
  *   3. Wrong-answer feedback bar (correct microbe revealed after a wrong guess)
  *   4. End-screen round review (correct microbe per round)
  * Source: Microbe.answerImageUrl — Supabase Storage CDN URL set during the seed import.
- *         One PNG per microbe.  e.g. "staphylococcus-aureus-answer.png"
- * Replace: No code change needed — upload PNGs to Supabase Storage and populate
+ *         One WebP per microbe.  e.g. "staphylococcus-aureus-answer.webp"
+ * Replace: No code change needed — upload WebPs to Supabase Storage and populate
  *          Microbe.answerImageUrl via the seed script.  The <img> below picks it up automatically.
  */
 // SUB-COMPONENT: reusable microbe thumbnail.
@@ -1371,7 +1373,7 @@ function MicrobeThumb({
   const src = resolveImageSrc(microbe.imageUrl ?? microbe.answerImageUrl);
   const label = microbe.shortName ?? microbe.name ?? "";
   // Different sizing for small (grid) vs large (feedback bar / end-screen) variants.
-  // lg matches the real answer-card art ratio (1428x2000 PNGs) so the image isn't squished/cropped.
+  // lg matches the real answer-card art ratio (1428x2000 WebPs) so the image isn't squished/cropped.
   const dim = size === "sm" ? "w-full aspect-square" : "w-[8.75rem] flex-shrink-0";
 
   return (
@@ -1522,7 +1524,7 @@ function RoundReviewRow({ result, attemptNumber }: { result: RoundResult; attemp
  * IMAGE SLOT D — Clue card thumbnail in the end-screen round review
  * File: src/app/play/page.tsx  →  <ClueCardThumb>
  * What: Small thumbnail of each clue card shown in the end-screen recap row.
- *       Same PNG as IMAGE SLOT B (CardSlot front face) — just displayed at a smaller size.
+ *       Same WebP as IMAGE SLOT B (CardSlot front face) — just displayed at a smaller size.
  * Source: card.imageUrl — same Supabase Storage CDN URL as the in-game card.
  * Replace: No code change needed — populated automatically once seed script runs.
  */

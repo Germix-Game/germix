@@ -3,7 +3,7 @@
     "id": "cmpy3iebs0002ti0ct9s5yd0d",
     "category": "SPECIAL_TRAIT",
     "label": "Autoinfection",
-    "imageUrl": "cards/clues/special-trait/autoinfection.png"
+    "imageUrl": "cards/clues/special-trait/autoinfection.webp"
   },
   {
     "id": "cmpy3il39000pti0cz2qajt7t",
@@ -189,7 +189,7 @@
     "id": "cmpy3ie190001ti0c9z1ml45d",
     "category": "SPECIAL_TRAIT",
     "label": "Opportunistic infection",
-    "imageUrl": "cards/clues/special-trait/opportunistic-infection.png"
+    "imageUrl": "cards/clues/special-trait/opportunistic-infection.webp"
   },
   {
     "id": "cmpy3imjx000uti0cu4maezml",
@@ -225,13 +225,13 @@
     "id": "cmpy3ifii0006ti0codaet7ny",
     "category": "SPECIAL_TRAIT",
     "label": "Relapse malaria",
-    "imageUrl": "cards/clues/special-trait/relapse-malaria.png"
+    "imageUrl": "cards/clues/special-trait/relapse-malaria.webp"
   },
   {
     "id": "cmpy3infc000xti0chx1dl0z5",
     "category": "SPECIAL_TRAIT",
     "label": "Retro-infection",
-    "imageUrl": "cards/clues/special-trait/retro-infection.png"
+    "imageUrl": "cards/clues/special-trait/retro-infection.webp"
   },
   {
     "id": "cmpy3iigc000gti0cr1hpcgze",
@@ -255,13 +255,13 @@
     "id": "cmpy3igos000ati0cz2pxk4yr",
     "category": "SPECIAL_TRAIT",
     "label": "Urethritis",
-    "imageUrl": "cards/clues/special-trait/urethritis.png"
+    "imageUrl": "cards/clues/special-trait/urethritis.webp"
   },
   {
     "id": "cmpy3igea0009ti0chq95d1f7",
     "category": "SPECIAL_TRAIT",
     "label": "Vaginitis",
-    "imageUrl": "cards/clues/special-trait/vaginitis.png"
+    "imageUrl": "cards/clues/special-trait/vaginitis.webp"
   },
   {
     "id": "cmpy3ipi30014ti0cy51xevu6",
@@ -273,7 +273,7 @@
     "id": "cmpxw9zwx0003tio0sgi53tgk",
     "category": "TRANSMISSION",
     "label": "Blood transfusion",
-    "imageUrl": "cards/clues/transmission/blood-transfusion.png"
+    "imageUrl": "cards/clues/transmission/blood-transfusion.webp"
   },
   {
     "id": "cmpxwa2xo000etio0zruk6e2a",
@@ -303,7 +303,7 @@
     "id": "cmpxwa06q0004tio02yl19jpz",
     "category": "TRANSMISSION",
     "label": "Organ transplant",
-    "imageUrl": "cards/clues/transmission/organ-transplant.png"
+    "imageUrl": "cards/clues/transmission/organ-transplant.webp"
   },
   {
     "id": "cmpxwa3h8000gtio0raw5iys6",
@@ -315,7 +315,7 @@
     "id": "cmpxwa2d6000ctio0dsw97og1",
     "category": "TRANSMISSION",
     "label": "Penetrate nasal mucosa",
-    "imageUrl": "cards/clues/transmission/penetrate-nasal-mucosa.png"
+    "imageUrl": "cards/clues/transmission/penetrate-nasal-mucosa.webp"
   },
   {
     "id": "cmpxwa10b0007tio0pedudoet",
@@ -327,13 +327,13 @@
     "id": "cmpxwa37f000ftio075i5zq71",
     "category": "TRANSMISSION",
     "label": "Skin contact",
-    "imageUrl": "cards/clues/transmission/skin-contact.png"
+    "imageUrl": "cards/clues/transmission/skin-contact.webp"
   },
   {
     "id": "cmpxw9zn10002tio0k5m5smqo",
     "category": "TRANSMISSION",
     "label": "Transplacenta",
-    "imageUrl": "cards/clues/transmission/transplacenta.png"
+    "imageUrl": "cards/clues/transmission/transplacenta.webp"
   },
   {
     "id": "cmpxwa40o000itio0oaad6m9a",

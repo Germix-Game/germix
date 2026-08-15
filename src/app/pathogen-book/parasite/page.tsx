@@ -4,7 +4,7 @@ export default function ParasiteBookPage() {
   return (
     <PathogenBookLayout
       gameMode="PARASITES"
-      backgroundSrc="/assets/pathogen-book/parasite.png"
+      backgroundSrc="/assets/pathogen-book/parasite.webp"
     />
   );
 }

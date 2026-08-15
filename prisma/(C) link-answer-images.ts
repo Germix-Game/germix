@@ -2,10 +2,10 @@
  * (C) link-answer-images.ts
  * ---------------------------------------------------------------------------
  * Links each Microbe in the DB to its species image file by setting
- * `answerImageUrl` to `/assets/cards/answers/<mode>/<slug>.png`.
+ * `answerImageUrl` to `/assets/cards/answers/<mode>/<slug>.webp`.
  *
  * The image files are named by species slug, e.g.:
- *   public/assets/cards/answers/bacteria/escherichia-coli.png
+ *   public/assets/cards/answers/bacteria/escherichia-coli.webp
  *   public/assets/cards/answers/parasite/...
  *
  * We slugify each Microbe.name and match it to a file on disk.
@@ -84,8 +84,8 @@ async function main() {
 
     // Build a set of available slug filenames on disk (without extension).
     const filesOnDisk = readdirSync(dir)
-      .filter((f) => f.toLowerCase().endsWith(".png"))
-      .map((f) => f.replace(/\.png$/i, ""));
+      .filter((f) => f.toLowerCase().endsWith(".webp"))
+      .map((f) => f.replace(/\.webp$/i, ""));
     const slugSet = new Set(filesOnDisk.map((s) => s.toLowerCase()));
 
     // Pull all microbes for this game mode.
@@ -101,7 +101,7 @@ async function main() {
 
     for (const m of microbes) {
       const slug = slugify(m.name);
-      const url = `/assets/cards/answers/${folder}/${slug}.png`;
+      const url = `/assets/cards/answers/${folder}/${slug}.webp`;
 
       if (slugSet.has(slug.toLowerCase())) {
         totalMatched++;
@@ -114,7 +114,7 @@ async function main() {
         }
       } else {
         totalMissing++;
-        missing.push(`${m.name}  (expected: ${slug}.png)`);
+        missing.push(`${m.name}  (expected: ${slug}.webp)`);
       }
     }
 
@@ -129,7 +129,7 @@ async function main() {
     const orphans = filesOnDisk.filter((f) => !claimedSlugs.has(f.toLowerCase()));
     if (orphans.length) {
       console.log(`\n  📂 ${orphans.length} ${mode} image files not matched to any microbe:`);
-      orphans.forEach((f) => console.log(`     - ${f}.png`));
+      orphans.forEach((f) => console.log(`     - ${f}.webp`));
     }
   }
 
