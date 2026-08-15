@@ -204,6 +204,12 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
         if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2034') {
           continue
         }
+        // answeredMicrobeId is a foreign key to Microbe — a client sending an
+        // id that doesn't exist would otherwise crash the transaction instead
+        // of getting a clean validation error.
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2003') {
+          return Response.json({ error: 'Invalid answeredMicrobeId' }, { status: 422 })
+        }
         throw e
       }
     }

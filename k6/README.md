@@ -10,9 +10,17 @@ Two scenarios, pick based on what you're trying to learn:
 Both simulate a "bot": leaderboard → game-modes → create session → (cards →
 reveal → answer) × up to 5 rounds, with 1-3s think-time between calls.
 Neither knows the real microbe answer (the API never exposes it), so bots
-always guess wrong and the session ends after 3 hearts — that's expected,
-it's still exercising the full write path (Score insert, heart deduction,
-completion/abandon logic).
+guess a random real microbe — usually wrong (exercises heart loss), sometimes
+right (exercises the correct/completion path). It must be a real id:
+`answeredMicrobeId` is a foreign key to `Microbe`, so both scripts need
+`k6/data/microbes.json` (a JSON array of real ids for `GAME_MODE`) — a made-up
+guess string throws a constraint violation instead of just losing. Generate
+it once (needs DB access, so run it wherever your `.env`/`DATABASE_URL`
+points at the DB you're about to test):
+
+```powershell
+node --env-file=.env scripts/fetch-microbe-ids.mjs
+```
 
 ## 1. Install k6
 

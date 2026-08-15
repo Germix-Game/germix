@@ -15,14 +15,25 @@
 // Target server needs, in its .env:
 //   NODE_ENV=development
 //   DEV_AUTH_BYPASS=true
+//
+// Also requires k6/data/microbes.json — a JSON array of real Microbe ids for
+// GAME_MODE. answeredMicrobeId is a foreign key to Microbe, so a made-up guess
+// string crashes the answer endpoint (FK violation) instead of just being
+// wrong. Generate it with:
+//   node --env-file=.env scripts/fetch-microbe-ids.mjs
 
 import http from 'k6/http'
 import { check, sleep } from 'k6'
+import { SharedArray } from 'k6/data'
 import { Rate, Trend } from 'k6/metrics'
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000'
 const GAME_MODE = __ENV.GAME_MODE || 'BACTERIA'
 const MAX_VUS = Number(__ENV.MAX_VUS || 100)
+
+const microbes = new SharedArray('microbes', function () {
+  return JSON.parse(open('../data/microbes.json'))
+})
 
 const gameplayErrors = new Rate('gameplay_errors')
 const sessionDuration = new Trend('session_duration_ms')
@@ -90,12 +101,15 @@ export default function () {
     if (!check(res, { 'reveal ok': (r) => r.status === 200 || r.status === 409 })) gameplayErrors.add(1)
     thinkTime()
 
-    // Bots don't know the real answer (the API never exposes it) — submitting
-    // a bogus guess still exercises the full write path: Score insert, heart
-    // deduction, and session completion/abandon logic.
+    // Bots don't know the real answer (the API never exposes it) — a random
+    // real microbe id is usually wrong (exercises heart loss) and occasionally
+    // right (exercises the correct/completion path). Must be a real id:
+    // answeredMicrobeId is a foreign-key column, a made-up string throws
+    // instead of just losing.
+    const guess = microbes[Math.floor(Math.random() * microbes.length)]
     res = http.post(
       `${BASE_URL}/api/sessions/${sessionId}/answer`,
-      JSON.stringify({ answeredMicrobeId: `loadtest-guess-${__VU}-${__ITER}-${round}` }),
+      JSON.stringify({ answeredMicrobeId: guess }),
       JSON_HEADERS,
     )
     if (!check(res, { 'answer 200': (r) => r.status === 200 })) {
