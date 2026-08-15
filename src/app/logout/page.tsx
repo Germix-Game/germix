@@ -19,7 +19,7 @@ export default function LogoutConfirmPage() {
   return (
     <div
       className="flex h-screen w-screen items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
+      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
     >
       <div className="w-[min(340px,92vw)] rounded-2xl border border-[#6b3520] bg-[#1a0a04]/90 p-6 text-center shadow-xl">
         <h1 className="mb-2 text-lg font-bold text-[#f5e6c8]">Log out?</h1>

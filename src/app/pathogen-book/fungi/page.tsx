@@ -16,7 +16,7 @@ export default function FungiBookPage() {
       className={`${alice.className} pb-page-root relative h-screen w-screen overflow-hidden bg-cover bg-center`}
       style={{
         backgroundImage:
-          "url('/assets/pathogen-book/fungi.png'), url('/assets/backgrounds/main_page_background.png')",
+          "url('/assets/pathogen-book/fungi.webp'), url('/assets/backgrounds/main_page_background.webp')",
         backgroundSize: "auto 100%, cover",
         backgroundRepeat: "no-repeat, no-repeat",
         backgroundPosition: "center, center",

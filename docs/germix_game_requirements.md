@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Last Updated:** 2026-06-07  
-**Status:** Draft — Pathogen Book layout expanded (§9): two-panel open book, PNG-only chrome, left microbe grid, right detail + characteristic cards.
+**Status:** Draft — Pathogen Book layout expanded (§9): two-panel open book, WebP-only chrome, left microbe grid, right detail + characteristic cards.
 
 ---
 
@@ -10,12 +10,12 @@
 
 | Version | Date | Summary |
 |---|---|---|
-| 1.0 | 2026-06-07 | **Pathogen Book layout specified (§9):** two-panel open book; left page = microbe grid per category with PNG cards, star rating, gram badge, locked/unlocked state; right page = selected microbe detail with large card + all ClueCard PNGs grouped by category. All visual chrome is PNG-based — no CSS-drawn UI elements. Category navigation via tab strip. Seven open questions added (PB-1 through PB-7). |
+| 1.0 | 2026-06-07 | **Pathogen Book layout specified (§9):** two-panel open book; left page = microbe grid per category with WebP cards, star rating, gram badge, locked/unlocked state; right page = selected microbe detail with large card + all ClueCard WebPs grouped by category. All visual chrome is WebP-based — no CSS-drawn UI elements. Category navigation via tab strip. Seven open questions added (PB-1 through PB-7). |
 | 0.9 | 2026-05-18 | **Applied all 0.8 schema changes that were logged but never written to the schema:** `enum AnswerOption { A B C D }` added; `Microbe.answerImageUrl String` added; `Score.microbeId`/`answeredMicrobeId` now proper named `@relation` to `Microbe` (`"CorrectMicrobe"` / `"AnsweredMicrobe"`); `Score.gameMode` removed; `ClueCard.imageUrl` non-nullable; `PostTest.score Int @default(0)` non-nullable; `PostTestQuestion.correctOption AnswerOption`; `ApprovedUsername` gains `registeredAt DateTime?` + 1-to-1 `Player?` back-relation; `Player` gains `approved ApprovedUsername` FK (DB-enforces every player was whitelisted). **Over-engineering fixed:** `SessionMicrobe` and `PlayerMicrobeUnlocked` surrogate PKs removed — now use composite `@@id` (natural key). **Index added:** `Score.@@index([microbeId])` for admin per-microbe accuracy queries. |
-| 0.8 | 2026-05-18 | **Schema best-practice fixes (logged only — not applied until 0.9):** added `enum AnswerOption { A B C D }` for type-safe posttest answers; `Microbe.answerImageUrl String` added (required for Answer panel, End Screen, Pathogen Book); `Score.microbeId`/`answeredMicrobeId` now proper `@relation` to `Microbe` (was bare String — no referential integrity); `Score.gameMode` removed (redundant, derivable via session join); `ClueCard.imageUrl` is now non-nullable `String` (all cards are PNGs); `PostTest.score` is now non-nullable `Int @default(0)`; `PostTestQuestion.correctOption` now typed as `AnswerOption`; `ApprovedUsername` gains `registeredAt DateTime?` and a 1-to-1 relation to `Player` (enforces that every registered player was whitelisted at DB level). |
+| 0.8 | 2026-05-18 | **Schema best-practice fixes (logged only — not applied until 0.9):** added `enum AnswerOption { A B C D }` for type-safe posttest answers; `Microbe.answerImageUrl String` added (required for Answer panel, End Screen, Pathogen Book); `Score.microbeId`/`answeredMicrobeId` now proper `@relation` to `Microbe` (was bare String — no referential integrity); `Score.gameMode` removed (redundant, derivable via session join); `ClueCard.imageUrl` is now non-nullable `String` (all cards are WebPs); `PostTest.score` is now non-nullable `Int @default(0)`; `PostTestQuestion.correctOption` now typed as `AnswerOption`; `ApprovedUsername` gains `registeredAt DateTime?` and a 1-to-1 relation to `Player` (enforces that every registered player was whitelisted at DB level). |
 | 0.7 | 2026-05-18 | **Session structure changed:** 5 rounds × 1 microbe = 5 total identifications to win (was 5 × 3 = 15). `MICROBES_PER_ROUND` is now 1. Max session score is now 500. All references updated. **Schema fixes:** `PlayerMicrobeSeen` renamed to `PlayerMicrobeUnlocked` (semantic clarity); `Json microbeIds` replaced with `SessionMicrobe` relation model (enforces no-duplicate microbes via DB constraint); `Score.microbeInRound` removed (always 1, redundant); `GameSession.currentMicrobeInRound` removed (same reason); `PostTestQuestion` model added so `/api/posttest` can compute scores server-side. |
 | 0.6 | 2026-05-17 | **Schema fixes:** removed redundant `Score.cardsOpened` (derive from `cardSlotsOpened.length`); replaced ad-hoc `Microbe.isAnaerobe` boolean with extensible `tags MicrobeTag[]`; `PostTest.period` is now a `PostTestPeriod` enum; clarified `GameSession.currentRound`/`currentMicrobeInRound` exist for server-side anti-cheat sequencing (not client resume). **API fixes:** added `POST /api/auth/signup` (was a spec hole vs §4.1); added §11 preamble defining response envelope and error format; specified `/reveal` and `/answer` request and response bodies; generalized `PUT /api/admin/deadline` to `PUT /api/admin/config/:key`; `/api/leaderboard` is now explicitly public. **New §10 Visual Design Direction:** tokens, type, color, motion, accessibility constraints. |
-| 0.5 | 2026-05-17 | Wrong-answer flow finalized (reveal all cards + correct answer → Next button). No auto-reveal — all 5 cards start hidden, player opens manually. Account creation: self-registration with username whitelist (CSV import). Leaderboard: username display. Posttest: show score (X/30), no pass/fail gate. Pathogen Book: unlocks on correct answer only. Tutorial: YouTube embed. Session structure noted as scalable (5×N). PNG naming convention confirmed. |
+| 0.5 | 2026-05-17 | Wrong-answer flow finalized (reveal all cards + correct answer → Next button). No auto-reveal — all 5 cards start hidden, player opens manually. Account creation: self-registration with username whitelist (CSV import). Leaderboard: username display. Posttest: show score (X/30), no pass/fail gate. Pathogen Book: unlocks on correct answer only. Tutorial: YouTube embed. Session structure noted as scalable (5×N). WebP naming convention confirmed. |
 | 0.4 | 2026-05-17 | **Phaser.js removed — pure React/Next.js.** Google Sheets removed — Supabase only, CSV export. Login field changed to username (1-10 chars). Score formula finalized (100 max, card-based penalty only, no time factor). Session structure changed to 5 rounds × 3 microbes = 15 total. Leaderboard changed to top 5, equal rank for ties. Posttest changed to 30-question in-game web form, shuffled, locks game 2–3 days before exam. Card count changed to 600 (from 900). Focus on bacteria first. Admin dashboard marked optional. Sound: 1 min MP3 loop. Mobile: force landscape. No animations for v1. |
 | 0.3 | 2026-05-15 | Removed REDCap. Auth switched to custom JWT + bcrypt. API redesigned to be server-authoritative. |
 | 0.2 | 2026-05 | Migrated stack to Next.js 14 + Phaser.js 3. |
@@ -56,19 +56,19 @@ An educational web-based card game for a research study on microbiology learning
 | ORM | Prisma | Schema-first; pooled connection on Vercel |
 | Database | Supabase Postgres | Managed; PITR enabled during data collection |
 | Auth | Supabase Auth + approved-username whitelist | Sessions managed by Supabase; `Player.id` is the auth UID |
-| Storage | Supabase Storage | 600 card PNGs (see §2.3 for rationale) |
+| Storage | Supabase Storage | 600 card WebPs (see §2.3 for rationale) |
 | Error tracking | Sentry | Client + server |
 
 ### 2.3 Card Asset Storage — Supabase Storage (Recommended)
 
-600 PNGs should live in **Supabase Storage**, not `public/assets/`.
+600 WebPs should live in **Supabase Storage**, not `public/assets/`.
 
 | Approach | Pros | Cons |
 |---|---|---|
 | **Supabase Storage** ✅ | CDN delivery; no git bloat; update cards without redeploy; bucket access control | Requires seed script to register URLs in DB |
 | `public/assets/` | Simple; zero config | Commits 600 binary files to git (~hundreds of MB); redeployment required for every card update |
 
-**Decision:** Use Supabase Storage for all card PNGs. `public/assets/` is reserved for small, infrequently-changed files: BGM MP3, UI sprites, favicon.
+**Decision:** Use Supabase Storage for all card WebPs. `public/assets/` is reserved for small, infrequently-changed files: BGM MP3, UI sprites, favicon.
 
 ### 2.4 Hosting
 
@@ -268,7 +268,7 @@ Scrollable rows — one row per microbe attempted. If the player lost on microbe
 ### UI Requirements
 
 - Scrollable panel of **answer cards** (up to ~100 cards for bacteria mode)
-- Each card shows: cartoon PNG image + microbe name beneath
+- Each card shows: cartoon WebP image + microbe name beneath
 - **Must be easy to scroll and find** — design priority
 - **Drag and drop** from the panel to the answer zone OR tap/click to select
 
@@ -300,7 +300,7 @@ Filters narrow the answer pool. Two filter sources, both queried server-side:
 
 ### Microbe Properties on Cards
 
-Cards in the answer panel are tagged with their filterable properties. These properties come from the seed CSV alongside the PNG metadata (not manually entered post-import).
+Cards in the answer panel are tagged with their filterable properties. These properties come from the seed CSV alongside the WebP metadata (not manually entered post-import).
 
 ---
 
@@ -309,7 +309,7 @@ Cards in the answer panel are tagged with their filterable properties. These pro
 
 ### 10.1 Purpose & Audience
 
-Medical students at Faculty of Medicine Ramathibodi Hospital, Mahidol University, using the game repeatedly over a semester (5–10 min sessions). The **visual hero is the clue card** — 600 hand-drawn cartoon PNGs delivered by the content team. The UI chrome's job is to disappear and let the cards do the talking.
+Medical students at Faculty of Medicine Ramathibodi Hospital, Mahidol University, using the game repeatedly over a semester (5–10 min sessions). The **visual hero is the clue card** — 600 hand-drawn cartoon WebPs delivered by the content team. The UI chrome's job is to disappear and let the cards do the talking.
 
 ### 10.2 Tone
 
@@ -337,7 +337,7 @@ The **card reveal flip** is the emotional core. Use a 3D `rotateY` flip (~400ms,
 
 | Component | Direction |
 |---|---|
-| **Clue card** | Delivered as PNG asset — no element design needed. Render the PNG as-is at the slot's aspect ratio; label below in italic serif for microbe names. |
+| **Clue card** | Delivered as WebP asset — no element design needed. Render the WebP as-is at the slot's aspect ratio; label below in italic serif for microbe names. |
 | **Microbe name** | Always italic serif (e.g., *Staphylococcus aureus*). Genus capitalized, species lowercase, italic. This single typographic rule conveys "scientific" without extra ornament. |
 | **Hearts** | Outlined heart icon in a muted rusty red. Filled when alive, outline only when lost. No bouncing or pulsing. |
 | **Score** | Monospace digits so the value doesn't jitter when it changes. |
@@ -432,7 +432,7 @@ The **card reveal flip** is the emotional core. Use a 3D `rotateY` flip (~400ms,
 
 #### 9.1 Overall Layout
 
-The Pathogen Book renders as a two-page open book. **All visual chrome (background, book frame, panels, tabs, stars) is PNG — no CSS-drawn UI elements.** React components position PNG `<img>` tags and microbe data on top of these backgrounds.
+The Pathogen Book renders as a two-page open book. **All visual chrome (background, book frame, panels, tabs, stars) is WebP — no CSS-drawn UI elements.** React components position WebP `<img>` tags and microbe data on top of these backgrounds.
 
 ```
 ┌──────┬───────────────────────────┬───────────────────────────┐
@@ -442,22 +442,22 @@ The Pathogen Book renders as a two-page open book. **All visual chrome (backgrou
 └──────┴───────────────────────────┴───────────────────────────┘
 ```
 
-- **Background:** full-screen PNG (`/assets/pathogen-book/{category}.png`) — one per category (bacteria, virus, fungi, parasite)
-- **Category tabs (far-left strip):** vertical column of circular/icon PNGs, one per microbe type; clicking a tab navigates to that category's page
-- The book uses `position: relative` / `absolute` to layer microbe data on top of the background PNG
+- **Background:** full-screen WebP (`/assets/pathogen-book/{category}.webp`) — one per category (bacteria, virus, fungi, parasite)
+- **Category tabs (far-left strip):** vertical column of circular/icon WebPs, one per microbe type; clicking a tab navigates to that category's page
+- The book uses `position: relative` / `absolute` to layer microbe data on top of the background WebP
 
 #### 9.2 Left Page — Microbe Grid
 
 Displays all microbes for the current category in a scrollable grid.
 
-- **Title:** category name at the top of the left page (e.g. "Bacteria"), rendered as text positioned over the background PNG
+- **Title:** category name at the top of the left page (e.g. "Bacteria"), rendered as text positioned over the background WebP
 - **Grid:** 4 columns, fixed
-- **Each microbe entry card contains (all PNGs):**
+- **Each microbe entry card contains (all WebPs):**
   - Microbe cartoon image (`Microbe.answerImageUrl`)
   - Short name label beneath the image (`Microbe.shortName`)
-  - Clinical Relevance star rating beneath the name — one static PNG per rating value (e.g. `stars-1.png` … `stars-5.png`); chosen by rounding `Microbe.starRating Float` to the nearest integer (1–5 max)
-  - Gram-type indicator badge in the top-left corner of the card (PNG icon showing GRAM+/GRAM−/ACID-FAST)
-- **Locked state:** if the microbe has not been unlocked by the player, the microbe image is replaced with a locked-state PNG (black card / "?"); the name and stars are hidden
+  - Clinical Relevance star rating beneath the name — one static WebP per rating value (e.g. `stars-1.webp` … `stars-5.webp`); chosen by rounding `Microbe.starRating Float` to the nearest integer (1–5 max)
+  - Gram-type indicator badge in the top-left corner of the card (WebP icon showing GRAM+/GRAM−/ACID-FAST)
+- **Locked state:** if the microbe has not been unlocked by the player, the microbe image is replaced with a locked-state WebP (black card / "?"); the name and stars are hidden
 - **Unlocked state:** full card shown as described above
 - **Selection:** clicking an unlocked microbe entry updates the right page to show that microbe's detail; the selected card has a visual highlight
 - A microbe is unlocked **only when the player answers it correctly** in-game
@@ -467,9 +467,9 @@ Displays all microbes for the current category in a scrollable grid.
 Shows the full detail for the currently selected microbe.
 
 - **Microbe card (top section):**
-  - Large microbe cartoon image (`Microbe.answerImageUrl`) in a card frame PNG
+  - Large microbe cartoon image (`Microbe.answerImageUrl`) in a card frame WebP
   - Full name beneath or beside the card (`Microbe.name`) in italic serif
-  - "Clinical Relevance Rating" label + the same static `stars-{n}.png` as the grid card
+  - "Clinical Relevance Rating" label + the same static `stars-{n}.webp` as the grid card
 - **Characteristic cards (bottom grid) — ⚠️ NOT YET IMPLEMENTED:**
   - Each microbe has one or more characteristic cards sourced from `public/assets/cards/clues/`
   - Card categories (each is a sub-folder under `clues/`):
@@ -483,7 +483,7 @@ Shows the full detail for the currently selected microbe.
     | Transmission | `transmission/` | `TRANSMISSION` |
     | Morphology | `morphology/` | `MORPHOLOGY` |
   - Each microbe may have **zero, one, or many** cards per category (e.g. 3 Virulence Factor cards shown side-by-side)
-  - Each card is a PNG (`ClueCard.imageUrl`)
+  - Each card is a WebP (`ClueCard.imageUrl`)
   - Layout order: Gram Stain → Clinical Manifestation → Lab Characteristic → Virulence Factor → Special Trait -> Transmission -> Morphology
   - Data source: `GET /api/pathogen-book/{microbeId}/clues` → array of `{ id, category, label, imageUrl, sortOrder }`
   - **Implementation note:** The API endpoint already exists. UI display in `PathogenBookLayout.tsx` right panel is pending — see `ClueSection` component and `ClueCardEntry` type already scaffolded in that file.
@@ -507,12 +507,12 @@ Shows the full detail for the currently selected microbe.
 | # | Question |
 |---|---|
 | ~~PB-1~~ | ~~How many columns?~~ — **resolved: 4 columns, fixed** |
-| PB-2 | Is there a separate bacteria background PNG, or is only fungi/parasite/virus provided? |
-| PB-3 | Are the category tab icons already provided as PNGs, or do we create them? |
+| PB-2 | Is there a separate bacteria background WebP, or is only fungi/parasite/virus provided? |
+| PB-3 | Are the category tab icons already provided as WebPs, or do we create them? |
 | PB-4 | What is the `clinicalRelevance` field on `Microbe`? (not in current schema — is it a 1–5 int, or derived from tags?) |
 | PB-5 | Are ClueCards fetched alongside the microbe list, or on-demand when a microbe is selected? |
 | PB-6 | Does the right page show all ClueCards for a microbe regardless of which ones the player revealed in-game? |
-| ~~PB-7~~ | ~~Shared vs per-microbe star PNGs?~~ — **resolved: static `stars-{1..5}.png` per rating value; `Microbe.starRating` rounded to nearest int selects the image** |
+| ~~PB-7~~ | ~~Shared vs per-microbe star WebPs?~~ — **resolved: static `stars-{1..5}.webp` per rating value; `Microbe.starRating` rounded to nearest int selects the image** |
 
 ### Page 10 — Posttest (In-Game)
 - Full-page React component (not a modal) — player cannot skip
@@ -820,20 +820,20 @@ NEXT_PUBLIC_SENTRY_DSN=
 
 ## 20. Card Asset Naming Convention
 
-PNG files delivered by the content team must follow this naming convention so the seed script can parse them automatically:
+WebP files delivered by the content team must follow this naming convention so the seed script can parse them automatically:
 
 ```
-{microbe-name-kebab-case}-{category-kebab-case}-{two-digit-index}.png
+{microbe-name-kebab-case}-{category-kebab-case}-{two-digit-index}.webp
 ```
 
 Examples:
 ```
-staphylococcus-aureus-gram-stain-01.png
-staphylococcus-aureus-virulence-factor-01.png
-staphylococcus-aureus-virulence-factor-02.png
-staphylococcus-aureus-lab-characteristic-01.png
-staphylococcus-aureus-special-trait-01.png
-staphylococcus-aureus-clinical-manifestation-01.png
+staphylococcus-aureus-gram-stain-01.webp
+staphylococcus-aureus-virulence-factor-01.webp
+staphylococcus-aureus-virulence-factor-02.webp
+staphylococcus-aureus-lab-characteristic-01.webp
+staphylococcus-aureus-special-trait-01.webp
+staphylococcus-aureus-clinical-manifestation-01.webp
 ```
 
 Category slugs in filenames:
@@ -849,8 +849,8 @@ Supabase Storage bucket layout:
 ```
 cards/
 └── bacteria/
-    ├── staphylococcus-aureus-gram-stain-01.png
-    ├── staphylococcus-aureus-virulence-factor-01.png
+    ├── staphylococcus-aureus-gram-stain-01.webp
+    ├── staphylococcus-aureus-virulence-factor-01.webp
     └── ...
 ```
 
@@ -863,7 +863,7 @@ cards/
 | 1 | Full filter-tag list for Answer panel (GRAM+, GRAM−, ANAEROBE — what else?) | Content team | 2026-06-15 |
 | 2 | Posttest questions — 30 questions content and correct answers authored | Faculty | 2026-06-30 |
 | 3 | Are posttest questions static (hardcoded) or stored in DB? | PI | 2026-06-30 |
-| 4 | Card PNGs delivery format (zip? Google Drive? other?) | Content team | upon delivery |
+| 4 | Card WebPs delivery format (zip? Google Drive? other?) | Content team | upon delivery |
 | 5 | How many bacteria microbes total? (exact count TBD) | Content team | upon delivery |
 | 6 | IRB consent text for posttest — approved before pilot | PI + IRB | before pilot |
 | 7 | YouTube tutorial video URL | Stakeholder | before release |
