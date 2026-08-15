@@ -14,8 +14,8 @@ import { getMotionPreference } from "@/lib/motion-preference";
 // Positions are percentages of the 1280×720 reference canvas used in the original
 // Phaser scene (x/1280, y/720). Each card is centered at its (left, top) point.
 
-const B = (n: number) => `/assets/cards/Answer%20Cards/Bacteria%20Cards/${n}.png`;
-const P = (n: number) => `/assets/cards/Answer%20Cards/Parasite%20Card/${n}.png`;
+const B = (n: number) => `/assets/cards/Answer%20Cards/Bacteria%20Cards/${n}.webp`;
+const P = (n: number) => `/assets/cards/Answer%20Cards/Parasite%20Card/${n}.webp`;
 
 type FloatSize = "card-float-sm" | "card-float-md" | "card-float-lg";
 
@@ -144,7 +144,7 @@ export default function HomePage() {
       {/* Main content */}
       <div
         className={`relative h-screen w-screen overflow-hidden bg-cover bg-center ${motionEnabled ? "" : "home-motion-off"}`}
-        style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
+        style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
       >
         {/* Scattered floating card decorations */}
         {CARDS.map((card, i) => (
@@ -198,7 +198,7 @@ export default function HomePage() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/assets/ui/main-page-element-bg.png"
+            src="/assets/ui/main-page-element-bg.webp"
             alt=""
             aria-hidden="true"
             className="w-full"
@@ -217,7 +217,7 @@ export default function HomePage() {
           }}
         >
           <Image
-            src="/assets/ui/game-logo.png"
+            src="/assets/ui/game-logo.webp"
             alt="Germix — Microbiology Card Game"
             width={800}
             height={300}

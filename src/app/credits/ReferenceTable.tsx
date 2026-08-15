@@ -41,7 +41,7 @@ function CitationText({ reference }: { reference: Reference }) {
   );
 }
 
-// Replaces the old 6_reference_table.png overlay with a real, accessible
+// Replaces the old 6_reference_table.webp overlay with a real, accessible
 // table so every citation link is actually clickable.
 export function ReferenceTable() {
   return (

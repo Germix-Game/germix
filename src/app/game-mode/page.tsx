@@ -57,7 +57,7 @@ export default function GameModePage() {
 
   return (
     <div
-      className="flex min-h-screen w-screen flex-col items-center justify-center gap-10 px-6 py-12 bg-[#5c2a0e] bg-[url('/assets/ui/wood-bg.png')] bg-cover bg-center"
+      className="flex min-h-screen w-screen flex-col items-center justify-center gap-10 px-6 py-12 bg-[#5c2a0e] bg-[url('/assets/ui/wood-bg.webp')] bg-cover bg-center"
     >
       <h1 className="text-3xl font-bold text-[#d4a96a] tracking-wide">Select Game Mode</h1>
 

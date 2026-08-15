@@ -5,8 +5,10 @@ import type { ClueCard } from "@/types/game";
 
 function resolveImageSrc(url: string | null | undefined): string {
   if (!url) return "";
-  if (url.startsWith("http") || url.startsWith("/")) return url;
-  return `/assets/${url}`;
+  if (url.startsWith("http")) return url;
+
+  const localUrl = url.startsWith("/") ? url : `/assets/${url}`;
+  return localUrl.replace(/\.png(?=$|[?#])/i, ".webp");
 }
 
 interface CardSlotProps {
@@ -98,20 +100,20 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
         {/*
          * IMAGE SLOT A — Card back (face-down state)
          * What: The design shown on the back of every hidden card before the player flips it.
-         * Source: /public/assets/ui/Backcard.png (served at /assets/ui/Backcard.png)
+         * Source: /public/assets/ui/Backcard.webp (served at /assets/ui/Backcard.webp)
          * Applied as a Tailwind arbitrary-value background utility (bg-cover, bg-center).
          * The hover:brightness-125 stays — gives visual feedback when the card is hoverable.
          * To swap: drop a new file at the same path. No code change needed.
          */}
         {/* <button
-          className="card-face w-full h-full rounded-3xl bg-[url('/assets/ui/Backcard.png')] bg-cover bg-center shadow-lg hover:brightness-125 focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] disabled:cursor-default disabled:hover:brightness-100 transition-[filter]"
+          className="card-face w-full h-full rounded-3xl bg-[url('/assets/ui/Backcard.webp')] bg-cover bg-center shadow-lg hover:brightness-125 focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] disabled:cursor-default disabled:hover:brightness-100 transition-[filter]"
           onClick={() => onReveal(index)}
           disabled={revealed || disabled}
           aria-label={`Reveal clue card ${index + 1}`}
           tabIndex={revealed ? -1 : 0}
         /> */}
         <button
-          className="card-face w-full h-full rounded-3xl overflow-hidden bg-[url('/assets/ui/Backcard.png')] bg-cover bg-center shadow-lg hover:brightness-125 focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] disabled:cursor-default disabled:hover:brightness-100 transition-[filter]"
+          className="card-face w-full h-full rounded-3xl overflow-hidden bg-[url('/assets/ui/Backcard.webp')] bg-cover bg-center shadow-lg hover:brightness-125 focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] disabled:cursor-default disabled:hover:brightness-100 transition-[filter]"
           onClick={() => onReveal(index)}
           disabled={revealed || disabled}
           aria-label={`Reveal clue card ${index + 1}`}
@@ -143,12 +145,12 @@ export function CardSlot({ index, revealed, card, onReveal, disabled, revealedCo
               {/*
                * IMAGE SLOT B — Clue card front (revealed state)
                * File: src/components/game/CardSlot.tsx
-               * What: The hand-drawn cartoon PNG that fills the card after the player flips it.
-               *       One unique PNG per clue card (600 total).
+               * What: The hand-drawn cartoon WebP that fills the card after the player flips it.
+               *       One unique WebP per clue card (600 total).
                * Source: card.imageUrl — Supabase Storage CDN URL populated by the seed script.
-               *         Naming convention: {microbe-name}-{category}-{index}.png
-               *         e.g. "staphylococcus-aureus-gram-stain-01.png"
-               * Replace: No code change needed — just upload PNGs to Supabase Storage and run
+               *         Naming convention: {microbe-name}-{category}-{index}.webp
+               *         e.g. "staphylococcus-aureus-gram-stain-01.webp"
+               * Replace: No code change needed — just upload WebPs to Supabase Storage and run
                *          the seed script to populate ClueCard.imageUrl in the database.
                *          The <img> below will automatically show them once the URL is set.
                */}

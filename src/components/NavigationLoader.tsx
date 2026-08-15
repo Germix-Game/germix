@@ -55,7 +55,7 @@ export function NavigationLoader() {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/assets/ui/game-logo.png"
+        src="/assets/ui/game-logo.webp"
         alt="Germix"
         draggable={false}
         style={{

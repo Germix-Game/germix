@@ -48,10 +48,10 @@ export default function AuthPage() {
   return (
     <div
       className="flex h-screen w-screen flex-col items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
+      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
     >
       <Image
-        src="/assets/ui/game-logo.png"
+        src="/assets/ui/game-logo.webp"
         alt="Germix"
         width={800}
         height={300}
