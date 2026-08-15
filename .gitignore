@@ -49,3 +49,8 @@ next-env.d.ts
 /src/generated/prisma
 
 /src/generated/prisma
+
+# k6 load testing — generated credentials and run output
+/k6/data
+/k6/results
+*.summary.json
