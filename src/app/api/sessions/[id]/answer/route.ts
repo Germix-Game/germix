@@ -200,8 +200,12 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
       } catch (e) {
         if (e instanceof Response) return e
         // Postgres aborts the losing transaction of a conflicting concurrent
-        // pair with a serialization failure — retry it from scratch.
+        // pair with a serialization failure — retry it from scratch. A short
+        // jittered backoff (instead of retrying immediately) keeps a burst of
+        // conflicting retries from re-fighting over the same scarce DB
+        // connection under load.
         if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2034') {
+          await new Promise((resolve) => setTimeout(resolve, 20 + Math.random() * 60))
           continue
         }
         // answeredMicrobeId is a foreign key to Microbe — a client sending an
