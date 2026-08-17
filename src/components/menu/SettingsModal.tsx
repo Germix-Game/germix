@@ -209,7 +209,7 @@ export function SettingsModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-modal-title"
-        className="relative w-full max-w-md rounded-2xl border border-[#d4a96a] bg-[#1a0a04] p-6 text-[#f5e6c8] shadow-2xl max-h-[85vh] overflow-y-auto"
+        className="relative w-full max-w-md rounded-2xl border border-[#d4a96a] bg-[#1a0a04] p-6 text-[#f5e6c8] shadow-2xl max-h-[85dvh] overflow-y-auto"
         style={{ animation: "settings-modal-in 180ms ease-out both" }}
       >
         <div className="flex items-center justify-between">
@@ -253,7 +253,7 @@ export function SettingsModal({
             Display
           </h3>
 
-          <div className="flex items-center justify-between gap-6 rounded-xl border border-[#6b3520] bg-[#0d0500]/70 p-4">
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-[#6b3520] bg-[#0d0500]/70 p-4">
             <h2 className="font-semibold">Floating card animation</h2>
 
             <button
@@ -276,7 +276,7 @@ export function SettingsModal({
             </button>
           </div>
 
-          <div className="flex items-center justify-between gap-6 rounded-xl border border-[#6b3520] bg-[#0d0500]/70 p-4">
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-[#6b3520] bg-[#0d0500]/70 p-4">
             <h2 className="font-semibold">Fullscreen mode</h2>
 
             <button

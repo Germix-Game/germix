@@ -47,6 +47,8 @@ const MAX_VUS = Number(__ENV.MAX_VUS || users.length)
 const loginErrors = new Rate('login_errors')
 const gameplayErrors = new Rate('gameplay_errors')
 const sessionDuration = new Trend('session_duration_ms')
+const imageErrors = new Rate('image_errors')
+const imageLoadDuration = new Trend('image_load_ms')
 
 const JSON_HEADERS = { headers: { 'Content-Type': 'application/json' } }
 
@@ -71,11 +73,30 @@ export const options = {
     http_req_duration: ['p(95)<800'],
     login_errors: ['rate<0.01'],
     gameplay_errors: ['rate<0.01'],
+    image_load_ms: ['p(95)<800'],
   },
 }
 
 function thinkTime() {
   sleep(1 + Math.random() * 2)
+}
+
+// Fetches the actual clue-card image bytes (the endpoints above only ever
+// return an imageUrl string) so p95/slow outliers reflect what the browser
+// actually waits on when a card is revealed, not just the JSON API.
+//
+// clueCard.imageUrl is a bare storage key (e.g. "cards/clues/gram-stain/6.png"),
+// not a URL path — mirrors resolveImageSrc() in CardSlot.tsx/page.tsx: absolute
+// URLs pass through, everything else is rooted under /assets and served as
+// .webp (see the PNG->webp conversion).
+function loadImage(imageUrl) {
+  if (!imageUrl) return
+  const resolved = imageUrl.startsWith('http')
+    ? imageUrl
+    : (imageUrl.startsWith('/') ? imageUrl : `/assets/${imageUrl}`).replace(/\.png($|[?#])/i, '.webp$1')
+  const res = http.get(imageUrl.startsWith('http') ? resolved : `${BASE_URL}${resolved}`)
+  if (!check(res, { 'image 200': (r) => r.status === 200 })) imageErrors.add(1)
+  imageLoadDuration.add(res.timings.duration)
 }
 
 // Per-VU state: k6 keeps top-level module state isolated per VU and alive
@@ -129,11 +150,17 @@ export default function () {
   for (let round = 0; round < 5 && !completed && heartsLeft > 0; round++) {
     res = http.get(`${BASE_URL}/api/sessions/${sessionId}/cards`)
     if (!check(res, { 'cards 200': (r) => r.status === 200 })) gameplayErrors.add(1)
+    else {
+      for (const card of res.json().cards) loadImage(card && card.imageUrl)
+    }
     thinkTime()
 
     const slot = Math.floor(Math.random() * 4)
     res = http.post(`${BASE_URL}/api/sessions/${sessionId}/reveal`, JSON.stringify({ slotIndex: slot }), JSON_HEADERS)
     if (!check(res, { 'reveal ok': (r) => r.status === 200 || r.status === 409 })) gameplayErrors.add(1)
+    else if (res.status === 200) {
+      loadImage(res.json().card.imageUrl)
+    }
     thinkTime()
 
     // A random real microbe id — usually wrong (exercises the heart-loss
