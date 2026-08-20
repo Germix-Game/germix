@@ -37,8 +37,9 @@ function resolvePostTestImageSrc(url: string | null | undefined): string {
     cleanUrl = cleanUrl.substring("assets/".length);
   }
 
-  // Prepend /assets/ since Next.js serves public/assets at root /assets/
-  return `/assets/${cleanUrl}`;
+  // Prepend /assets/ since Next.js serves public/assets at root /assets/.
+  // Normalize legacy database paths left over from the PNG asset set.
+  return `/assets/${cleanUrl.replace(/\.png(?=$|[?#])/i, ".webp")}`;
 }
 
 export function PostTestPopup({

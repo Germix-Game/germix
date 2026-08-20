@@ -145,7 +145,7 @@ describe('Demo mode — initial render', () => {
     await renderDemo()
     const imgs = screen.getAllByAltText(/round 1 of 5/i)
     expect(imgs.length).toBeGreaterThanOrEqual(1)
-    expect((imgs[0] as HTMLImageElement).src).toContain('round-1.png')
+    expect((imgs[0] as HTMLImageElement).src).toContain('round-1.webp')
   })
 
   it('shows 3 hearts (full health)', async () => {

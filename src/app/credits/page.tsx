@@ -23,14 +23,14 @@ type CreditElement = {
   maxW?: string; // overrides the default max width (portrait images need a smaller one)
 };
 
-const BG_SRC = "/assets/credit/credit_and_reference_compressed_2.png";
+const BG_SRC = "/assets/credit/credit_and_reference_compressed_2.webp";
 
 const ELEMENTS: CreditElement[] = [
-  { src: "1_game_top.png", alt: "Germix", width: 1803, height: 529, offsetY: "-2rem", raise: "15%" },
-  { src: "2_researcher.png", alt: "Researchers", width: 1844, height: 518, offsetY: "-1rem" },
-  { src: "3_game_advisor.png", alt: "Advisors", width: 1755, height: 471, offsetY: "-1rem" },
-  { src: "4_game_dev.png", alt: "Game Developers", width: 1784, height: 983, offsetY: "-1rem", raise: "0%" },
-  { src: "5_designer.png", alt: "Designers", width: 1801, height: 915, offsetY: "-1rem", raise: "-25%" },
+  { src: "1_game_top.webp", alt: "Germix", width: 1803, height: 529, offsetY: "-2rem", raise: "15%" },
+  { src: "2_researcher.webp", alt: "Researchers", width: 1844, height: 518, offsetY: "-1rem" },
+  { src: "3_game_advisor.webp", alt: "Advisors", width: 1755, height: 471, offsetY: "-1rem" },
+  { src: "4_game_dev.webp", alt: "Game Developers", width: 1784, height: 983, offsetY: "-1rem", raise: "0%" },
+  { src: "5_designer.webp", alt: "Designers", width: 1801, height: 915, offsetY: "-1rem", raise: "-25%" },
 ];
 
 // Every image that must be loaded before we reveal the page.

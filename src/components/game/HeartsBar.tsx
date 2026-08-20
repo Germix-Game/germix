@@ -15,22 +15,22 @@ interface HeartsBarProps {
  * File: src/components/game/HeartsBar.tsx
  *
  * What: 3 hearts shown side-by-side. Red = life remaining, dark = life lost.
- * Design ref: Germix graphic game(2).png  (left column = red alive hearts,
+ * Design ref: Germix graphic game(2).webp  (left column = red alive hearts,
  *              right column = black lost hearts)
  *
  * Current implementation: SVG pixel-art hearts drawn in code (placeholder).
  *
- * To replace with real PNG sprites:
- *   1. Export two PNGs from the design file:
- *        public/assets/ui/heart-alive.png   ← red pixel heart
- *        public/assets/ui/heart-dead.png    ← black pixel heart
+ * To replace with real WebP sprites:
+ *   1. Export two WebPs from the design file:
+ *        public/assets/ui/heart-alive.webp   ← red pixel heart
+ *        public/assets/ui/heart-dead.webp    ← black pixel heart
  *   2. Replace the <PixelHeart> SVG below with:
  *
  *        import Image from "next/image"
  *        function PixelHeart({ filled }: { filled: boolean }) {
  *          return (
  *            <Image
- *              src={filled ? "/assets/ui/heart-alive.png" : "/assets/ui/heart-dead.png"}
+ *              src={filled ? "/assets/ui/heart-alive.webp" : "/assets/ui/heart-dead.webp"}
  *              alt=""
  *              width={28}
  *              height={24}
@@ -85,7 +85,7 @@ export function HeartsBar({ heartsLeft, vertical }: HeartsBarProps) {
 //   return (
 //     // eslint-disable-next-line @next/next/no-img-element
 //     <img
-//       src={filled ? "/assets/ui/heart-alive.png" : "/assets/ui/heart-dead.png"}
+//       src={filled ? "/assets/ui/heart-alive.webp" : "/assets/ui/heart-dead.webp"}
 //       alt=""
 //       width={72}
 //       height={62}
@@ -99,7 +99,7 @@ export function HeartsBar({ heartsLeft, vertical }: HeartsBarProps) {
 function PixelHeart({ filled, flashing }: { filled: boolean; flashing: boolean }) {
   return (
     <img
-      src={filled ? "/assets/ui/heart-alive.png" : "/assets/ui/heart-dead.png"}
+      src={filled ? "/assets/ui/heart-alive.webp" : "/assets/ui/heart-dead.webp"}
       alt=""
       style={{ imageRendering: "pixelated" }}
       className={`heart-icon h-[clamp(44px,8vh,92px)] w-auto ${flashing ? "heart-flash" : ""}`}

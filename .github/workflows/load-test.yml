@@ -1,0 +1,83 @@
+name: Load test (k6)
+
+# Manual only, on purpose: this provisions real throwaway accounts against
+# whatever base_url you give it and generates real write traffic (sessions,
+# scores). It should never run on a schedule or on push/PR. See k6/README.md.
+#
+# There's no separate staging deployment for this project — base_url is
+# meant to point at germix.vercel.app itself, and this should only be run
+# while that deployment is closed to real users (before launch, or during a
+# maintenance window). Do NOT run it once real players are active: it writes
+# real Player/Score rows and will pollute the leaderboard.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Target URL to load test (only while closed to real users — this writes real rows)'
+        required: true
+      game_mode:
+        description: 'GameMode to play (BACTERIA is the only mode guaranteed unlocked)'
+        required: false
+        default: 'BACTERIA'
+      user_count:
+        description: 'Test accounts to provision. Signup is rate-limited to 5/min/IP: 30 ~6min, 100 ~20min.'
+        required: false
+        default: '30'
+
+# Serialize runs so two manual triggers never share the 5/min signup and
+# 10/min login limits against the same target.
+concurrency:
+  group: k6-load-test
+  cancel-in-progress: false
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    environment: load-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Provision load-test accounts
+        run: node scripts/seed-load-test-accounts.mjs
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          DATABASE_URL: ${{ secrets.LOADTEST_DATABASE_URL }}
+          LOAD_TEST_USER_COUNT: ${{ inputs.user_count }}
+          # Unique per run so re-runs don't collide with earlier runs' accounts
+          # (a collision would be skipped — the earlier run's password is unknown).
+          LOAD_TEST_USER_PREFIX: loadtest-${{ github.run_id }}
+
+      - name: Fetch real microbe ids
+        # answeredMicrobeId is a foreign key to Microbe — the gameplay script
+        # needs real ids to submit, or the answer endpoint throws instead of
+        # just recording a wrong guess.
+        run: node scripts/fetch-microbe-ids.mjs
+        env:
+          DATABASE_URL: ${{ secrets.LOADTEST_DATABASE_URL }}
+          GAME_MODE: ${{ inputs.game_mode }}
+
+      - uses: grafana/setup-k6-action@v1
+
+      - uses: grafana/run-k6-action@v1
+        with:
+          path: k6/scenarios/gameplay-authed.js
+          flags: --summary-export=k6-summary.json
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          GAME_MODE: ${{ inputs.game_mode }}
+
+      - name: Upload k6 summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-summary-${{ github.run_id }}
+          path: k6-summary.json
+          retention-days: 30

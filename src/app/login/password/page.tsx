@@ -112,8 +112,8 @@ function PasswordForm() {
 export default function PasswordPage() {
   return (
     <div
-      className="flex h-screen w-screen items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
+      className="flex min-h-dvh w-screen items-center justify-center overflow-y-auto bg-cover bg-center px-4 py-8"
+      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
     >
       <Suspense fallback={<p className="text-[#c8a060]">Loading…</p>}>
         <PasswordForm />

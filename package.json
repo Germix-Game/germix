@@ -10,7 +10,10 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "loadtest:seed": "node scripts/seed-load-test-accounts.mjs",
+    "loadtest:bypass": "k6 run k6/scenarios/gameplay-bypass.js",
+    "loadtest:authed": "k6 run k6/scenarios/gameplay-authed.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

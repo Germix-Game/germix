@@ -4,7 +4,7 @@ export default function BacteriaBookPage() {
   return (
     <PathogenBookLayout
       gameMode="BACTERIA"
-      backgroundSrc="/assets/pathogen-book/bacteria.png"
+      backgroundSrc="/assets/pathogen-book/bacteria.webp"
     />
   );
 }

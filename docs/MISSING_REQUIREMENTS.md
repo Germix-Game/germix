@@ -44,7 +44,7 @@
 | R24 | Posttest pass/fail | No threshold. Show "You scored X / 30". Any submission unlocks game. |
 | R25 | Posttest window timing | Stored as exact ISO datetimes in Config. Dev updates manually via admin API. Locks at midnight Bangkok time. |
 | R26 | Session scalability | Constant `MICROBES_PER_ROUND = 3`. Easy to change to 4 in future without schema migration. |
-| R27 | PNG naming convention | `{microbe-kebab}-{category-slug}-{nn}.png` e.g. `staphylococcus-aureus-gram-stain-01.png`. |
+| R27 | WebP naming convention | `{microbe-kebab}-{category-slug}-{nn}.webp` e.g. `staphylococcus-aureus-gram-stain-01.webp`. |
 | R28 | Tutorial format | YouTube video embed (iframe). |
 
 ---
@@ -70,7 +70,7 @@ No microbe data exists yet. The game cannot be seeded or tested without it.
 **Missing:**
 - Complete list of bacteria microbes (exact count TBD)
 - Filter tags for each microbe: gramType, isAnaerobe, and any additional categories (full taxonomy — see item 7)
-- PNG naming convention for the 600 card images
+- WebP naming convention for the 600 card images
 - Folder structure for Supabase Storage bucket
 - Format of the CSV file to be delivered (column names, structure)
 - Seed script input: what does the CSV look like?
@@ -121,11 +121,11 @@ Sound asset (`public/assets/audio/bgm.mp3`) is coming soon but not received.
 
 ---
 
-## 7. MEDIUM — Card PNG Delivery Format
+## 7. MEDIUM — Card WebP Delivery Format
 
-Naming convention is confirmed (`staphylococcus-aureus-gram-stain-01.png`). Still unknown:
+Naming convention is confirmed (`staphylococcus-aureus-gram-stain-01.webp`). Still unknown:
 
-- Will PNGs arrive as a zip, Google Drive folder, or USB/other?
+- Will WebPs arrive as a zip, Google Drive folder, or USB/other?
 - Delivery timeline?
 
 Cannot run the Supabase Storage upload + seed script until files are received.
@@ -161,6 +161,6 @@ Tutorial page will embed a YouTube iframe. URL not yet provided.
 | 4 | `microbeIds` format + dedup policy | HIGH | Dev | Open |
 | 5 | Pathogen Book: per-mode or unified? | HIGH | Stakeholder | Open |
 | 6 | BGM MP3 delivery | HIGH | Content team | Open |
-| 7 | Card PNG delivery format (zip/Drive/etc.) | MEDIUM | Content team | Open |
+| 7 | Card WebP delivery format (zip/Drive/etc.) | MEDIUM | Content team | Open |
 | 8 | IRB consent text for posttest | MEDIUM | PI + IRB | Open |
 | 9 | YouTube tutorial video URL | MEDIUM | Stakeholder | Open |

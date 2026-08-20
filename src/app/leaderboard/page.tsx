@@ -26,7 +26,7 @@ const FONT = "var(--font-alice), serif";
 const PODIUM_TEXT_COLOR = ["#7a4500", "#1a3060", "#000000"];
 const GREEN_TEXT_COLOR = "#0a3010";
 
-// Bar rectangles as % of leaderboard_ui.png (1223x443), in rank order.
+// Bar rectangles as % of leaderboard_ui.webp (1223x443), in rank order.
 const PODIUM_BARS: React.CSSProperties[] = [
   { left: "24.5%", top: "44.4%", width: "51.1%", height: "24.6%" },
   { left: "1.5%", top: "71%", width: "48.2%", height: "24.8%" },
@@ -101,13 +101,13 @@ function GreenBar({
         ...(sticky && { bottom: 0, zIndex: 5 }),
         width: "100%",
         aspectRatio: "1198 / 117",
-        // greenbar.png carries ~20px transparent padding top and bottom;
+        // greenbar.webp carries ~20px transparent padding top and bottom;
         // pull rows together to cancel it (% margin resolves against width).
         marginTop: pullUp ? "-2.9%" : 0,
       }}
     >
       <Image
-        src="/assets/Leaderboard/greenbar.png"
+        src="/assets/Leaderboard/greenbar.webp"
         alt=""
         fill
         sizes="(max-width: 1500px) 67vw, 1005px"
@@ -153,7 +153,7 @@ export default function LeaderboardPage() {
       <div
         className="fixed inset-0 -z-10"
         style={{
-          backgroundImage: "url('/assets/backgrounds/main_page_background.png')",
+          backgroundImage: "url('/assets/backgrounds/main_page_background.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -172,7 +172,7 @@ export default function LeaderboardPage() {
           className="relative w-full"
           style={{
             aspectRatio: "1920 / 1080",
-            backgroundImage: "url('/assets/Leaderboard/leaderboard_bg.png')",
+            backgroundImage: "url('/assets/Leaderboard/leaderboard_bg.webp')",
             backgroundSize: "100% 100%",
           }}
         >
@@ -194,7 +194,7 @@ export default function LeaderboardPage() {
               }}
             >
               <Image
-                src="/assets/Leaderboard/leaderboard_ui.png"
+                src="/assets/Leaderboard/leaderboard_ui.webp"
                 alt=""
                 fill
                 priority
@@ -232,7 +232,7 @@ export default function LeaderboardPage() {
           {/* Flipped vertically so the tablet's frame closes at the bottom and
               the cream screen continues seamlessly from the section above. */}
           <Image
-            src="/assets/Leaderboard/leaderboard_bg_bottom.png"
+            src="/assets/Leaderboard/leaderboard_bg_bottom.webp"
             alt=""
             fill
             sizes="(max-width: 1500px) 100vw, 1500px"

@@ -47,22 +47,22 @@ export default function AuthPage() {
 
   return (
     <div
-      className="flex h-screen w-screen flex-col items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
+      className="flex min-h-dvh w-screen flex-col items-center justify-center overflow-y-auto bg-cover bg-center px-4 py-8 landscape:py-4"
+      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
     >
       <Image
-        src="/assets/ui/game-logo.png"
+        src="/assets/ui/game-logo.webp"
         alt="Germix"
         width={800}
         height={300}
         priority
-        className="mb-6 h-auto w-[500px] drop-shadow-[2px_4px_10px_rgba(0,0,0,0.6)]"
+        className="mb-6 h-auto w-[min(500px,70vw)] shrink-0 drop-shadow-[2px_4px_10px_rgba(0,0,0,0.6)] landscape:mb-3 landscape:w-[min(280px,40vw)]"
         style={{ animation: "menu-fade-in 500ms ease-out both" }}
       />
 
       <form
         onSubmit={handleSubmit}
-        className="relative w-[360px] overflow-hidden rounded-3xl border border-[#7a4a1e] bg-[#1a0a04]/90 p-7 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85)] backdrop-blur-sm"
+        className="relative w-[min(360px,92vw)] shrink-0 overflow-hidden rounded-3xl border border-[#7a4a1e] bg-[#1a0a04]/90 p-7 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85)] backdrop-blur-sm"
         style={{ animation: "menu-fade-in 500ms ease-out 120ms both" }}
       >
         {/* subtle gold accent line */}

@@ -43,11 +43,11 @@ export default function LevelSelectPage() {
   return (
     <div
         className="relative h-screen w-screen overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.png')" }}
+        style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
       >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/assets/game-selection/germix-graphic-game-26.png"
+        src="/assets/game-selection/germix-graphic-game-26.webp"
         alt=""
         aria-hidden
         draggable={false}
@@ -63,7 +63,7 @@ export default function LevelSelectPage() {
       {/* Bacteria level button — top-left */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/assets/game-selection/bateria_level.png"
+        src="/assets/game-selection/bateria_level.webp"
         alt="Bacteria"
         draggable={false}
         onClick={() => handleSelect("BACTERIA")}
@@ -76,7 +76,7 @@ export default function LevelSelectPage() {
       {/* Parasite level button — bottom-right (now playable, same as Bacteria) */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/assets/game-selection/parasite_level.png"
+        src="/assets/game-selection/parasite_level.webp"
         alt="Parasites"
         draggable={false}
         onClick={() => handleSelect("PARASITE")}
