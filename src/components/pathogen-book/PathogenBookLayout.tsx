@@ -59,6 +59,23 @@ function starSrc(rating: number): string {
   return `/assets/pathogen-book/star-${n}.webp`;
 }
 
+// Long binomial names (e.g. "Burkholderia pseudomallei") can run wider than
+// the right-page header has room for. Past 20 characters, force the break
+// after the genus (first word) instead of leaving the browser to wrap
+// wherever it fits, so the name always reads as two clean lines.
+function formatMicrobeName(name: string) {
+  if (name.length <= 20) return name;
+  const firstSpace = name.indexOf(" ");
+  if (firstSpace === -1) return name;
+  return (
+    <>
+      {name.slice(0, firstSpace)}
+      <br />
+      {name.slice(firstSpace + 1)}
+    </>
+  );
+}
+
 function GramBadge({ gramType }: { gramType: GramType }) {
   if (gramType === "POSITIVE")
     return (
@@ -198,7 +215,7 @@ function ClueSectionSkeleton() {
   return (
     <>
       <style>{SHIMMER_CSS}</style>
-      <div className="grid grid-cols-3 gap-2" style={{ zoom: 0.78, width: "75%" }}>
+      <div className="pb-clue-grid grid grid-cols-4 gap-2" style={{ zoom: 0.68, width: "85%" }}>
         {Array.from({ length: 8 }).map((_, i) => (
           <ShimmerCard key={i} base="rgba(160,130,90,0.22)" sheen="rgba(185,155,110,0.32)" />
         ))}
@@ -415,7 +432,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
                   className="pb-detail-name font-semibold italic leading-snug text-[#2a1208]"
                   style={{ fontSize: "clamp(1rem, 2.4vw, 1.5rem)" }}
                 >
-                  {selectedMicrobe.name}
+                  {formatMicrobeName(selectedMicrobe.name)}
                 </h2>
                 <p
                   className="pb-detail-rating-label uppercase tracking-wider text-[#7a5a30]"
