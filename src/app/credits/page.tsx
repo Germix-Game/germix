@@ -23,14 +23,14 @@ type CreditElement = {
   maxW?: string; // overrides the default max width (portrait images need a smaller one)
 };
 
-const BG_SRC = "/assets/credit/credit_and_reference_compressed_2.webp";
+const BG_SRC = "/assets/credit/credit_and_reference_compressed_3.webp";
 
 const ELEMENTS: CreditElement[] = [
-  { src: "1_game_top.webp", alt: "Germix", width: 1803, height: 529, offsetY: "-6rem", raise: "15%" },
+  { src: "1_game_top.webp", alt: "Germix", width: 1803, height: 529, offsetY: "-4rem", raise: "15%" },
   { src: "2_researcher.webp", alt: "Researchers", width: 1844, height: 518, offsetY: "-1rem" },
   { src: "3_game_advisor.webp", alt: "Advisors", width: 1755, height: 471, offsetY: "-1rem" },
   { src: "4_game_dev.webp", alt: "Game Developers", width: 1784, height: 983, offsetY: "-1rem", raise: "0%" },
-  { src: "5_designer.webp", alt: "Designers", width: 1801, height: 915, offsetY: "-1rem", raise: "-25%" },
+  { src: "5_designer2.webp", alt: "Designers", width: 1801, height: 1131, offsetY: "-1rem", raise: "-25%" },
 ];
 
 // Every image that must be loaded before we reveal the page.
@@ -110,18 +110,18 @@ export default function CreditsPage() {
         </p>
       </div>
 
-      {/* Background artwork — sized off the content below, not a fixed aspect
-          ratio, so it always covers the page even when the reference table
-          wraps into extra rows on narrow screens. It stretches vertically
-          (object-fit: fill) to match whatever height the content needs;
-          width still fills the viewport unchanged. */}
+      {/* Background artwork — rendered at its own aspect ratio (width 1912,
+          height 9276) instead of being stretched/cropped to match the
+          content's height, so it always starts at the image's top and ends
+          at the image's bottom, uncropped. */}
       <div className="relative z-0 w-full">
         <Image
           src={BG_SRC}
           alt="Germix Credits & References"
-          fill
+          width={1912}
+          height={9276}
           sizes="100vw"
-          className={`-z-10 object-fill ${ready ? "credit-bg-in" : "opacity-0"}`}
+          className={`absolute inset-x-0 top-0 -z-10 h-auto w-full ${ready ? "credit-bg-in" : "opacity-0"}`}
           preload
         />
 
@@ -156,12 +156,18 @@ export default function CreditsPage() {
           ))}
 
           {/* Reference table heading — also pulls the table + copyright notice
-              below it up, since they follow in normal document flow. */}
+              below it up, since they follow in normal document flow.
+              The designer element's `raise: -25%` is a transform, so it
+              vacates space without reclaiming it in layout. 15.7% of the
+              container's width is exactly that vacated height (25% of the
+              art's 1131/1801 aspect), capped at 241px for viewports past the
+              96rem art cap; the -2rem also swallows the parent's gap-8.
+              The +200px is the deliberate gap below the art. */}
           <div
             className={`credit-heading-wrap flex w-full justify-center px-4 text-center ${ready ? "credit-in" : "opacity-0"}`}
             style={
               {
-                marginTop: "calc(-1rem - 720px)",
+                marginTop: "calc(-1 * min(15.7%, 241px) - 2rem + 50px)",
                 "--credit-delay": `${ELEMENTS.length * 110}ms`,
               } as React.CSSProperties
             }

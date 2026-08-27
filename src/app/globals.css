@@ -697,18 +697,6 @@
   }
 }
 
-/* ─── Credits page — landscape only ────────────────────────────────────
-   The "In-Game Card Photo Credit" heading's -150px pull is tuned for
-   portrait, where the background art scales down more per viewport
-   width. In landscape the art renders relatively wider, so the same
-   pull drags the heading up into the credit element above it. Ease it
-   back down here only; portrait keeps the original design untouched. ── */
-@media (orientation: landscape) {
-  .credit-heading-wrap {
-    margin-top: calc(-1rem - 60px) !important;
-  }
-}
-
 /* ─── /pathogen-book — iPad landscape only (1024x768, 1180x820, 1366x1024) ──
    The two background layers normally use `background-size: auto 100%, cover`
    so the book art keeps its aspect ratio and gets letterboxed on the sides.

@@ -49,7 +49,7 @@ export function ReferenceTable() {
       className="w-full overflow-x-auto rounded-lg border"
       style={{ maxWidth: "58rem", borderColor: "#5a2413" }}
     >
-      <table className="w-full min-w-[22rem] table-fixed border-collapse text-left text-[0.4375rem] leading-snug sm:text-[0.5rem]">
+      <table className="w-full min-w-[22rem] table-fixed border-collapse text-left text-[0.35rem] leading-snug sm:text-[13px]">
         <colgroup>
           <col className="w-8 sm:w-14" />
           <col />
@@ -80,7 +80,7 @@ export function ReferenceTable() {
                 [{reference.id}]
               </td>
               <td
-                className="break-words border-b px-1.5 py-1 align-top leading-snug text-black sm:px-2 sm:py-1.5"
+                className="break-words border-b px-1.5 py-1 align-top leading-snug text-black sm:px-2 sm:py-1.5 [@media(min-width:768px)_and_(max-width:1400px)]:text-[11px]"
                 style={{ borderColor: "#d8c8a8" }}
               >
                 <CitationText reference={reference} />
