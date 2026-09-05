@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Alice } from "next/font/google";
 
 const alice = Alice({ weight: "400", subsets: ["latin"] });
@@ -7,9 +8,9 @@ const YOUTUBE_VIDEO_ID = "pnYAGnHUo8E";
 
 const RULES = [
   { step: "1", title: "5 rounds, 1 mystery pathogen each", body: "Every round hides a different microbe. Your goal is to identify it." },
-  { step: "2", title: "Reveal clue cards one at a time", body: "Five clue cards are face-down. Flip them to uncover Gram stain, virulence factors, lab traits, and more." },
-  { step: "3", title: "Pick your answer", body: "Select the correct microbe from the Pathogen Book. You can answer at any time — fewer clues means a higher score." },
-  { step: "4", title: "Scoring", body: "100 pts for 1 clue · 80 for 2 · 60 for 3 · 40 for 4 · 20 for 5. Maximum possible score: 500." },
+  { step: "2", title: "Each round starts with a clinical manifestation card", body: "Five clue cards. The first card reveals the clinical manifestation. Flip the other cards to uncover more characteristics." },
+  { step: "3", title: "Pick your answer", body: "Drag the correct microbe from the Pathogen list. You can answer at any time — fewer clues means a higher score." },
+  { step: "4", title: "Scoring", body: "100 points if you open 1 more clue, 75 for 2, 50 for 3, and 25 for 4. Maximum possible score: 500 per game." },
   { step: "5", title: "Hearts system", body: "You start with 3 hearts. Each wrong answer costs 1 heart. Lose all 3 and the game ends." },
 ] as const;
 
@@ -28,20 +29,29 @@ export default function HowToPlayPage() {
         ← Back
       </Link>
 
-      <div className="mx-auto max-w-2xl">
-        {/* Header */}
-        <div className="mb-6 text-center">
-          <h1
-            className="text-2xl font-bold tracking-wide text-[#d4a96a]"
-            style={{ fontFamily: "'Impact','Arial Black',sans-serif" }}
-          >
-            HOW TO PLAY
-          </h1>
-        </div>
-
-        {/* YouTube embed */}
-        <div className="mb-5 overflow-hidden rounded-2xl border border-[#d4a96a]/60 bg-[#1a0a04]/90">
-          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+      <div className="mx-auto max-w-5xl pt-12 sm:pt-0">
+        <h1 className="sr-only">How to Play</h1>
+        <div className="relative">
+          <Image
+            src="/assets/how-to-play/rules.webp"
+            alt=""
+            width={1719}
+            height={2664}
+            className="h-auto w-full"
+            unoptimized
+            preload
+          />
+          {/* Keep the rules accessible while the image supplies their visual layout. */}
+          <ol className="sr-only">
+            {RULES.map((rule) => (
+              <li key={rule.step}>
+                <h2>{rule.title}</h2>
+                <p>{rule.body}</p>
+              </li>
+            ))}
+          </ol>
+          {/* Align the video with the blank area beneath the printed heading. */}
+          <div className="absolute left-[12%] top-[68%] aspect-video w-[76%] overflow-hidden rounded-lg bg-[#1a0a04] shadow-lg">
             <iframe
               className="absolute inset-0 h-full w-full"
               src={`https://www.youtube.com/embed/${videoId}`}
@@ -50,26 +60,6 @@ export default function HowToPlayPage() {
               allowFullScreen
             />
           </div>
-        </div>
-
-        {/* Rules */}
-        <div className="rounded-2xl border border-[#d4a96a]/60 bg-[#1a0a04]/90 px-5 py-5">
-          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-[#d4a96a]">
-            Game Rules
-          </h2>
-          <ol className="space-y-4">
-            {RULES.map((rule) => (
-              <li key={rule.step} className="flex gap-4">
-                <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-[#d4a96a]/60 text-sm font-bold text-[#d4a96a]">
-                  {rule.step}
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-[#f5e6c8]">{rule.title}</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-[#9a7850]">{rule.body}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
         </div>
 
         <div className="mt-5 flex justify-center">
