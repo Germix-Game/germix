@@ -83,7 +83,7 @@ export default function LevelSelectPage() {
         className={`absolute select-none transition-transform duration-200 ${
           starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
         }`}
-        style={{ bottom: "2%", right: "8%", width: "43vw" }}
+        style={{ bottom: "2%", right: "7.9%", width: "43vw" }}
       />
 
       {/* Back button — top-left */}
