@@ -48,19 +48,17 @@ const CARDS: CardDef[] = [
 
   // ── Top-Right Cluster ──────────────────────────────────────────────────────
   { src: B(21), left: "80%",  top: "12%",  rotate: 15,  float: "card-float-md", dur: 2400, delay: 100 },   // S. pneumoniae (Purple pair)
-  { src: P(108), left: "95%",  top: "15%",  rotate: -10, float: "card-float-lg", dur: 2800, delay: 300 },   // E. vermicularis (Brown oval)
+  { src: P(108), left: "90%",  top: "15%",  rotate: -10, float: "card-float-lg", dur: 2800, delay: 300 },   // E. vermicularis (Brown oval)
 
   // ── Mid-Right Cluster ──────────────────────────────────────────────────────
   { src: B(61), left: "78%",  top: "38%",  rotate: 0,   float: "card-float-lg", dur: 2200, delay: 500 },   // T. pallidum (White squiggly)
   { src: P(90), left: "88%",  top: "35%",  rotate: -5,  float: "card-float-md", dur: 2450, delay: 700 },   // E. histolytica (Brown poop)
   { src: B(35), left: "74%",  top: "62%",  rotate: -5,  float: "card-float-sm", dur: 2600, delay: 900 },   // C. perfringens (Gas mask)
   { src: B(36), left: "85%",  top: "60%",  rotate: 5,   float: "card-float-lg", dur: 2350, delay: 1100 },  // P. aeruginosa (Pink pill)
-  { src: P(103), left: "95%",  top: "60%",  rotate: 15,  float: "card-float-lg", dur: 2800, delay: 1300 },  // S. japonicum (Blood fluke)
 
   // ── Bottom-Right Cluster ───────────────────────────────────────────────────
   { src: P(95), left: "76%",  top: "88%",  rotate: -15, float: "card-float-sm", dur: 2200, delay: 1500 },  // S. stercoralis (Muscle worm)
-  { src: P(96), left: "85%",  top: "85%",  rotate: -20, float: "card-float-lg", dur: 2550, delay: 1700 },  // P. westermani (Lung fluke)
-  { src: P(98), left: "95%",  top: "92%",  rotate: 25,  float: "card-float-md", dur: 2700, delay: 1900 },  // C. belli (Red eyes poop)
+  { src: P(96), left: "90%",  top: "85%",  rotate: -20, float: "card-float-lg", dur: 2550, delay: 1700 },  // P. westermani (Lung fluke)
 ];
 
 const PRELOAD_ASSETS = [
@@ -189,7 +187,7 @@ export default function HomePage() {
         <div
           className="absolute left-1/2 pointer-events-none"
           style={{
-            top: "95%",
+            top: "90%",
             width: "44%",
             transform: "translate(-50%, -50%)",
             opacity: 0.88,
