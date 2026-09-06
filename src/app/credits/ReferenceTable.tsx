@@ -49,21 +49,21 @@ export function ReferenceTable() {
       className="w-full overflow-x-auto rounded-lg border"
       style={{ maxWidth: "58rem", borderColor: "#5a2413" }}
     >
-      <table className="w-full min-w-[22rem] table-fixed border-collapse text-left text-[0.5rem] sm:text-[0.59375rem]">
+      <table className="w-full min-w-[22rem] table-fixed border-collapse text-left text-[0.4375rem] leading-snug sm:text-[0.5rem]">
         <colgroup>
-          <col className="w-10 sm:w-16" />
+          <col className="w-8 sm:w-14" />
           <col />
         </colgroup>
         <thead>
           <tr style={{ backgroundColor: "#e8c98f" }}>
             <th
-              className="border-b px-2 py-1.5 font-semibold text-black sm:px-3 sm:py-2"
+              className="border-b px-1.5 py-1 font-semibold text-black sm:px-2 sm:py-1.5"
               style={{ borderColor: "#5a2413" }}
             >
               Ref
             </th>
             <th
-              className="border-b px-2 py-1.5 font-semibold text-black sm:px-3 sm:py-2"
+              className="border-b px-1.5 py-1 font-semibold text-black sm:px-2 sm:py-1.5"
               style={{ borderColor: "#5a2413" }}
             >
               Citation
@@ -74,13 +74,13 @@ export function ReferenceTable() {
           {REFERENCES.map((reference) => (
             <tr key={reference.id} className="odd:bg-white even:bg-[#f2ede2]">
               <td
-                className="break-words border-b px-2 py-1.5 align-top text-black sm:px-3 sm:py-2"
+                className="break-words border-b px-1.5 py-1 align-top text-black sm:px-2 sm:py-1.5"
                 style={{ borderColor: "#d8c8a8" }}
               >
                 [{reference.id}]
               </td>
               <td
-                className="break-words border-b px-2 py-1.5 align-top leading-relaxed text-black sm:px-3 sm:py-2"
+                className="break-words border-b px-1.5 py-1 align-top leading-snug text-black sm:px-2 sm:py-1.5"
                 style={{ borderColor: "#d8c8a8" }}
               >
                 <CitationText reference={reference} />

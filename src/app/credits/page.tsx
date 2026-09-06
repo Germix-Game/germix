@@ -110,19 +110,25 @@ export default function CreditsPage() {
         </p>
       </div>
 
-      {/* Background artwork — full screen width */}
-      <div className="relative w-full">
+      {/* Background artwork — sized off the content below, not a fixed aspect
+          ratio, so it always covers the page even when the reference table
+          wraps into extra rows on narrow screens. It stretches vertically
+          (object-fit: fill) to match whatever height the content needs;
+          width still fills the viewport unchanged. */}
+      <div className="relative z-0 w-full">
         <Image
           src={BG_SRC}
           alt="Germix Credits & References"
-          width={1920}
-          height={8725}
-          className={`h-auto w-full object-contain ${ready ? "credit-bg-in" : "opacity-0"}`}
-          priority
+          fill
+          sizes="100vw"
+          className={`-z-10 object-fill ${ready ? "credit-bg-in" : "opacity-0"}`}
+          preload
         />
 
-        {/* Credit elements overlaid, centered with a fixed gap */}
-        <div className="absolute inset-0 flex flex-col items-center justify-start gap-8 pt-8">
+        {/* Credit elements, in normal flow so their real height drives the
+            container above (and therefore the background) instead of being
+            clipped to it. */}
+        <div className="relative z-10 flex flex-col items-center justify-start gap-8 pt-8">
           {ELEMENTS.map((el, i) => (
             <div
               key={el.src}
@@ -182,7 +188,7 @@ export default function CreditsPage() {
 
           {/* Copyright notice */}
           <div
-            className={`flex w-full justify-center px-4 pb-12 text-center ${ready ? "credit-in" : "opacity-0"}`}
+            className={`flex w-full justify-center px-4 pb-6 text-center sm:pb-8 ${ready ? "credit-in" : "opacity-0"}`}
             style={
               {
                 marginTop: "0.5rem",
@@ -190,7 +196,7 @@ export default function CreditsPage() {
               } as React.CSSProperties
             }
           >
-            <p className="max-w-3xl rounded-lg bg-white px-4 py-3 text-sm leading-relaxed text-black shadow-sm">
+            <p className="max-w-3xl rounded-lg bg-white px-3 py-2 text-[0.6875rem] leading-snug text-black shadow-sm sm:px-4 sm:py-3 sm:text-sm sm:leading-relaxed">
               <span className="font-semibold">Copyright Notice:</span> Images
               used in this project were selected from sources that permit
               educational reuse and have been appropriately attributed where
