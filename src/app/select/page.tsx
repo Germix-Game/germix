@@ -70,7 +70,7 @@ export default function LevelSelectPage() {
         className={`absolute select-none transition-transform duration-200 ${
           starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
         }`}
-        style={{ top: "2%", left: "12%", width: "37vw" }}
+        style={{ top: "0.3%", left: "6%", width: "43vw" }}
       />
 
       {/* Parasite level button — bottom-right (now playable, same as Bacteria) */}
@@ -83,7 +83,7 @@ export default function LevelSelectPage() {
         className={`absolute select-none transition-transform duration-200 ${
           starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
         }`}
-        style={{ bottom: "2%", right: "12%", width: "37vw" }}
+        style={{ bottom: "2%", right: "8%", width: "43vw" }}
       />
 
       {/* Back button — top-left */}

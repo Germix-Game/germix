@@ -189,7 +189,7 @@ export default function HomePage() {
         <div
           className="absolute left-1/2 pointer-events-none"
           style={{
-            top: "95%",
+            top: "90%",
             width: "44%",
             transform: "translate(-50%, -50%)",
             opacity: 0.88,
