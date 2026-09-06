@@ -26,7 +26,7 @@ type CreditElement = {
 const BG_SRC = "/assets/credit/credit_and_reference_compressed_2.webp";
 
 const ELEMENTS: CreditElement[] = [
-  { src: "1_game_top.webp", alt: "Germix", width: 1803, height: 529, offsetY: "-2rem", raise: "15%" },
+  { src: "1_game_top.webp", alt: "Germix", width: 1803, height: 529, offsetY: "-6rem", raise: "15%" },
   { src: "2_researcher.webp", alt: "Researchers", width: 1844, height: 518, offsetY: "-1rem" },
   { src: "3_game_advisor.webp", alt: "Advisors", width: 1755, height: 471, offsetY: "-1rem" },
   { src: "4_game_dev.webp", alt: "Game Developers", width: 1784, height: 983, offsetY: "-1rem", raise: "0%" },
@@ -161,7 +161,7 @@ export default function CreditsPage() {
             className={`credit-heading-wrap flex w-full justify-center px-4 text-center ${ready ? "credit-in" : "opacity-0"}`}
             style={
               {
-                marginTop: "calc(-1rem - 220px)",
+                marginTop: "calc(-1rem - 720px)",
                 "--credit-delay": `${ELEMENTS.length * 110}ms`,
               } as React.CSSProperties
             }
@@ -173,9 +173,11 @@ export default function CreditsPage() {
             </h2>
           </div>
 
-          {/* References table — real, clickable links instead of a flat image */}
+          {/* References table — real, clickable links instead of a flat image.
+              px-4 matches the heading/copyright siblings above and below so
+              the table doesn't hug the screen edges on narrow viewports. */}
           <div
-            className={`flex w-full justify-center ${ready ? "credit-in" : "opacity-0"}`}
+            className={`flex w-full justify-center px-4 ${ready ? "credit-in" : "opacity-0"}`}
             style={
               {
                 marginTop: "0.5rem",
