@@ -217,7 +217,7 @@ export default function PlayPage() {
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]); // recap of every round played
   const [won, setWon] = useState(false);                               // did the player win or lose?
 
-  const { containerRef, contentRef, scale } = useScaleToFit(1, 16);
+  const { containerRef, contentRef, scale } = useScaleToFit(1, 130, 16);
   const router = useRouter();
 
   // Warm up the route the player will land on when they exit (back button,
@@ -798,6 +798,11 @@ export default function PlayPage() {
         ref={containerRef}
         className="play-wood-zone relative flex flex-col px-6 pt-[7vh] pb-2 bg-[url('/assets/ui/wood-bg.webp')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
       >
+        {/* HeartsBar positioned absolutely at the leftmost of the screen, vertically centered */}
+        <div className="absolute left-6 top-1/2 -translate-y-1/2 z-20 safe-left game-hearts-inline">
+          <HeartsBar heartsLeft={heartsLeft} vertical />
+        </div>
+
         {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen.
             safe-top/-left/-right keep it clear of the iPhone notch / iPad rounded corners in landscape. */}
         <div className="absolute safe-top safe-left safe-right z-20 flex items-center justify-between">
@@ -864,9 +869,6 @@ export default function PlayPage() {
           className="game-content-row flex items-center justify-center gap-3 self-center"
           style={{ transform: `scale(${scale})`, transformOrigin: "center" }}
         >
-          <div className="flex-shrink-0 game-hearts-inline">
-            <HeartsBar heartsLeft={heartsLeft} vertical />
-          </div>
           <CardGrid
             slots={slots}
             onReveal={handleReveal}
