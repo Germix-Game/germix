@@ -86,7 +86,7 @@ export default function GameModePage() {
               key={apiValue}
               disabled={locked}
               onClick={() => handleSelect(apiValue)}
-              className={`flex flex-col items-center gap-3 rounded-2xl border-2 p-5 transition-all focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] ${
+              className={`flex h-full min-h-[11.5rem] flex-col items-center gap-3 rounded-2xl border-2 p-5 transition-all focus-visible:ring-2 focus-visible:ring-[#d4a96a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#5c2a0e] ${
                 !modes
                   ? "cursor-wait border-[#4a2210] bg-[#2a1208]/60 opacity-40"
                   : locked
@@ -96,18 +96,26 @@ export default function GameModePage() {
                   : "border-[#6b3520] bg-[#3d1a0a]/70 hover:border-[#d4a96a] hover:bg-[#3d1a0a]"
               }`}
             >
-              <div className="h-16 w-16 rounded-xl bg-[#5c2a0e] border border-[#6b3520] flex items-center justify-center">
+              <div className="h-16 w-16 shrink-0 rounded-xl bg-[#5c2a0e] border border-[#6b3520] flex items-center justify-center">
                 <span className="text-2xl select-none">{modeEmoji(apiValue)}</span>
               </div>
               <span className="font-semibold text-[#f5e6c8] text-sm">{label}</span>
-              {modes && locked && !modes.posttestRequired && (
-                <span className="text-[#9a7850] text-[0.65rem] text-center leading-tight">
-                  {unlocksAt ? `Unlocks ${unlocksAt}` : "Locked"}
-                </span>
-              )}
-              {isStarting && (
-                <span className="text-[#d4a96a] text-xs animate-pulse">Starting…</span>
-              )}
+
+              {/* Status slot. Always rendered, always the same height, even when
+                  empty -- otherwise a locked card (which shows "Unlocks ...")
+                  is taller than an unlocked one and the grid row stretches to
+                  match, leaving cards visibly different sizes. mt-auto pins it
+                  to the bottom so the icon and label stay aligned across all
+                  four cards regardless of state. */}
+              <span className="mt-auto flex h-8 items-center justify-center text-center leading-tight">
+                {isStarting ? (
+                  <span className="text-[#d4a96a] text-xs animate-pulse">Starting…</span>
+                ) : modes && locked && !modes.posttestRequired ? (
+                  <span className="text-[#9a7850] text-[0.65rem]">
+                    {unlocksAt ? `Unlocks ${unlocksAt}` : "Locked"}
+                  </span>
+                ) : null}
+              </span>
             </button>
           );
         })}

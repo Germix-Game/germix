@@ -52,21 +52,28 @@ const TABS: { mode: GameMode; href: string; label: string }[] = [
   { mode: "VIRUS",    href: "/pathogen-book/virus",    label: "Virus"    },
 ];
 
-const CATEGORY_LABEL: Record<string, string> = {
-  GRAM_STAIN: "Gram Stain",
-  CLINICAL_MANIFESTATION: "Clinical Manifestation",
-  LAB_CHARACTERISTIC: "Lab Characteristic",
-  VIRULENCE_FACTOR: "Virulence Factor",
-  SPECIAL_TRAIT: "Special Trait",
-  TRANSMISSION: "Transmission",
-  MORPHOLOGY: "Morphology",
-};
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function starSrc(rating: number): string {
   const n = Math.min(5, Math.max(1, Math.round(rating * 2) / 2));
   return `/assets/pathogen-book/star-${n}.webp`;
+}
+
+// Long binomial names (e.g. "Burkholderia pseudomallei") can run wider than
+// the right-page header has room for. Past 20 characters, force the break
+// after the genus (first word) instead of leaving the browser to wrap
+// wherever it fits, so the name always reads as two clean lines.
+function formatMicrobeName(name: string) {
+  if (name.length <= 20) return name;
+  const firstSpace = name.indexOf(" ");
+  if (firstSpace === -1) return name;
+  return (
+    <>
+      {name.slice(0, firstSpace)}
+      <br />
+      {name.slice(firstSpace + 1)}
+    </>
+  );
 }
 
 function GramBadge({ gramType }: { gramType: GramType }) {
@@ -136,13 +143,15 @@ function MicrobeCard({
           <img
             src={resolveImageSrc(microbe.answerImageUrl)}
             alt={microbe.name}
-            className="w-full object-contain"
+            className="w-full rounded-[11px] object-contain"
+            style={{ aspectRatio: "1429 / 2000" }}
             draggable={false}
           />
         </>
       ) : (
+        // Grid parent renders at `zoom: 0.38` — 21px here displays as ~8px.
         <div
-          className="flex w-full flex-col items-center justify-center rounded-sm"
+          className="flex w-full flex-col items-center justify-center rounded-[21px]"
           style={{
             aspectRatio: "1429 / 2000",
             background: "linear-gradient(145deg, #2a1a0a 0%, #1a0e05 60%, #0f0804 100%)",
@@ -206,7 +215,7 @@ function ClueSectionSkeleton() {
   return (
     <>
       <style>{SHIMMER_CSS}</style>
-      <div className="grid grid-cols-3 gap-2" style={{ zoom: 0.78, width: "75%" }}>
+      <div className="pb-clue-grid grid grid-cols-4 gap-2" style={{ zoom: 0.68, width: "85%" }}>
         {Array.from({ length: 8 }).map((_, i) => (
           <ShimmerCard key={i} base="rgba(160,130,90,0.22)" sheen="rgba(185,155,110,0.32)" />
         ))}
@@ -217,7 +226,7 @@ function ClueSectionSkeleton() {
 
 // Face-down placeholder for a slot the player hasn't opened yet — mirrors the
 // locked-microbe look, with the slot's category so they know what's left to find.
-function LockedClue({ category }: { category: string }) {
+function LockedClue() {
   return (
     <div
       className="flex w-full flex-col items-center justify-center rounded"
@@ -240,9 +249,6 @@ function LockedClue({ category }: { category: string }) {
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
       </svg>
-      <span className="mt-1 px-1 text-center text-[7px] uppercase leading-tight tracking-wide text-[#7a5a30]">
-        {CATEGORY_LABEL[category] ?? ""}
-      </span>
     </div>
   );
 }
@@ -264,6 +270,7 @@ function ClueSection({ slots }: { slots: BookSlot[] }) {
                 src={resolveImageSrc(slot.card.imageUrl)}
                 alt={slot.card.label}
                 className="w-full rounded shadow"
+                style={{ aspectRatio: "1429 / 2000" }}
                 draggable={false}
               />
             ) : (
@@ -275,7 +282,7 @@ function ClueSection({ slots }: { slots: BookSlot[] }) {
               </div>
             )
           ) : (
-            <LockedClue category={slot.category} />
+            <LockedClue />
           )}
         </div>
       ))}
@@ -425,7 +432,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
                   className="pb-detail-name font-semibold italic leading-snug text-[#2a1208]"
                   style={{ fontSize: "clamp(1rem, 2.4vw, 1.5rem)" }}
                 >
-                  {selectedMicrobe.name}
+                  {formatMicrobeName(selectedMicrobe.name)}
                 </h2>
                 <p
                   className="pb-detail-rating-label uppercase tracking-wider text-[#7a5a30]"

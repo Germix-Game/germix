@@ -697,18 +697,6 @@
   }
 }
 
-/* ─── Credits page — landscape only ────────────────────────────────────
-   The "In-Game Card Photo Credit" heading's -150px pull is tuned for
-   portrait, where the background art scales down more per viewport
-   width. In landscape the art renders relatively wider, so the same
-   pull drags the heading up into the credit element above it. Ease it
-   back down here only; portrait keeps the original design untouched. ── */
-@media (orientation: landscape) {
-  .credit-heading-wrap {
-    margin-top: calc(-1rem - 60px) !important;
-  }
-}
-
 /* ─── /pathogen-book — iPad landscape only (1024x768, 1180x820, 1366x1024) ──
    The two background layers normally use `background-size: auto 100%, cover`
    so the book art keeps its aspect ratio and gets letterboxed on the sides.
@@ -718,8 +706,11 @@
    the letterboxing, so the existing percentage-based positions land on the
    book graphic correctly again with no extra offsets needed — every element
    stays at its normal/default place. iPad-only; phone and desktop/mouse
-   keep the original background sizing. ─────────────────────────────────── */
-@media (orientation: landscape) and (pointer: coarse) and (min-width: 961px) and (max-width: 1366px) {
+   keep the original background sizing. Upper bound is 1400px, not 1366px,
+   because browsers can report the 1366-wide iPad Pro viewport as a
+   fraction of a px over 1366 — a strict max-width: 1366px boundary missed
+   it and left that device letterboxed. ─────────────────────────────────── */
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 961px) and (max-width: 1400px) {
   .pb-page-root {
     background-size: 100% 100%, cover !important;
   }
