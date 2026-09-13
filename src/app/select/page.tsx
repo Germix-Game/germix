@@ -47,7 +47,7 @@ export default function LevelSelectPage() {
       >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/assets/game-selection/germix-graphic-game-26.webp"
+        src="/assets/game-selection/germix-graphic-game-29.webp"
         alt=""
         aria-hidden
         draggable={false}
@@ -84,6 +84,22 @@ export default function LevelSelectPage() {
           starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
         }`}
         style={{ bottom: "2%", right: "7.9%", width: "43vw" }}
+      />
+
+      <img
+        src="/assets/game-selection/fungi_select.webp"
+        alt="Fungi — locked, coming soon"
+        draggable={false}
+        className="absolute -translate-x-1/2 select-none cursor-not-allowed transition-transform duration-200 hover:scale-105"
+        style={{ top: "47%", left: "27.8%", width: "27vw" }}
+      />
+
+      <img
+        src="/assets/game-selection/virus_select.webp"
+        alt="Virus — locked, coming soon"
+        draggable={false}
+        className="absolute -translate-x-1/2 select-none cursor-not-allowed transition-transform duration-200 hover:scale-105"
+        style={{ bottom: "48%", left: "69.7%", width: "27vw" }}
       />
 
       {/* Back button — top-left */}

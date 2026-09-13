@@ -562,10 +562,12 @@
    bottom edge on short viewports and gets clipped by overflow-hidden.
    Anchor to the bottom (safe-area aware) and shrink buttons instead. ── */
 @media (orientation: landscape) and (max-height: 500px) {
+  /* The cluster is now a static flex child inside ParchmentPanel, not an
+     absolutely-positioned element. top/bottom no longer apply, and the old
+     translateX(-50%) would shift it half a width off-centre — it was only
+     there to undo the absolute centring that no longer exists. Only the gap
+     is still meaningful here. */
   .home-menu-cluster {
-    top: auto !important;
-    bottom: max(0.5rem, calc(var(--safe-bottom) + 0.5rem)) !important;
-    transform: translateX(-50%) !important;
     gap: 0.4rem !important;
   }
   .menu-btn-play {
