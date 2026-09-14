@@ -804,6 +804,32 @@
   }
 }
 
+/* ─── /pathogen-book — narrow phone landscape (~601x525 to 882x525) ─────
+   Same letterboxing issue as the iPad fix above (`auto 100%, cover` keeps
+   the art's aspect ratio and letterboxes the sides, which shifts it off
+   from the percentage-positioned left/right page overlays). In this
+   narrow width band the letterboxing is bad enough that even a
+   non-uniform stretch is worth it to keep the overlays aligned with the
+   art. ─────────────────────────────────────────────────────────────── */
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 601px) and (max-width: 882px) {
+  .pb-page-root {
+    background-size: 100% 100%, cover !important;
+  }
+}
+
+/* ─── /pathogen-book — mid-width phone landscape (~612x525 to 927x525) ───
+   Category tab strip and left-page microbe grid nudged another 200px
+   left in this width band, same idea as the iPad nudge above but a
+   bigger offset for this narrower range. ────────────────────────────── */
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 612px) and (max-width: 960px) {
+  .pb-tab-nav {
+    left: calc(13% - 60px) !important;
+  }
+  .pb-left-page {
+    left: calc(22% - 30px) !important;
+  }
+}
+
 /* ─── /pathogen-book — iPad landscape only (1024x768, 1180x820, 1366x1024) ──
    The two background layers normally use `background-size: auto 100%, cover`
    so the book art keeps its aspect ratio and gets letterboxed on the sides.

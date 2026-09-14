@@ -357,7 +357,7 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
       {/* ── Category tab strip — transparent overlays aligned to the book's visual sidebar ── */}
       <div
         className="pb-tab-nav absolute z-20 flex flex-col"
-        style={{ left: "13%", top: "8%", width: "5.5vw", height: "49vh" }}
+        style={{ left: "13%", top: "8%", width: "7vw", height: "49vh" }}
       >
         {TABS.map(({ mode, href, label }) => (
           <Link
