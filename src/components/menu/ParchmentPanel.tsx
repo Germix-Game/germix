@@ -18,7 +18,7 @@ import type { ReactNode } from "react";
 const PAPER_WIDTH = "44%";
 const PAPER_TOP = "90%";
 const PAPER_LEFT = "50%";
-const PAPER_OPACITY = 0.88;
+const PAPER_OPACITY = 1;
 
 /**
  * Where the content sits on the paper, as a percentage of the PAPER's height.

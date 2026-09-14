@@ -126,28 +126,29 @@ describe('getBookSlots', () => {
     clue('CLINICAL_MANIFESTATION', 'Abscess', 4),
   ]
 
-  it('reveals card data only for opened slots and withholds it for the rest', async () => {
+  it('reveals card data for every slot the microbe has — an unlocked microbe shows all its clues', async () => {
     vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(fullClues as never)
 
-    const slots = await getBookSlots('microbe-1', [0, 2])
+    const slots = await getBookSlots('microbe-1')
 
     const byIndex = Object.fromEntries(slots.map((s) => [s.slotIndex, s]))
     expect(byIndex[0].opened).toBe(true)
     expect(byIndex[0].card?.imageUrl).toBe('/Gram +.png')
+    expect(byIndex[1].opened).toBe(true)
+    expect(byIndex[1].card?.imageUrl).toBe('/Capsule.png')
     expect(byIndex[2].opened).toBe(true)
     expect(byIndex[2].card?.imageUrl).toBe('/Catalase+.png')
-    // Unopened slots exist as placeholders but carry NO card data (no leak).
-    expect(byIndex[1].opened).toBe(false)
-    expect(byIndex[1].card).toBeNull()
-    expect(byIndex[4].opened).toBe(false)
-    expect(byIndex[4].card).toBeNull()
+    expect(byIndex[3].opened).toBe(true)
+    expect(byIndex[3].card?.imageUrl).toBe('/Tumbling.png')
+    expect(byIndex[4].opened).toBe(true)
+    expect(byIndex[4].card?.imageUrl).toBe('/Abscess.png')
   })
 
-  it('maps a stored slot index to the same card the game showed in that slot', async () => {
-    // Slot 2 is the lab slot → 'Catalase+'. A stored index of 2 must resolve to
-    // that card, proving the book uses the fixed slot layout, not raw clue order.
+  it('maps a slot index to the same card the game showed in that slot', async () => {
+    // Slot 2 is the lab slot → 'Catalase+', proving the book uses the fixed
+    // slot layout, not raw clue order.
     vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(fullClues as never)
-    const slots = await getBookSlots('microbe-1', [2])
+    const slots = await getBookSlots('microbe-1')
     const lab = slots.find((s) => s.slotIndex === 2)
     expect(lab?.card?.imageUrl).toBe('/Catalase+.png')
     expect(lab?.category).toBe('LAB_CHARACTERISTIC')
@@ -156,7 +157,7 @@ describe('getBookSlots', () => {
   it('omits slots the microbe has no clue for', async () => {
     // Only a Gram-stain clue exists → slots 1–4 have no card and are omitted.
     vi.mocked(prisma.microbeClue.findMany).mockResolvedValue([clue('GRAM_STAIN', 'Gram +', 0)] as never)
-    const slots = await getBookSlots('microbe-1', [0])
+    const slots = await getBookSlots('microbe-1')
     expect(slots).toHaveLength(1)
     expect(slots[0].slotIndex).toBe(0)
     expect(slots[0].opened).toBe(true)
@@ -164,7 +165,7 @@ describe('getBookSlots', () => {
 
   it('queries clues with the stable [sortOrder, clueCardId] ordering', async () => {
     vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(fullClues as never)
-    await getBookSlots('microbe-1', [])
+    await getBookSlots('microbe-1')
     expect(prisma.microbeClue.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }] }),
     )

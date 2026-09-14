@@ -503,33 +503,80 @@
 
 /* ─── /select page — iPad landscape only ─────────────────────────────
    Touch (pointer: coarse) + landscape + tablet width range, so real
-   desktops (mouse pointer) keep the original layout untouched. ────── */
+   desktops (mouse pointer) keep the original layout untouched.
+   Every offset here uses vw (not vh/%) on BOTH axes — iPad mini
+   (1024x768, 4:3), iPad Air (1180x820) and iPad Pro (1366x1024, 4:3)
+   all fall in this bucket with different aspect ratios, and vh/%
+   verticals would drift relative to the vw-sized cards on each one.
+   vw-only keeps the rectangle's shape identical across all three, and
+   corner pairs (bacteria/parasite, fungi/virus) mirror the same width
+   and margins so they stay equal in size to their counterpart. ────── */
 @media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) {
   .select-bacteria-card {
     width: 44vw !important;
     left: 6vw !important;
     top: 8vw !important;
+    right: auto !important;
+    bottom: auto !important;
   }
   .select-parasite-card {
     width: 44vw !important;
-    bottom: 10vw !important;
+    right: 6vw !important;
+    bottom: 8vw !important;
+    left: auto !important;
+    top: auto !important;
+  }
+  .select-fungi-card {
+    width: 28vw !important;
+    left: 28vw !important;
+    bottom: 5.99vw !important;
+    top: auto !important;
+  }
+  .select-virus-card {
+    width: 28vw !important;
+    left: 72vw !important;
+    top: 5.69vw !important;
+    bottom: auto !important;
   }
 }
 
 /* ─── /select page — iPhone landscape only ────────────────────────────
    Short landscape height distinguishes phones from iPads/desktop here
-   (large phones can exceed 768px in width, so width alone isn't enough). */
+   (large phones can exceed 768px in width, so width alone isn't enough).
+   iPhone 12 (844x390), 16 Pro Max (956x440) and 15 Pro Max (932x430) all
+   land in this bucket at slightly different widths/heights, so — same
+   reasoning as the iPad block above — every offset is vw-only on both
+   axes to keep the rectangle's shape identical across all three, with
+   mirrored corner pairs so bacteria/parasite and fungi/virus stay equal
+   to their counterpart. Sizes here are smaller than the iPad bucket
+   (34vw/22vw vs. 44vw/28vw) so cards scale down for phones and up for
+   tablets rather than just inheriting one shared size. ──────────────── */
 @media (orientation: landscape) and (pointer: coarse) and (max-height: 500px) {
   .select-bacteria-card {
     width: 34vw !important;
-    top: 0% !important;
-    right: 8% !important;
-    transform: translateX(20px) !important;
+    left: 4vw !important;
+    top: 4vw !important;
+    right: auto !important;
+    bottom: auto !important;
   }
   .select-parasite-card {
     width: 34vw !important;
-    bottom: 0% !important;
-    transform: translateX(-20px) !important;
+    right: 4vw !important;
+    bottom: 4vw !important;
+    left: auto !important;
+    top: auto !important;
+  }
+  .select-fungi-card {
+    width: 22vw !important;
+    left: 21vw !important;
+    bottom: 2.26vw !important;
+    top: auto !important;
+  }
+  .select-virus-card {
+    width: 22vw !important;
+    left: 79vw !important;
+    top: 2.02vw !important;
+    bottom: auto !important;
   }
 }
 
