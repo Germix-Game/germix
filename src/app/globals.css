@@ -503,39 +503,48 @@
 
 /* ─── /select page — iPad landscape only ─────────────────────────────
    Touch (pointer: coarse) + landscape + tablet width range, so real
-   desktops (mouse pointer) keep the original layout untouched.
+   desktops (mouse pointer) get their own (also vw-only, see base
+   styles in page.tsx) sizing instead.
    Every offset here uses vw (not vh/%) on BOTH axes — iPad mini
    (1024x768, 4:3), iPad Air (1180x820) and iPad Pro (1366x1024, 4:3)
    all fall in this bucket with different aspect ratios, and vh/%
    verticals would drift relative to the vw-sized cards on each one.
-   vw-only keeps the rectangle's shape identical across all three, and
-   corner pairs (bacteria/parasite, fungi/virus) mirror the same width
-   and margins so they stay equal in size to their counterpart. ────── */
+   vw-only keeps the rectangle's shape identical across all three.
+   The four offsets are NOT plain mirrors of each other: each webp's
+   visible circle badge sits off-center within its own transparent
+   canvas (to make room for the curved label text), by a different
+   amount and direction per asset — bacteria/fungi/virus/parasite
+   circle centers sit at roughly (50.2%,52.1%) / (52.6%,45.0%) /
+   (46.4%,56.1%) / (41.3%,46.2%) of their image's own width/height.
+   These left/top/right/bottom values already bake in the correction
+   so the four *visible circles* (not just the four bounding boxes)
+   land on a rectangle — recompute them if any of the four assets are
+   ever swapped for art with different internal padding. ──────────── */
 @media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) {
   .select-bacteria-card {
     width: 44vw !important;
-    left: 6vw !important;
-    top: 8vw !important;
+    left: 5.91vw !important;
+    top: 7.48vw !important;
     right: auto !important;
     bottom: auto !important;
   }
   .select-parasite-card {
     width: 44vw !important;
-    right: 6vw !important;
-    bottom: 8vw !important;
+    right: 2.18vw !important;
+    bottom: 7.05vw !important;
     left: auto !important;
     top: auto !important;
   }
   .select-fungi-card {
     width: 28vw !important;
-    left: 28vw !important;
-    bottom: 5.99vw !important;
+    left: 27.28vw !important;
+    bottom: 4.54vw !important;
     top: auto !important;
   }
   .select-virus-card {
     width: 28vw !important;
-    left: 72vw !important;
-    top: 5.69vw !important;
+    left: 73vw !important;
+    top: 3.89vw !important;
     bottom: auto !important;
   }
 }
@@ -546,36 +555,37 @@
    iPhone 12 (844x390), 16 Pro Max (956x440) and 15 Pro Max (932x430) all
    land in this bucket at slightly different widths/heights, so — same
    reasoning as the iPad block above — every offset is vw-only on both
-   axes to keep the rectangle's shape identical across all three, with
-   mirrored corner pairs so bacteria/parasite and fungi/virus stay equal
-   to their counterpart. Sizes here are smaller than the iPad bucket
-   (34vw/22vw vs. 44vw/28vw) so cards scale down for phones and up for
-   tablets rather than just inheriting one shared size. ──────────────── */
+   axes to keep the rectangle's shape identical across all three, and
+   (same as the iPad block) each offset also corrects for that card's
+   own off-center circle artwork rather than mirroring its counterpart
+   exactly. Sizes here are smaller than the iPad bucket (34vw/22vw vs.
+   44vw/28vw) so cards scale down for phones and up for tablets rather
+   than just inheriting one shared size. ─────────────────────────────── */
 @media (orientation: landscape) and (pointer: coarse) and (max-height: 500px) {
   .select-bacteria-card {
     width: 34vw !important;
-    left: 4vw !important;
-    top: 4vw !important;
+    left: 13.93vw !important;
+    top: 3.6vw !important;
     right: auto !important;
     bottom: auto !important;
   }
   .select-parasite-card {
     width: 34vw !important;
-    right: 4vw !important;
-    bottom: 4vw !important;
+    right: 11.05vw !important;
+    bottom: 3.27vw !important;
     left: auto !important;
     top: auto !important;
   }
   .select-fungi-card {
     width: 22vw !important;
-    left: 21vw !important;
-    bottom: 2.26vw !important;
+    left: 30.43vw !important;
+    bottom: 1.12vw !important;
     top: auto !important;
   }
   .select-virus-card {
     width: 22vw !important;
-    left: 79vw !important;
-    top: 2.02vw !important;
+    left: 69.78vw !important;
+    top: 0.61vw !important;
     bottom: auto !important;
   }
 }

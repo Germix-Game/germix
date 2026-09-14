@@ -70,7 +70,7 @@ export default function LevelSelectPage() {
         className={`select-bacteria-card absolute select-none transition-transform duration-200 ${
           starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
         }`}
-        style={{ top: "5%", left: "11%", width: "34.4vw" }}
+        style={{ top: "2.81vw", left: "10.93vw", width: "34.4vw" }}
       />
 
       {/* Parasite level button — bottom-right (now playable, same as Bacteria) */}
@@ -83,7 +83,7 @@ export default function LevelSelectPage() {
         className={`select-parasite-card absolute select-none transition-transform duration-200 ${
           starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
         }`}
-        style={{ bottom: "5%", right: "11%", width: "34.4vw" }}
+        style={{ bottom: "2.81vw", right: "16.02vw", width: "34.4vw" }}
       />
 
       <img
@@ -91,7 +91,7 @@ export default function LevelSelectPage() {
         alt="Fungi — locked, coming soon"
         draggable={false}
         className="select-fungi-card absolute -translate-x-1/2 select-none cursor-not-allowed transition-transform duration-200 hover:scale-105"
-        style={{ bottom: "2%", left: "28.2%", width: "21.6vw" }}
+        style={{ bottom: "1.02vw", left: "27.64vw", width: "21.6vw" }}
       />
 
       <img
@@ -99,7 +99,7 @@ export default function LevelSelectPage() {
         alt="Virus — locked, coming soon"
         draggable={false}
         className="select-virus-card absolute -translate-x-1/2 select-none cursor-not-allowed transition-transform duration-200 hover:scale-105"
-        style={{ top: "2%", left: "71.8%", width: "21.6vw" }}
+        style={{ top: "0.17vw", left: "66.57vw", width: "21.6vw" }}
       />
 
       {/* Back button — top-left */}

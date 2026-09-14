@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import sharp from 'sharp'
 
 /**
  * The 4 level-select cards (bacteria/parasite = playable corners,
@@ -15,6 +16,16 @@ import { fileURLToPath } from 'node:url'
  * mirroring its counterpart fails this test instead of silently drifting
  * (this caught a real bug: fungi/virus `left` values on the iPad/iPhone
  * breakpoints weren't actually under bacteria/parasite's columns).
+ *
+ * The rectangle that matters is the one a player actually SEES — the
+ * circular badge inside each webp — not the image's own bounding box.
+ * Every one of the 4 assets has extra transparent canvas around the
+ * circle to make room for a curved label ("Bacteria" / "Fungi" / ...)
+ * that pokes out in a different direction per asset, so the circle sits
+ * off-center within its bounding box by a different amount for every
+ * card. This test measures each circle's real position via the webp's
+ * alpha channel (see `circleOffsetFraction` below) and checks that those
+ * circle centers — not the raw CSS box centers — land on a rectangle.
  */
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -24,6 +35,27 @@ const assetsDir = path.join(dirname, '../../../public/assets/game-selection')
 
 type Card = 'bacteria' | 'parasite' | 'fungi' | 'virus'
 type Style = Partial<Record<'top' | 'left' | 'right' | 'bottom' | 'width', string>>
+
+const CARDS: Card[] = ['bacteria', 'parasite', 'fungi', 'virus']
+const ASSET_FILE: Record<Card, string> = {
+  bacteria: 'bateria_level.webp',
+  parasite: 'parasite_level.webp',
+  fungi: 'fungi_select.webp',
+  virus: 'virus_select.webp',
+}
+const CLASS_NAME: Record<Card, string> = {
+  bacteria: 'select-bacteria-card',
+  parasite: 'select-parasite-card',
+  fungi: 'select-fungi-card',
+  virus: 'select-virus-card',
+}
+// fungi/virus are horizontally centered on their `left` via Tailwind's -translate-x-1/2
+const CENTERED_X: Record<Card, boolean> = {
+  bacteria: false,
+  parasite: false,
+  fungi: true,
+  virus: true,
+}
 
 // --- read each card's real intrinsic aspect ratio straight from its webp header,
 // so the test tracks reality if an asset is ever swapped for a differently-shaped one.
@@ -47,26 +79,52 @@ function webpAspectRatio(file: string): number {
   return h / w
 }
 
-const ASPECT: Record<Card, number> = {
-  bacteria: webpAspectRatio('bateria_level.webp'),
-  parasite: webpAspectRatio('parasite_level.webp'),
-  fungi: webpAspectRatio('fungi_select.webp'),
-  virus: webpAspectRatio('virus_select.webp'),
-}
+// --- find the visible circle badge's bounding box via the alpha channel, and return
+// how far its center sits from the *image's own* bounding-box center, as a fraction
+// of the image's width/height (so the correction scales with however big the card is
+// rendered). The circle produces a much longer contiguous opaque run per row than the
+// thin curved label text does, which is what separates "circle row" from "label row".
+async function circleOffsetFraction(file: string): Promise<{ x: number; y: number }> {
+  const { data, info } = await sharp(path.join(assetsDir, file))
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const { width, height, channels } = info
 
-// fungi/virus are horizontally centered on their `left` via Tailwind's -translate-x-1/2
-const CENTERED_X: Record<Card, boolean> = {
-  bacteria: false,
-  parasite: false,
-  fungi: true,
-  virus: true,
-}
+  const rows = new Array<{ start: number; len: number }>(height)
+  let maxRunLen = 0
+  for (let y = 0; y < height; y++) {
+    let runStart = -1
+    let bestStart = 0
+    let bestLen = 0
+    for (let x = 0; x <= width; x++) {
+      const opaque = x < width && data[(y * width + x) * channels + 3] > 128
+      if (opaque) {
+        if (runStart === -1) runStart = x
+      } else if (runStart !== -1) {
+        const len = x - runStart
+        if (len > bestLen) { bestLen = len; bestStart = runStart }
+        runStart = -1
+      }
+    }
+    rows[y] = { start: bestStart, len: bestLen }
+    if (bestLen > maxRunLen) maxRunLen = bestLen
+  }
 
-const CLASS_NAME: Record<Card, string> = {
-  bacteria: 'select-bacteria-card',
-  parasite: 'select-parasite-card',
-  fungi: 'select-fungi-card',
-  virus: 'select-virus-card',
+  const threshold = maxRunLen * 0.5
+  let minX = width, maxX = 0, minY = height, maxY = 0
+  for (let y = 0; y < height; y++) {
+    const row = rows[y]
+    if (row.len < threshold) continue
+    minY = Math.min(minY, y)
+    maxY = Math.max(maxY, y)
+    minX = Math.min(minX, row.start)
+    maxX = Math.max(maxX, row.start + row.len)
+  }
+
+  const circleCx = (minX + maxX) / 2
+  const circleCy = (minY + maxY) / 2
+  return { x: circleCx / width - 0.5, y: circleCy / height - 0.5 }
 }
 
 // --- extract the literal `style={{ ... }}` that follows a card's className in page.tsx
@@ -104,7 +162,7 @@ function extractOverrideStyle(mediaMarker: string, card: Card): Style {
 function parseDeclarations(text: string, separator: ',' | ';'): Style {
   const style: Style = {}
   for (const rawDecl of text.split(separator)) {
-    const m = rawDecl.match(/(top|left|right|bottom|width)\s*:\s*"?([\w.%]+)"?/)
+    const m = rawDecl.match(/(top|left|right|bottom|width)\s*:\s*"?(-?[\w.%]+)"?/)
     if (m) style[m[1] as keyof Style] = m[2]
   }
   return style
@@ -122,43 +180,19 @@ function mergeStyle(base: Style, override?: Style): Style {
   return merged
 }
 
-function lengthToPx(raw: string, viewportW: number, viewportH: number, axis: 'x' | 'y'): number {
-  const m = raw.match(/^(-?[\d.]+)(vw|%)$/)
-  if (!m) throw new Error(`Unparsable CSS length: "${raw}"`)
-  const value = parseFloat(m[1])
-  const unit = m[2]
-  // `vw` is always a fraction of viewport WIDTH regardless of which axis it's
-  // applied to; `%` on top/bottom is relative to height, left/right/width to width.
-  if (unit === 'vw') return (value / 100) * viewportW
-  return (value / 100) * (axis === 'x' ? viewportW : viewportH)
+// Every declaration on this page (base styles + every breakpoint override) is
+// vw-only on both axes — see the comments in page.tsx / globals.css for why.
+function vwToPx(raw: string, viewportW: number): number {
+  const m = raw.match(/^(-?[\d.]+)vw$/)
+  if (!m) throw new Error(`Expected a vw length, got: "${raw}"`)
+  return (parseFloat(m[1]) / 100) * viewportW
 }
 
-function centerOf(card: Card, style: Style, viewportW: number, viewportH: number) {
-  if (!style.width) throw new Error(`${card}: no width resolved`)
-  const width = lengthToPx(style.width, viewportW, viewportH, 'x')
-  const height = width * ASPECT[card]
-
-  let cx: number
-  if (style.left !== undefined) {
-    const leftPx = lengthToPx(style.left, viewportW, viewportH, 'x')
-    cx = CENTERED_X[card] ? leftPx : leftPx + width / 2
-  } else if (style.right !== undefined) {
-    const rightPx = lengthToPx(style.right, viewportW, viewportH, 'x')
-    cx = viewportW - rightPx - width / 2
-  } else {
-    throw new Error(`${card}: neither left nor right resolved`)
-  }
-
-  let cy: number
-  if (style.top !== undefined) {
-    cy = lengthToPx(style.top, viewportW, viewportH, 'y') + height / 2
-  } else if (style.bottom !== undefined) {
-    cy = viewportH - lengthToPx(style.bottom, viewportW, viewportH, 'y') - height / 2
-  } else {
-    throw new Error(`${card}: neither top nor bottom resolved`)
-  }
-
-  return { cx, cy }
+const ASPECT: Record<Card, number> = {
+  bacteria: webpAspectRatio(ASSET_FILE.bacteria),
+  parasite: webpAspectRatio(ASSET_FILE.parasite),
+  fungi: webpAspectRatio(ASSET_FILE.fungi),
+  virus: webpAspectRatio(ASSET_FILE.virus),
 }
 
 const BASE_STYLE: Record<Card, Style> = {
@@ -183,50 +217,94 @@ function resolvedStyle(card: Card, viewportW: number, viewportH: number, coarseP
   return style
 }
 
-function centersFor(viewportW: number, viewportH: number, coarsePointer: boolean) {
-  const cards: Card[] = ['bacteria', 'parasite', 'fungi', 'virus']
-  const centers = {} as Record<Card, { cx: number; cy: number }>
-  for (const card of cards) {
-    centers[card] = centerOf(card, resolvedStyle(card, viewportW, viewportH, coarsePointer), viewportW, viewportH)
-  }
-  return centers
-}
-
-function expectRectangle(viewportW: number, viewportH: number, coarsePointer: boolean, tolerancePx: number) {
-  const { bacteria, virus, fungi, parasite } = centersFor(viewportW, viewportH, coarsePointer)
-  // top row: bacteria (TL) / virus (TR) share center-y
-  expect(Math.abs(bacteria.cy - virus.cy)).toBeLessThanOrEqual(tolerancePx)
-  // bottom row: fungi (BL) / parasite (BR) share center-y
-  expect(Math.abs(fungi.cy - parasite.cy)).toBeLessThanOrEqual(tolerancePx)
-  // left column: bacteria (TL) / fungi (BL) share center-x
-  expect(Math.abs(bacteria.cx - fungi.cx)).toBeLessThanOrEqual(tolerancePx)
-  // right column: virus (TR) / parasite (BR) share center-x
-  expect(Math.abs(virus.cx - parasite.cx)).toBeLessThanOrEqual(tolerancePx)
-}
-
 describe('/select page — 4-card rectangle alignment', () => {
-  describe('desktop (mouse, base styles only)', () => {
-    // Base styles mix `%` (height-relative on top/bottom) with viewport width,
-    // so exact row alignment is inherently aspect-ratio dependent — columns are
-    // exact (both axes resolve from width only), rows get a generous tolerance.
+  let CIRCLE_OFFSET: Record<Card, { x: number; y: number }>
+
+  beforeAll(async () => {
+    const entries = await Promise.all(CARDS.map(async (card) => [card, await circleOffsetFraction(ASSET_FILE[card])] as const))
+    CIRCLE_OFFSET = Object.fromEntries(entries) as Record<Card, { x: number; y: number }>
+  })
+
+  it("every card's circle badge is measurably off-center in its own canvas", () => {
+    // sanity check on the measurement itself: if this ever starts failing because
+    // an asset was re-exported cropped tight to the circle, the hand-tuned CSS
+    // offsets in page.tsx / globals.css need to be re-derived for the new art.
+    for (const card of CARDS) {
+      expect(Math.abs(CIRCLE_OFFSET[card].x) + Math.abs(CIRCLE_OFFSET[card].y)).toBeGreaterThan(0.01)
+    }
+  })
+
+  // The *visible circle's* center, in px, for a card resolved at a given viewport —
+  // this is the CSS box center shifted by that card's measured circle offset.
+  function circleCenterOf(card: Card, style: Style, viewportW: number, viewportH: number) {
+    if (!style.width) throw new Error(`${card}: no width resolved`)
+    const width = vwToPx(style.width, viewportW)
+    const height = width * ASPECT[card]
+
+    let boxCx: number
+    if (style.left !== undefined) {
+      const leftPx = vwToPx(style.left, viewportW)
+      boxCx = CENTERED_X[card] ? leftPx : leftPx + width / 2
+    } else if (style.right !== undefined) {
+      boxCx = viewportW - vwToPx(style.right, viewportW) - width / 2
+    } else {
+      throw new Error(`${card}: neither left nor right resolved`)
+    }
+
+    let boxCy: number
+    if (style.top !== undefined) {
+      boxCy = vwToPx(style.top, viewportW) + height / 2
+    } else if (style.bottom !== undefined) {
+      boxCy = viewportH - vwToPx(style.bottom, viewportW) - height / 2
+    } else {
+      throw new Error(`${card}: neither top nor bottom resolved`)
+    }
+
+    const offset = CIRCLE_OFFSET[card]
+    return { cx: boxCx + offset.x * width, cy: boxCy + offset.y * height }
+  }
+
+  function circleCentersFor(viewportW: number, viewportH: number, coarsePointer: boolean) {
+    const centers = {} as Record<Card, { cx: number; cy: number }>
+    for (const card of CARDS) {
+      centers[card] = circleCenterOf(card, resolvedStyle(card, viewportW, viewportH, coarsePointer), viewportW, viewportH)
+    }
+    return centers
+  }
+
+  function expectRectangle(viewportW: number, viewportH: number, coarsePointer: boolean, tolerancePx: number) {
+    const { bacteria, virus, fungi, parasite } = circleCentersFor(viewportW, viewportH, coarsePointer)
+    // top row: bacteria (TL) / virus (TR) share center-y
+    expect(Math.abs(bacteria.cy - virus.cy)).toBeLessThanOrEqual(tolerancePx)
+    // bottom row: fungi (BL) / parasite (BR) share center-y
+    expect(Math.abs(fungi.cy - parasite.cy)).toBeLessThanOrEqual(tolerancePx)
+    // left column: bacteria (TL) / fungi (BL) share center-x
+    expect(Math.abs(bacteria.cx - fungi.cx)).toBeLessThanOrEqual(tolerancePx)
+    // right column: virus (TR) / parasite (BR) share center-x
+    expect(Math.abs(virus.cx - parasite.cx)).toBeLessThanOrEqual(tolerancePx)
+  }
+
+  // Every breakpoint is vw-only on both axes with the circle-offset correction baked
+  // in (see page.tsx / globals.css comments), so all of them get the same tight,
+  // sub-pixel tolerance — including desktop, which previously only got a loose 15px
+  // tolerance because its `top`/`bottom` were `%` (height-relative) before this fix.
+  describe('desktop (mouse)', () => {
     it.each([
       ['1440x900', 1440, 900],
       ['1920x1080', 1920, 1080],
       ['1280x800', 1280, 800],
     ])('%s', (_label, w, h) => {
-      expectRectangle(w, h, false, 15)
+      expectRectangle(w, h, false, 2)
     })
   })
 
   describe('iPad landscape (touch, 768-1366px wide)', () => {
-    // Every override here is vw-only on both axes, so alignment is exact
-    // regardless of the device's actual aspect ratio — tight tolerance.
     it.each([
       ['iPad mini', 1024, 768],
       ['iPad Air', 1180, 820],
       ['iPad Pro', 1366, 1024],
     ])('%s (%dx%d)', (_label, w, h) => {
-      expectRectangle(w, h, true, 1)
+      expectRectangle(w, h, true, 2)
     })
   })
 
@@ -236,7 +314,7 @@ describe('/select page — 4-card rectangle alignment', () => {
       ['iPhone 16 Pro Max', 956, 440],
       ['iPhone 15 Pro Max', 932, 430],
     ])('%s (%dx%d)', (_label, w, h) => {
-      expectRectangle(w, h, true, 1)
+      expectRectangle(w, h, true, 2)
     })
   })
 })
