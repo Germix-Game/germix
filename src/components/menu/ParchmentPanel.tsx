@@ -16,34 +16,38 @@ import type { ReactNode } from "react";
 
 /** Paper size + position, as percentages of the viewport. */
 const PAPER_WIDTH = "44%";
-const PAPER_TOP = "90%";
 const PAPER_LEFT = "50%";
+const PAPER_BOTTOM = "-60px";
 const PAPER_OPACITY = 1;
+const PAPER_TOP_FALLBACK = "calc(27vh + 6.45vw + 8px)";
 
 /**
  * Where the content sits on the paper, as a percentage of the PAPER's height.
  * Because it's relative to the paper rather than the screen, this stays put
  * when the paper is resized or the window aspect changes.
  */
-const CONTENT_TOP = "32%";
+const CONTENT_TOP = "45%";
 
 // ──────────────────────────────────────────────────────────────────────────────
 
 export function ParchmentPanel({
   loaded,
+  top,
   children,
 }: {
   loaded: boolean;
+  top?: string | number;
   children?: ReactNode;
 }) {
   return (
     <div
       className="@container absolute z-10"
       style={{
-        top: PAPER_TOP,
+        top: top ?? PAPER_TOP_FALLBACK,
+        bottom: PAPER_BOTTOM,
         left: PAPER_LEFT,
         width: PAPER_WIDTH,
-        transform: "translate(-50%, -50%)",
+        transform: "translateX(-50%)",
         animation: loaded ? "menu-fade-in 650ms ease-out 200ms both" : "none",
       }}
     >
@@ -55,7 +59,7 @@ export function ParchmentPanel({
         src="/assets/ui/main-page-element-bg.webp"
         alt=""
         aria-hidden="true"
-        className="pointer-events-none w-full select-none"
+        className="pointer-events-none h-full w-full object-fill select-none"
         style={{ opacity: PAPER_OPACITY }}
         draggable={false}
       />
