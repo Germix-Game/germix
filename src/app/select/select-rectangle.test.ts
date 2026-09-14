@@ -203,6 +203,7 @@ const BASE_STYLE: Record<Card, Style> = {
 }
 
 const IPAD_MARKER = 'min-width: 768px) and (max-width: 1366px)'
+const SHORT_TABLET_MARKER = 'max-height: 650px'
 const IPHONE_MARKER = 'max-height: 500px'
 
 function resolvedStyle(card: Card, viewportW: number, viewportH: number, coarsePointer: boolean) {
@@ -210,6 +211,11 @@ function resolvedStyle(card: Card, viewportW: number, viewportH: number, coarseP
   const landscape = viewportW > viewportH
   if (coarsePointer && landscape && viewportW >= 768 && viewportW <= 1366) {
     style = mergeStyle(style, extractOverrideStyle(IPAD_MARKER, card))
+  }
+  // shorter than a real iPad but still tablet-width (e.g. 1242x602-1364x602,
+  // reported as overlapping) — see globals.css comment above that block.
+  if (coarsePointer && landscape && viewportW >= 768 && viewportW <= 1366 && viewportH <= 650) {
+    style = mergeStyle(style, extractOverrideStyle(SHORT_TABLET_MARKER, card))
   }
   if (coarsePointer && landscape && viewportH <= 500) {
     style = mergeStyle(style, extractOverrideStyle(IPHONE_MARKER, card))
@@ -264,6 +270,19 @@ describe('/select page — 4-card rectangle alignment', () => {
     return { cx: boxCx + offset.x * width, cy: boxCy + offset.y * height }
   }
 
+  // Top/bottom pixel edges of a card's CSS box (not the circle) — used only to
+  // catch the two rows physically overlapping, independent of whether their
+  // circle centers happen to be aligned.
+  function verticalBoxEdges(style: Style, viewportW: number, viewportH: number, aspect: number) {
+    if (!style.width) throw new Error('no width resolved')
+    const width = vwToPx(style.width, viewportW)
+    const height = width * aspect
+    const top = style.top !== undefined
+      ? vwToPx(style.top, viewportW)
+      : viewportH - vwToPx(style.bottom!, viewportW) - height
+    return { top, bottom: top + height }
+  }
+
   function circleCentersFor(viewportW: number, viewportH: number, coarsePointer: boolean) {
     const centers = {} as Record<Card, { cx: number; cy: number }>
     for (const card of CARDS) {
@@ -282,6 +301,13 @@ describe('/select page — 4-card rectangle alignment', () => {
     expect(Math.abs(bacteria.cx - fungi.cx)).toBeLessThanOrEqual(tolerancePx)
     // right column: virus (TR) / parasite (BR) share center-x
     expect(Math.abs(virus.cx - parasite.cx)).toBeLessThanOrEqual(tolerancePx)
+
+    // rows must not physically collide, regardless of how well-aligned their
+    // circle centers are (this is what "1242x602 through 1364x602 overlap"
+    // actually reported: the boxes touching, not a rectangle-shape mismatch).
+    const bacteriaBox = verticalBoxEdges(resolvedStyle('bacteria', viewportW, viewportH, coarsePointer), viewportW, viewportH, ASPECT.bacteria)
+    const parasiteBox = verticalBoxEdges(resolvedStyle('parasite', viewportW, viewportH, coarsePointer), viewportW, viewportH, ASPECT.parasite)
+    expect(bacteriaBox.bottom).toBeLessThanOrEqual(parasiteBox.top)
   }
 
   // Every breakpoint is vw-only on both axes with the circle-offset correction baked
@@ -303,6 +329,19 @@ describe('/select page — 4-card rectangle alignment', () => {
       ['iPad mini', 1024, 768],
       ['iPad Air', 1180, 820],
       ['iPad Pro', 1366, 1024],
+    ])('%s (%dx%d)', (_label, w, h) => {
+      expectRectangle(w, h, true, 2)
+    })
+  })
+
+  describe('short tablet-width landscape (touch, 768-1366px wide, <=650px tall)', () => {
+    // regression case: reported as overlapping (bacteria/parasite rows colliding)
+    // when the iPad block's taller-aspect-ratio margins applied to a much
+    // shorter tablet-width viewport.
+    it.each([
+      ['reported overlap, narrow end', 1242, 602],
+      ['reported overlap, wide end', 1364, 602],
+      ['shortest supported height', 1366, 590],
     ])('%s (%dx%d)', (_label, w, h) => {
       expectRectangle(w, h, true, 2)
     })

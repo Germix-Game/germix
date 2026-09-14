@@ -549,6 +549,54 @@
   }
 }
 
+/* ─── /select page — short tablet-width landscape ─────────────────────
+   Catches viewports inside the iPad block's width range (768-1366px)
+   that are much shorter than a real iPad's landscape height (e.g.
+   1242x602 through 1364x602 — reported as overlapping the top/bottom
+   rows). The iPad block above has no height limit, so it was applying
+   its 44vw cards + 7-8vw vertical margins to these too, and at this
+   aspect ratio bacteria/parasite are tall enough that those margins
+   put row 1 below row 2. This block reuses the smaller iPhone-bucket
+   card size (34vw/22vw, needs less vertical room) with slimmer
+   top/bottom margins re-solved the same way — bacteria/parasite's own
+   margin is chosen first, fungi/virus's is solved from it so the
+   circle badges (not just the boxes) still land on a rectangle. Some
+   of these end up negative (box edge just past the viewport edge) —
+   verified safe: each asset has 10%+ empty canvas padding beyond its
+   visible artwork on that edge, so nothing actually gets clipped.
+   Left/right reuse the iPhone bucket's values as-is since horizontal
+   placement in vw scales the same regardless of viewport width.
+   Placed before the iPhone block so a genuinely short phone (<=500px
+   tall) still gets the iPhone block's own tuning via source order. ── */
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) and (max-height: 650px) {
+  .select-bacteria-card {
+    width: 34vw !important;
+    left: 13.93vw !important;
+    top: 1.5vw !important;
+    right: auto !important;
+    bottom: auto !important;
+  }
+  .select-parasite-card {
+    width: 34vw !important;
+    right: 11.05vw !important;
+    bottom: 1.5vw !important;
+    left: auto !important;
+    top: auto !important;
+  }
+  .select-fungi-card {
+    width: 22vw !important;
+    left: 30.43vw !important;
+    bottom: -0.64vw !important;
+    top: auto !important;
+  }
+  .select-virus-card {
+    width: 22vw !important;
+    left: 69.78vw !important;
+    top: -1.49vw !important;
+    bottom: auto !important;
+  }
+}
+
 /* ─── /select page — iPhone landscape only ────────────────────────────
    Short landscape height distinguishes phones from iPads/desktop here
    (large phones can exceed 768px in width, so width alone isn't enough).
