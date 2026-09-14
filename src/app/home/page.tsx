@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MenuButtons } from "@/components/menu/MenuButtons";
+import { ParchmentPanel } from "@/components/menu/ParchmentPanel";
 import { createClient } from "@/utils/supabase/client";
 import { HOME_CRITICAL_ASSETS } from "@/lib/preload-images";
 import { PostTestPopup } from "@/components/menu/PostTestPopup";
@@ -183,27 +184,6 @@ export default function HomePage() {
           </div>
         ))}
 
-        {/* Parchment element — sits behind the logo at the bottom-centre */}
-        <div
-          className="absolute left-1/2 pointer-events-none"
-          style={{
-            top: "90%",
-            width: "44%",
-            transform: "translate(-50%, -50%)",
-            opacity: 0.88,
-            animation: loaded ? "menu-fade-in 650ms ease-out 200ms both" : "none",
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/assets/ui/main-page-element-bg.webp"
-            alt=""
-            aria-hidden="true"
-            className="w-full"
-            draggable={false}
-          />
-        </div>
-
         {/* GERMIX logo — centred at 27% height */}
         <div
           className="absolute left-1/2 pointer-events-none"
@@ -281,15 +261,13 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Menu button group + POST TEST below */}
-        <div
-          className="home-menu-cluster absolute left-1/2 z-10 flex flex-col items-center gap-3"
-          style={{
-            top: "75%",
-            transform: "translate(-50%, -50%)",
-            animation: loaded ? "menu-fade-in 600ms ease-out 500ms both" : "none",
-          }}
-        >
+        {/* Parchment paper + everything that sits on it.
+            The buttons are CHILDREN of the panel, so they are positioned and
+            sized relative to the paper (via cqw units) rather than the
+            viewport. Move or resize the paper in ParchmentPanel.tsx and the
+            whole cluster follows. */}
+        <ParchmentPanel loaded={loaded}>
+        <div className="home-menu-cluster flex flex-col items-center" style={{ gap: "min(1.4cqw, 12px)" }}>
           <MenuButtons
             posttestRequired={posttestRequired}
             onPlayClick={() => setShowPosttestPopup(true)}
@@ -317,6 +295,7 @@ export default function HomePage() {
             </a>
           )}
         </div>
+        </ParchmentPanel>
 
         {showPosttestPopup && posttestPeriod && (
           <PostTestPopup
