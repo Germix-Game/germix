@@ -47,7 +47,7 @@ export default function LevelSelectPage() {
       >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/assets/game-selection/germix-graphic-game-26.webp"
+        src="/assets/game-selection/germix-graphic-game-29.webp"
         alt=""
         aria-hidden
         draggable={false}
@@ -70,7 +70,7 @@ export default function LevelSelectPage() {
         className={`select-bacteria-card absolute select-none transition-transform duration-200 ${
           starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
         }`}
-        style={{ top: "0.3%", left: "6%", width: "43vw" }}
+        style={{ top: "2.81vw", left: "10.93vw", width: "34.4vw" }}
       />
 
       {/* Parasite level button — bottom-right (now playable, same as Bacteria) */}
@@ -83,7 +83,23 @@ export default function LevelSelectPage() {
         className={`select-parasite-card absolute select-none transition-transform duration-200 ${
           starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
         }`}
-        style={{ bottom: "2%", right: "7.9%", width: "43vw" }}
+        style={{ bottom: "2.81vw", right: "16.02vw", width: "34.4vw" }}
+      />
+
+      <img
+        src="/assets/game-selection/fungi_select.webp"
+        alt="Fungi — locked, coming soon"
+        draggable={false}
+        className="select-fungi-card absolute -translate-x-1/2 select-none cursor-not-allowed transition-transform duration-200 hover:scale-105"
+        style={{ bottom: "1.02vw", left: "27.64vw", width: "21.6vw" }}
+      />
+
+      <img
+        src="/assets/game-selection/virus_select.webp"
+        alt="Virus — locked, coming soon"
+        draggable={false}
+        className="select-virus-card absolute -translate-x-1/2 select-none cursor-not-allowed transition-transform duration-200 hover:scale-105"
+        style={{ top: "0.17vw", left: "66.57vw", width: "21.6vw" }}
       />
 
       {/* Back button — top-left */}

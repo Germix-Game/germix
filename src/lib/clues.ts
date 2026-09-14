@@ -54,9 +54,10 @@ export async function getRoundClues(microbeId: string) {
   return selectSlotClues(all)
 }
 
-// One Pathogen Book slot: which fixed slot it is, whether this player has opened
-// it, and the card itself — present ONLY when opened, so unopened cards are never
-// sent to the client (the book shows only what the player actually revealed).
+// One Pathogen Book slot: which fixed slot it is, and the card itself. `opened`
+// is always true here — once a microbe is unlocked (the player has seen it),
+// the book reveals all of its clue cards, not just the ones flipped in the
+// round that unlocked it.
 export type BookSlot = {
   slotIndex: number
   category: CardCategory
@@ -64,30 +65,26 @@ export type BookSlot = {
   card: { id: string; category: CardCategory; imageUrl: string } | null
 }
 
-// Build the per-slot Pathogen Book view for one microbe and one player's opened
-// slots. Uses the SAME selectSlotClues mapping the game uses, so a stored slot
-// index (0–4) resolves to exactly the card the player saw in that slot. Slots the
-// microbe has no clue for are omitted (nothing to discover there).
-export async function getBookSlots(microbeId: string, openedSlots: number[]): Promise<BookSlot[]> {
+// Build the per-slot Pathogen Book view for one microbe. Uses the SAME
+// selectSlotClues mapping the game uses, so a slot index (0–4) resolves to
+// exactly the card the player saw in that slot. Slots the microbe has no clue
+// for are omitted (nothing to discover there). Callers must only invoke this
+// for a microbe the player has unlocked — every returned slot is fully opened.
+export async function getBookSlots(microbeId: string): Promise<BookSlot[]> {
   const all = await prisma.microbeClue.findMany({
     where: { microbeId },
     orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }],
     include: { clueCard: { select: { id: true, category: true, imageUrl: true } } },
   })
 
-  const opened = new Set(openedSlots)
-
   return selectSlotClues(all).flatMap((entry, slotIndex) => {
     if (!entry) return [] // microbe lacks this slot's category — no card exists
-    const isOpen = opened.has(slotIndex)
     const { clueCard } = entry
     return [{
       slotIndex,
       category: clueCard.category,
-      opened: isOpen,
-      card: isOpen
-        ? { id: clueCard.id, category: clueCard.category, imageUrl: clueCard.imageUrl }
-        : null,
+      opened: true,
+      card: { id: clueCard.id, category: clueCard.category, imageUrl: clueCard.imageUrl },
     }]
   })
 }

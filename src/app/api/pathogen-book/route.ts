@@ -55,11 +55,7 @@ export async function GET(request: NextRequest) {
     if (withFirstClues && playerId) {
       const firstUnlocked = result.find((m) => m.unlocked)
       if (firstUnlocked) {
-        const unlock = await prisma.playerMicrobeUnlocked.findUnique({
-          where: { playerId_microbeId: { playerId, microbeId: firstUnlocked.id } },
-          select: { cardSlotsOpened: true },
-        })
-        const slots = await getBookSlots(firstUnlocked.id, unlock?.cardSlotsOpened ?? [])
+        const slots = await getBookSlots(firstUnlocked.id)
         return Response.json({
           microbes: result,
           firstMicrobeId: firstUnlocked.id,

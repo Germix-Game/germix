@@ -23,18 +23,18 @@ export async function GET(
     return Response.json({ error: { code: 'unauthorized', message: 'Sign in to view details.' } }, { status: 401 })
   }
 
-  // Verify the microbe is unlocked by this player, and read which slots they've
-  // opened — the book reveals only those cards.
+  // Verify the microbe is unlocked by this player — once unlocked, the book
+  // reveals all of its clue cards.
   const unlocked = await prisma.playerMicrobeUnlocked.findUnique({
     where: { playerId_microbeId: { playerId, microbeId } },
-    select: { cardSlotsOpened: true },
+    select: { playerId: true },
   })
 
   if (!unlocked) {
     return Response.json({ error: { code: 'locked', message: 'Answer this microbe correctly to unlock its details.' } }, { status: 403 })
   }
 
-  const slots = await getBookSlots(microbeId, unlocked.cardSlotsOpened)
+  const slots = await getBookSlots(microbeId)
 
   return Response.json({ slots })
 }

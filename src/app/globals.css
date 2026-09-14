@@ -503,33 +503,138 @@
 
 /* ─── /select page — iPad landscape only ─────────────────────────────
    Touch (pointer: coarse) + landscape + tablet width range, so real
-   desktops (mouse pointer) keep the original layout untouched. ────── */
+   desktops (mouse pointer) get their own (also vw-only, see base
+   styles in page.tsx) sizing instead.
+   Every offset here uses vw (not vh/%) on BOTH axes — iPad mini
+   (1024x768, 4:3), iPad Air (1180x820) and iPad Pro (1366x1024, 4:3)
+   all fall in this bucket with different aspect ratios, and vh/%
+   verticals would drift relative to the vw-sized cards on each one.
+   vw-only keeps the rectangle's shape identical across all three.
+   The four offsets are NOT plain mirrors of each other: each webp's
+   visible circle badge sits off-center within its own transparent
+   canvas (to make room for the curved label text), by a different
+   amount and direction per asset — bacteria/fungi/virus/parasite
+   circle centers sit at roughly (50.2%,52.1%) / (52.6%,45.0%) /
+   (46.4%,56.1%) / (41.3%,46.2%) of their image's own width/height.
+   These left/top/right/bottom values already bake in the correction
+   so the four *visible circles* (not just the four bounding boxes)
+   land on a rectangle — recompute them if any of the four assets are
+   ever swapped for art with different internal padding. ──────────── */
 @media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) {
   .select-bacteria-card {
     width: 44vw !important;
-    left: 6vw !important;
-    top: 8vw !important;
+    left: 5.91vw !important;
+    top: 7.48vw !important;
+    right: auto !important;
+    bottom: auto !important;
   }
   .select-parasite-card {
     width: 44vw !important;
-    bottom: 10vw !important;
+    right: 2.18vw !important;
+    bottom: 7.05vw !important;
+    left: auto !important;
+    top: auto !important;
+  }
+  .select-fungi-card {
+    width: 28vw !important;
+    left: 27.28vw !important;
+    bottom: 4.54vw !important;
+    top: auto !important;
+  }
+  .select-virus-card {
+    width: 28vw !important;
+    left: 73vw !important;
+    top: 3.89vw !important;
+    bottom: auto !important;
+  }
+}
+
+/* ─── /select page — short tablet-width landscape ─────────────────────
+   Catches viewports inside the iPad block's width range (768-1366px)
+   that are much shorter than a real iPad's landscape height (e.g.
+   1242x602 through 1364x602 — reported as overlapping the top/bottom
+   rows). The iPad block above has no height limit, so it was applying
+   its 44vw cards + 7-8vw vertical margins to these too, and at this
+   aspect ratio bacteria/parasite are tall enough that those margins
+   put row 1 below row 2. This block reuses the smaller iPhone-bucket
+   card size (34vw/22vw, needs less vertical room) with slimmer
+   top/bottom margins re-solved the same way — bacteria/parasite's own
+   margin is chosen first, fungi/virus's is solved from it so the
+   circle badges (not just the boxes) still land on a rectangle. Some
+   of these end up negative (box edge just past the viewport edge) —
+   verified safe: each asset has 10%+ empty canvas padding beyond its
+   visible artwork on that edge, so nothing actually gets clipped.
+   Left/right reuse the iPhone bucket's values as-is since horizontal
+   placement in vw scales the same regardless of viewport width.
+   Placed before the iPhone block so a genuinely short phone (<=500px
+   tall) still gets the iPhone block's own tuning via source order. ── */
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) and (max-height: 650px) {
+  .select-bacteria-card {
+    width: 34vw !important;
+    left: 13.93vw !important;
+    top: 1.5vw !important;
+    right: auto !important;
+    bottom: auto !important;
+  }
+  .select-parasite-card {
+    width: 34vw !important;
+    right: 11.05vw !important;
+    bottom: 1.5vw !important;
+    left: auto !important;
+    top: auto !important;
+  }
+  .select-fungi-card {
+    width: 22vw !important;
+    left: 30.43vw !important;
+    bottom: -0.64vw !important;
+    top: auto !important;
+  }
+  .select-virus-card {
+    width: 22vw !important;
+    left: 69.78vw !important;
+    top: -1.49vw !important;
+    bottom: auto !important;
   }
 }
 
 /* ─── /select page — iPhone landscape only ────────────────────────────
    Short landscape height distinguishes phones from iPads/desktop here
-   (large phones can exceed 768px in width, so width alone isn't enough). */
+   (large phones can exceed 768px in width, so width alone isn't enough).
+   iPhone 12 (844x390), 16 Pro Max (956x440) and 15 Pro Max (932x430) all
+   land in this bucket at slightly different widths/heights, so — same
+   reasoning as the iPad block above — every offset is vw-only on both
+   axes to keep the rectangle's shape identical across all three, and
+   (same as the iPad block) each offset also corrects for that card's
+   own off-center circle artwork rather than mirroring its counterpart
+   exactly. Sizes here are smaller than the iPad bucket (34vw/22vw vs.
+   44vw/28vw) so cards scale down for phones and up for tablets rather
+   than just inheriting one shared size. ─────────────────────────────── */
 @media (orientation: landscape) and (pointer: coarse) and (max-height: 500px) {
   .select-bacteria-card {
     width: 34vw !important;
-    top: 0% !important;
-    right: 8% !important;
-    transform: translateX(20px) !important;
+    left: 13.93vw !important;
+    top: 3.6vw !important;
+    right: auto !important;
+    bottom: auto !important;
   }
   .select-parasite-card {
     width: 34vw !important;
-    bottom: 0% !important;
-    transform: translateX(-20px) !important;
+    right: 11.05vw !important;
+    bottom: 3.27vw !important;
+    left: auto !important;
+    top: auto !important;
+  }
+  .select-fungi-card {
+    width: 22vw !important;
+    left: 30.43vw !important;
+    bottom: 1.12vw !important;
+    top: auto !important;
+  }
+  .select-virus-card {
+    width: 22vw !important;
+    left: 69.78vw !important;
+    top: 0.61vw !important;
+    bottom: auto !important;
   }
 }
 
@@ -562,10 +667,12 @@
    bottom edge on short viewports and gets clipped by overflow-hidden.
    Anchor to the bottom (safe-area aware) and shrink buttons instead. ── */
 @media (orientation: landscape) and (max-height: 500px) {
+  /* The cluster is now a static flex child inside ParchmentPanel, not an
+     absolutely-positioned element. top/bottom no longer apply, and the old
+     translateX(-50%) would shift it half a width off-centre — it was only
+     there to undo the absolute centring that no longer exists. Only the gap
+     is still meaningful here. */
   .home-menu-cluster {
-    top: auto !important;
-    bottom: max(0.5rem, calc(var(--safe-bottom) + 0.5rem)) !important;
-    transform: translateX(-50%) !important;
     gap: 0.4rem !important;
   }
   .menu-btn-play {
