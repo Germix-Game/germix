@@ -501,165 +501,56 @@
   animation-delay: var(--dot-delay, 0ms);
 }
 
-/* ─── /select page — iPad landscape only ─────────────────────────────
-   Touch (pointer: coarse) + landscape + tablet width range, so real
-   desktops (mouse pointer) get their own (also vw-only, see base
-   styles in page.tsx) sizing instead.
-   Every offset here uses vw (not vh/%) on BOTH axes — iPad mini
-   (1024x768, 4:3), iPad Air (1180x820) and iPad Pro (1366x1024, 4:3)
-   all fall in this bucket with different aspect ratios, and vh/%
-   verticals would drift relative to the vw-sized cards on each one.
-   vw-only keeps the rectangle's shape identical across all three.
-   The four offsets are NOT plain mirrors of each other: each webp's
-   visible circle badge sits off-center within its own transparent
-   canvas (to make room for the curved label text), by a different
-   amount and direction per asset — bacteria/fungi/virus/parasite
-   circle centers sit at roughly (50.2%,52.1%) / (52.6%,45.0%) /
-   (46.4%,56.1%) / (41.3%,46.2%) of their image's own width/height.
-   These left/top/right/bottom values already bake in the correction
-   so the four *visible circles* (not just the four bounding boxes)
-   land on a rectangle — recompute them if any of the four assets are
-   ever swapped for art with different internal padding. ──────────── */
+/* ─── /select page — card sizing only ─────────────────────────────────
+   The page now renders inside a centred 16:9 "stage" (see select/page.tsx)
+   that reproduces object-fit: contain geometry, with the four selections in
+   a 2x2 grid — each centred in its own quadrant and nudged so its visible
+   circle badge, not its bounding box, lands on the quadrant centre.
+
+   That makes every viewport share one layout, just scaled, so the old
+   per-device positional tuning (left/top/right/bottom solved separately for
+   iPad mini vs Air vs Pro vs iPhone) is no longer needed and has been
+   removed — it would also fight the grid centring, since the cards are no
+   longer absolutely positioned.
+
+   What remains is purely ergonomic: bigger tap targets on touch devices.
+   Widths are % of a quadrant (half the stage), i.e. double the old vw
+   values — 44vw -> 88%, 34vw -> 68%, and so on. ───────────────────────── */
+
+/* iPad landscape */
 @media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) {
-  .select-bacteria-card {
-    width: 44vw !important;
-    left: 5.91vw !important;
-    top: 7.48vw !important;
-    right: auto !important;
-    bottom: auto !important;
-  }
-  .select-parasite-card {
-    width: 44vw !important;
-    right: 2.18vw !important;
-    bottom: 7.05vw !important;
-    left: auto !important;
-    top: auto !important;
-  }
-  .select-fungi-card {
-    width: 28vw !important;
-    left: 27.28vw !important;
-    bottom: 4.54vw !important;
-    top: auto !important;
-  }
-  .select-virus-card {
-    width: 28vw !important;
-    left: 73vw !important;
-    top: 3.89vw !important;
-    bottom: auto !important;
-  }
+  .select-bacteria-card,
+  .select-parasite-card { width: 114.4% !important; }
+  .select-fungi-card,
+  .select-virus-card    { width: 72.8% !important; }
 }
 
-/* ─── /select page — short tablet-width landscape ─────────────────────
-   Catches viewports inside the iPad block's width range (768-1366px)
-   that are much shorter than a real iPad's landscape height (e.g.
-   1242x602 through 1364x602 — reported as overlapping the top/bottom
-   rows). The iPad block above has no height limit, so it was applying
-   its 44vw cards + 7-8vw vertical margins to these too, and at this
-   aspect ratio bacteria/parasite are tall enough that those margins
-   put row 1 below row 2. This block reuses the smaller iPhone-bucket
-   card size (34vw/22vw, needs less vertical room) with slimmer
-   top/bottom margins re-solved the same way — bacteria/parasite's own
-   margin is chosen first, fungi/virus's is solved from it so the
-   circle badges (not just the boxes) still land on a rectangle. Some
-   of these end up negative (box edge just past the viewport edge) —
-   verified safe: each asset has 10%+ empty canvas padding beyond its
-   visible artwork on that edge, so nothing actually gets clipped.
-   Left/right reuse the iPhone bucket's values as-is since horizontal
-   placement in vw scales the same regardless of viewport width.
-   Placed before the iPhone block so a genuinely short phone (<=500px
-   tall) still gets the iPhone block's own tuning via source order. ── */
+/* Short tablet-width landscape — smaller cards need less vertical room */
 @media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) and (max-height: 650px) {
-  .select-bacteria-card {
-    width: 34vw !important;
-    left: 13.93vw !important;
-    top: 1.5vw !important;
-    right: auto !important;
-    bottom: auto !important;
-  }
-  .select-parasite-card {
-    width: 34vw !important;
-    right: 11.05vw !important;
-    bottom: 1.5vw !important;
-    left: auto !important;
-    top: auto !important;
-  }
-  .select-fungi-card {
-    width: 22vw !important;
-    left: 30.43vw !important;
-    bottom: -0.64vw !important;
-    top: auto !important;
-  }
-  .select-virus-card {
-    width: 22vw !important;
-    left: 69.78vw !important;
-    top: -1.49vw !important;
-    bottom: auto !important;
-  }
+  .select-bacteria-card,
+  .select-parasite-card { width: 88.4% !important; }
+  .select-fungi-card,
+  .select-virus-card    { width: 57.2% !important; }
 }
 
-/* ─── /select page — iPhone landscape only ────────────────────────────
-   Short landscape height distinguishes phones from iPads/desktop here
-   (large phones can exceed 768px in width, so width alone isn't enough).
-   iPhone 12 (844x390), 16 Pro Max (956x440) and 15 Pro Max (932x430) all
-   land in this bucket at slightly different widths/heights, so — same
-   reasoning as the iPad block above — every offset is vw-only on both
-   axes to keep the rectangle's shape identical across all three, and
-   (same as the iPad block) each offset also corrects for that card's
-   own off-center circle artwork rather than mirroring its counterpart
-   exactly. Sizes here are smaller than the iPad bucket (34vw/22vw vs.
-   44vw/28vw) so cards scale down for phones and up for tablets rather
-   than just inheriting one shared size. ─────────────────────────────── */
+/* iPhone landscape */
 @media (orientation: landscape) and (pointer: coarse) and (max-height: 500px) {
-  .select-bacteria-card {
-    width: 34vw !important;
-    left: 13.93vw !important;
-    top: 3.6vw !important;
-    right: auto !important;
-    bottom: auto !important;
-  }
-  .select-parasite-card {
-    width: 34vw !important;
-    right: 11.05vw !important;
-    bottom: 3.27vw !important;
-    left: auto !important;
-    top: auto !important;
-  }
-  .select-fungi-card {
-    width: 22vw !important;
-    left: 30.43vw !important;
-    bottom: 1.12vw !important;
-    top: auto !important;
-  }
-  .select-virus-card {
-    width: 22vw !important;
-    left: 69.78vw !important;
-    top: 0.61vw !important;
-    bottom: auto !important;
-  }
+  .select-bacteria-card,
+  .select-parasite-card { width: 88.4% !important; }
+  .select-fungi-card,
+  .select-virus-card    { width: 57.2% !important; }
 }
 
-/* ─── /select page — phone portrait ────────────────────────────────────
-   Base 37vw reads small on a narrow portrait phone screen; bump it up
-   a bit so the cards are easier to tap and read. ──────────────────── */
+/* Phone portrait — base size reads small on a narrow screen */
 @media (orientation: portrait) and (pointer: coarse) and (max-width: 640px) {
-  .select-bacteria-card {
-    width: 46vw !important;
-  }
-  .select-parasite-card {
-    width: 46vw !important;
-  }
+  .select-bacteria-card,
+  .select-parasite-card { width: 119.6% !important; }
 }
 
-/* ─── /select page — iPad portrait ─────────────────────────────────────
-   Same idea, slightly smaller bump since iPad's larger viewport already
-   renders the base size bigger in absolute terms. ─────────────────── */
+/* iPad portrait — smaller bump, the viewport is already larger */
 @media (orientation: portrait) and (pointer: coarse) and (min-width: 641px) and (max-width: 1366px) {
-  .select-bacteria-card {
-    width: 42vw !important;
-  }
-  .select-parasite-card {
-    width: 42vw !important;
-  }
+  .select-bacteria-card,
+  .select-parasite-card { width: 109.2% !important; }
 }
 
 /* ─── Home page menu cluster — short landscape phones (iPhone) ───────
@@ -804,6 +695,32 @@
   }
 }
 
+/* ─── /pathogen-book — narrow phone landscape (~601x525 to 882x525) ─────
+   Same letterboxing issue as the iPad fix above (`auto 100%, cover` keeps
+   the art's aspect ratio and letterboxes the sides, which shifts it off
+   from the percentage-positioned left/right page overlays). In this
+   narrow width band the letterboxing is bad enough that even a
+   non-uniform stretch is worth it to keep the overlays aligned with the
+   art. ─────────────────────────────────────────────────────────────── */
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 601px) and (max-width: 882px) {
+  .pb-page-root {
+    background-size: 100% 100%, cover !important;
+  }
+}
+
+/* ─── /pathogen-book — mid-width phone landscape (~612x525 to 927x525) ───
+   Category tab strip and left-page microbe grid nudged another 200px
+   left in this width band, same idea as the iPad nudge above but a
+   bigger offset for this narrower range. ────────────────────────────── */
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 612px) and (max-width: 960px) {
+  .pb-tab-nav {
+    left: calc(13% - 60px) !important;
+  }
+  .pb-left-page {
+    left: calc(22% - 30px) !important;
+  }
+}
+
 /* ─── /pathogen-book — iPad landscape only (1024x768, 1180x820, 1366x1024) ──
    The two background layers normally use `background-size: auto 100%, cover`
    so the book art keeps its aspect ratio and gets letterboxed on the sides.
@@ -817,7 +734,7 @@
    because browsers can report the 1366-wide iPad Pro viewport as a
    fraction of a px over 1366 — a strict max-width: 1366px boundary missed
    it and left that device letterboxed. ─────────────────────────────────── */
-@media (orientation: landscape) and (pointer: coarse) and (min-width: 961px) and (max-width: 1400px) {
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 961px) and (max-width: 2000px) {
   .pb-page-root {
     background-size: 100% 100%, cover !important;
   }
@@ -844,6 +761,99 @@
   .pb-clue-grid {
     zoom: 2.72 !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ─── /pathogen-book — Full HD desktop landscape (1920x1080 and nearby
+   widths). Falls inside the iPad block's 961–2000px width range above,
+   but that block is pointer:coarse-gated (touch only), so a real desktop
+   at 1920x1080 gets none of it — including this text sizing, which is
+   otherwise stuck at its clamp() ceiling same as the wider ultrawide band
+   below. Scaled the same way (200% / 2x) for consistency. ─────────────── */
+@media (orientation: landscape) and (min-width: 1901px) and (max-width: 2000px) {
+  .pb-detail-name {
+    font-size: 3rem !important;
+  }
+  .pb-detail-rating-label {
+    font-size: 1.5rem !important;
+  }
+  .pb-detail-stars {
+    height: 64px !important;
+  }
+  .pb-detail-header {
+    gap: 2rem !important;
+  }
+
+  /* Category tab strip and left-page microbe grid nudged left — same
+     offsets as the mid-width phone landscape fix further up. This width
+     range falls outside the iPad block's background-stretch fix (which
+     stops at 2000px) and the desktop one (which starts at 2001px), so
+     the letterboxing drift still needs a manual nudge here. */
+  .pb-tab-nav {
+    left: calc(7% - 20px) !important;
+  }
+  .pb-left-page {
+    left: calc(19% - 30px) !important;
+  }
+}
+
+/* ─── /pathogen-book — desktop/ultrawide landscape (2001px–2600px wide) ──
+   Same letterboxing problem as the iPad block above: outside that block's
+   961–2000px range, .pb-page-root falls back to the default
+   `background-size: auto 100%, cover`, which preserves the book art's
+   aspect ratio and letterboxes the sides. .pb-tab-nav/.pb-left-page are
+   positioned as percentages of the *container*, so once the art is
+   letterboxed they drift off the visible book graphic — a fixed-pixel
+   nudge (an earlier version of this block used calc(13% - 60px) etc.)
+   only cancels that drift at one specific width/height, not across the
+   whole band. Stretching the background instead (same fix as the iPad
+   block) keeps the existing percentage positions genuinely relative to
+   the visible art at every size in this range, with no nudge needed.
+   961–2000px is covered by the iPad block; picking 2001px up here closes
+   that boundary with no gap. No pointer:coarse guard needed: real touch
+   devices don't reach this width. ────────────────────────────────────── */
+@media (orientation: landscape) and (min-width: 2001px) and (max-width: 2600px) {
+  .pb-page-root {
+    background-size: 100% 100%, cover !important;
+  }
+}
+
+/* ─── /pathogen-book — large desktop landscape (2000px–2600px wide, up to
+   ~1600px tall — covers both 1920x1440-ish wide screens and QHD 2560x1440).
+   Right-page header text is otherwise stuck at its clamp() ceiling from
+   ~1150px width onward, so it needs an explicit override rather than a
+   bigger clamp max. Max-height of 1600px is generous enough to include
+   2560x1440 rather than exclude it. ─────────────────────────────────── */
+@media (orientation: landscape) and (min-width: 2000px) and (max-width: 2600px) and (max-height: 1600px) {
+  /* Name ("Bacillus cereus") and Clinical Relevance Rating label/stars —
+     scaled to 200% (2x) of their existing clamp() ceiling. */
+  .pb-detail-name {
+    font-size: 3rem !important;
+  }
+  .pb-detail-rating-label {
+    font-size: 1.5rem !important;
+  }
+  .pb-detail-stars {
+    height: 64px !important;
+  }
+  .pb-detail-header {
+    gap: 2rem !important;
+  }
+
+  /* Clue card grid — 3 columns instead of the default 4, so cards read
+     bigger at this width. */
+  .pb-clue-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  /* Category tab strip and left-page microbe grid nudged left, on top of
+     the background-stretch fix above — same offsets as the mid-width
+     phone landscape fix further up. */
+  .pb-tab-nav {
+    left: calc(5% - 20px) !important;
+  }
+  .pb-left-page {
+    left: calc(22% - 80px) !important;
   }
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MenuButtons } from "@/components/menu/MenuButtons";
@@ -81,6 +81,33 @@ export default function HomePage() {
   const [posttestEnabled, setPosttestEnabled] = useState(false);
   const [showPosttestPopup, setShowPosttestPopup] = useState(false);
 
+  const [paperTop, setPaperTop] = useState<number | null>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const updatePaperPosition = useCallback(() => {
+    if (logoRef.current && containerRef.current) {
+      const logoRect = logoRef.current.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const topPos = Math.round(logoRect.bottom - containerRect.top + 8);
+      setPaperTop(topPos);
+    }
+  }, []);
+
+  useEffect(() => {
+    updatePaperPosition();
+
+    const ro = new ResizeObserver(updatePaperPosition);
+    if (logoRef.current) ro.observe(logoRef.current);
+    if (containerRef.current) ro.observe(containerRef.current);
+
+    window.addEventListener("resize", updatePaperPosition);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", updatePaperPosition);
+    };
+  }, [updatePaperPosition]);
+
   useEffect(() => {
     fetch("/api/game-modes")
       .then((r) => (r.ok ? r.json() : Promise.reject()))
@@ -142,6 +169,7 @@ export default function HomePage() {
     <>
       {/* Main content */}
       <div
+        ref={containerRef}
         className={`relative h-screen w-screen overflow-hidden bg-cover bg-center ${motionEnabled ? "" : "home-motion-off"}`}
         style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
       >
@@ -186,6 +214,7 @@ export default function HomePage() {
 
         {/* GERMIX logo — centred at 27% height */}
         <div
+          ref={logoRef}
           className="absolute left-1/2 pointer-events-none"
           style={{
             top: "27%",
@@ -201,6 +230,7 @@ export default function HomePage() {
             height={300}
             className="w-full h-auto"
             priority
+            onLoad={updatePaperPosition}
           />
         </div>
 
@@ -266,7 +296,10 @@ export default function HomePage() {
             sized relative to the paper (via cqw units) rather than the
             viewport. Move or resize the paper in ParchmentPanel.tsx and the
             whole cluster follows. */}
-        <ParchmentPanel loaded={loaded}>
+        <ParchmentPanel
+          loaded={loaded}
+          top={paperTop !== null ? `${paperTop}px` : undefined}
+        >
         <div className="home-menu-cluster flex flex-col items-center" style={{ gap: "min(1.4cqw, 12px)" }}>
           <MenuButtons
             posttestRequired={posttestRequired}
