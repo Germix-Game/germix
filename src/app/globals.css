@@ -843,7 +843,7 @@
    because browsers can report the 1366-wide iPad Pro viewport as a
    fraction of a px over 1366 — a strict max-width: 1366px boundary missed
    it and left that device letterboxed. ─────────────────────────────────── */
-@media (orientation: landscape) and (pointer: coarse) and (min-width: 961px) and (max-width: 1400px) {
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 961px) and (max-width: 2000px) {
   .pb-page-root {
     background-size: 100% 100%, cover !important;
   }
@@ -870,6 +870,99 @@
   .pb-clue-grid {
     zoom: 2.72 !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ─── /pathogen-book — Full HD desktop landscape (1920x1080 and nearby
+   widths). Falls inside the iPad block's 961–2000px width range above,
+   but that block is pointer:coarse-gated (touch only), so a real desktop
+   at 1920x1080 gets none of it — including this text sizing, which is
+   otherwise stuck at its clamp() ceiling same as the wider ultrawide band
+   below. Scaled the same way (200% / 2x) for consistency. ─────────────── */
+@media (orientation: landscape) and (min-width: 1901px) and (max-width: 2000px) {
+  .pb-detail-name {
+    font-size: 3rem !important;
+  }
+  .pb-detail-rating-label {
+    font-size: 1.5rem !important;
+  }
+  .pb-detail-stars {
+    height: 64px !important;
+  }
+  .pb-detail-header {
+    gap: 2rem !important;
+  }
+
+  /* Category tab strip and left-page microbe grid nudged left — same
+     offsets as the mid-width phone landscape fix further up. This width
+     range falls outside the iPad block's background-stretch fix (which
+     stops at 2000px) and the desktop one (which starts at 2001px), so
+     the letterboxing drift still needs a manual nudge here. */
+  .pb-tab-nav {
+    left: calc(7% - 20px) !important;
+  }
+  .pb-left-page {
+    left: calc(19% - 30px) !important;
+  }
+}
+
+/* ─── /pathogen-book — desktop/ultrawide landscape (2001px–2600px wide) ──
+   Same letterboxing problem as the iPad block above: outside that block's
+   961–2000px range, .pb-page-root falls back to the default
+   `background-size: auto 100%, cover`, which preserves the book art's
+   aspect ratio and letterboxes the sides. .pb-tab-nav/.pb-left-page are
+   positioned as percentages of the *container*, so once the art is
+   letterboxed they drift off the visible book graphic — a fixed-pixel
+   nudge (an earlier version of this block used calc(13% - 60px) etc.)
+   only cancels that drift at one specific width/height, not across the
+   whole band. Stretching the background instead (same fix as the iPad
+   block) keeps the existing percentage positions genuinely relative to
+   the visible art at every size in this range, with no nudge needed.
+   961–2000px is covered by the iPad block; picking 2001px up here closes
+   that boundary with no gap. No pointer:coarse guard needed: real touch
+   devices don't reach this width. ────────────────────────────────────── */
+@media (orientation: landscape) and (min-width: 2001px) and (max-width: 2600px) {
+  .pb-page-root {
+    background-size: 100% 100%, cover !important;
+  }
+}
+
+/* ─── /pathogen-book — large desktop landscape (2000px–2600px wide, up to
+   ~1600px tall — covers both 1920x1440-ish wide screens and QHD 2560x1440).
+   Right-page header text is otherwise stuck at its clamp() ceiling from
+   ~1150px width onward, so it needs an explicit override rather than a
+   bigger clamp max. Max-height of 1600px is generous enough to include
+   2560x1440 rather than exclude it. ─────────────────────────────────── */
+@media (orientation: landscape) and (min-width: 2000px) and (max-width: 2600px) and (max-height: 1600px) {
+  /* Name ("Bacillus cereus") and Clinical Relevance Rating label/stars —
+     scaled to 200% (2x) of their existing clamp() ceiling. */
+  .pb-detail-name {
+    font-size: 3rem !important;
+  }
+  .pb-detail-rating-label {
+    font-size: 1.5rem !important;
+  }
+  .pb-detail-stars {
+    height: 64px !important;
+  }
+  .pb-detail-header {
+    gap: 2rem !important;
+  }
+
+  /* Clue card grid — 3 columns instead of the default 4, so cards read
+     bigger at this width. */
+  .pb-clue-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  /* Category tab strip and left-page microbe grid nudged left, on top of
+     the background-stretch fix above — same offsets as the mid-width
+     phone landscape fix further up. */
+  .pb-tab-nav {
+    left: calc(5% - 20px) !important;
+  }
+  .pb-left-page {
+    left: calc(22% - 80px) !important;
   }
 }
 
