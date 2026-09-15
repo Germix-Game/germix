@@ -42,65 +42,120 @@ export default function LevelSelectPage() {
 
   return (
     <div
-        className="relative h-screen w-screen overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
-      >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/assets/game-selection/germix-graphic-game-29.webp"
-        alt=""
-        aria-hidden
-        draggable={false}
-        className="pointer-events-none absolute inset-0 select-none"
+      className="relative h-screen w-screen overflow-hidden bg-cover bg-center"
+      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
+    >
+      {/* ── STAGE ──────────────────────────────────────────────────────────
+          A 16:9 box, centred, sized exactly the way `object-fit: contain`
+          sizes the artwork (both are 1920x1080). Everything that belongs
+          *on* the artwork lives inside and is positioned in % of the stage,
+          so squishing the window shrinks it toward the middle and the cards
+          come with it — instead of staying pinned to the viewport edges.
+
+          Because the stage normalises aspect ratio, the per-device
+          positional tuning that used to live in globals.css is no longer
+          needed: every viewport now gets the same 16:9 layout, just scaled.
+          Only the size bumps for touch devices remain there. ──────────── */}
+      <div
+        className="select-stage absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
         style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          objectPosition: "center",
+          width: "min(100vw, calc(100vh * 16 / 9))",
+          height: "min(100vh, calc(100vw * 9 / 16))",
         }}
-      />
+      >
+        {/* Background artwork — fills the stage exactly */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/assets/game-selection/germix-graphic-game-29.webp"
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain"
+        />
 
-      {/* Bacteria level button — top-left */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/assets/game-selection/bateria_level.webp"
-        alt="Bacteria"
-        draggable={false}
-        onClick={() => handleSelect("BACTERIA")}
-        className={`select-bacteria-card absolute select-none transition-transform duration-200 ${
-          starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
-        }`}
-        style={{ top: "2.81vw", left: "10.93vw", width: "34.4vw" }}
-      />
+        {/* ── QUADRANTS ──────────────────────────────────────────────────
+            The stage splits 2x2 and each selection centres in its own cell:
 
-      {/* Parasite level button — bottom-right (now playable, same as Bacteria) */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/assets/game-selection/parasite_level.webp"
-        alt="Parasites"
-        draggable={false}
-        onClick={() => handleSelect("PARASITE")}
-        className={`select-parasite-card absolute select-none transition-transform duration-200 ${
-          starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
-        }`}
-        style={{ bottom: "2.81vw", right: "16.02vw", width: "34.4vw" }}
-      />
+              top-left  Bacteria   |   top-right  Virus  (locked)
+              bottom-left Fungi    |   bottom-right Parasite
 
-      <img
-        src="/assets/game-selection/fungi_select.webp"
-        alt="Fungi — locked, coming soon"
-        draggable={false}
-        className="select-fungi-card absolute -translate-x-1/2 select-none cursor-not-allowed transition-transform duration-200 hover:scale-105"
-        style={{ bottom: "1.02vw", left: "27.64vw", width: "21.6vw" }}
-      />
+            Each card's visible circle badge sits off-centre inside its own
+            transparent canvas (to leave room for the curved label text), by
+            a different amount per asset. Flex-centring would align the four
+            *bounding boxes*, not the four circles — so each card carries a
+            nudge wrapper that shifts it by (50% - circleCentre), putting the
+            visible dish on the quadrant centre. Dish centres, measured by
+            eroding each asset's alpha until only the solid dish survives
+            (thin label strokes disappear), as % of its own width/height:
+              bacteria (52.1, 52.7)   fungi    (53.1, 47.9)
+              virus    (45.9, 56.5)   parasite (46.7, 46.2)
 
-      <img
-        src="/assets/game-selection/virus_select.webp"
-        alt="Virus — locked, coming soon"
-        draggable={false}
-        className="select-virus-card absolute -translate-x-1/2 select-none cursor-not-allowed transition-transform duration-200 hover:scale-105"
-        style={{ top: "0.17vw", left: "66.57vw", width: "21.6vw" }}
-      />
+            Widths are % of a quadrant (half the stage) and are tuned so all
+            four *dish circles* render at the same diameter — the raw frames
+            differ a lot: the dish fills ~47% of Bacteria/Parasite's 1920x1080
+            canvas but ~75-79% of Fungi/Virus's smaller square ones.
+            Recompute both the nudges and the widths if any asset is swapped
+            for art with different internal padding. ─────────────────── */}
+        <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+          {/* Q1 top-left — Bacteria */}
+          <div className="flex items-center justify-center">
+            <div className="flex w-full items-center justify-center" style={{ transform: "translate(-2.1%, -2.7%)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/assets/game-selection/bateria_level.webp"
+                alt="Bacteria"
+                draggable={false}
+                onClick={() => handleSelect("BACTERIA")}
+                className={`select-bacteria-card w-[90.88%]  object-contain select-none transition-transform duration-200 ${
+                  starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
+                }`}
+              />
+            </div>
+          </div>
+
+          {/* Q2 top-right — Virus (locked) */}
+          <div className="flex items-center justify-center">
+            <div className="flex w-full items-center justify-center" style={{ transform: "translate(4.1%, -6.5%)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/assets/game-selection/virus_select.webp"
+                alt="Virus — locked, coming soon"
+                draggable={false}
+                className="select-virus-card w-[56.9%]  object-contain select-none cursor-not-allowed transition-transform duration-200 hover:scale-105"
+              />
+            </div>
+          </div>
+
+          {/* Q3 bottom-left — Fungi (locked) */}
+          <div className="flex items-center justify-center">
+            <div className="flex w-full items-center justify-center" style={{ transform: "translate(-3.1%, 2.1%)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/assets/game-selection/fungi_select.webp"
+                alt="Fungi — locked, coming soon"
+                draggable={false}
+                className="select-fungi-card w-[54.02%]  object-contain select-none cursor-not-allowed transition-transform duration-200 hover:scale-105"
+              />
+            </div>
+          </div>
+
+          {/* Q4 bottom-right — Parasite */}
+          <div className="flex items-center justify-center">
+            <div className="flex w-full items-center justify-center" style={{ transform: "translate(3.3%, 3.8%)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/assets/game-selection/parasite_level.webp"
+                alt="Parasites"
+                draggable={false}
+                onClick={() => handleSelect("PARASITE")}
+                className={`select-parasite-card w-[90.43%]  object-contain select-none transition-transform duration-200 ${
+                  starting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-105"
+                }`}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Back button — top-left */}
       <button
