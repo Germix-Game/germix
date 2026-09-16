@@ -520,37 +520,37 @@
 /* iPad landscape */
 @media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) {
   .select-bacteria-card,
-  .select-parasite-card { width: 114.4% !important; }
+  .select-parasite-card { width: 57.2% !important; }
   .select-fungi-card,
-  .select-virus-card    { width: 72.8% !important; }
+  .select-virus-card    { width: 36.4% !important; }
 }
 
 /* Short tablet-width landscape — smaller cards need less vertical room */
 @media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) and (max-height: 650px) {
   .select-bacteria-card,
-  .select-parasite-card { width: 88.4% !important; }
+  .select-parasite-card { width: 44.2% !important; }
   .select-fungi-card,
-  .select-virus-card    { width: 57.2% !important; }
+  .select-virus-card    { width: 28.6% !important; }
 }
 
 /* iPhone landscape */
 @media (orientation: landscape) and (pointer: coarse) and (max-height: 500px) {
   .select-bacteria-card,
-  .select-parasite-card { width: 88.4% !important; }
+  .select-parasite-card { width: 44.2% !important; }
   .select-fungi-card,
-  .select-virus-card    { width: 57.2% !important; }
+  .select-virus-card    { width: 28.6% !important; }
 }
 
 /* Phone portrait — base size reads small on a narrow screen */
 @media (orientation: portrait) and (pointer: coarse) and (max-width: 640px) {
   .select-bacteria-card,
-  .select-parasite-card { width: 119.6% !important; }
+  .select-parasite-card { width: 59.8% !important; }
 }
 
 /* iPad portrait — smaller bump, the viewport is already larger */
 @media (orientation: portrait) and (pointer: coarse) and (min-width: 641px) and (max-width: 1366px) {
   .select-bacteria-card,
-  .select-parasite-card { width: 109.2% !important; }
+  .select-parasite-card { width: 54.6% !important; }
 }
 
 /* ─── Home page menu cluster — short landscape phones (iPhone) ───────
