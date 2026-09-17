@@ -217,7 +217,7 @@ export default function PlayPage() {
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]); // recap of every round played
   const [won, setWon] = useState(false);                               // did the player win or lose?
 
-  const { containerRef, contentRef, scale } = useScaleToFit(1, 130, 16);
+  const { containerRef, contentRef, scale } = useScaleToFit(1, 16);
   const router = useRouter();
 
   // Warm up the route the player will land on when they exit (back button,
@@ -798,10 +798,6 @@ export default function PlayPage() {
         ref={containerRef}
         className="play-wood-zone relative flex flex-col px-6 pt-[7vh] pb-2 bg-[url('/assets/ui/wood-bg.webp')] bg-cover bg-center flex-1 basis-1/2 min-h-0 overflow-hidden"
       >
-        {/* HeartsBar positioned absolutely at the leftmost of the screen, vertically centered */}
-        <div className="absolute left-6 top-1/2 -translate-y-1/2 z-20 safe-left game-hearts-inline">
-          <HeartsBar heartsLeft={heartsLeft} vertical />
-        </div>
 
         {/* Top bar: Score (left) + Exit (right) — pinned to the very top of the screen.
             safe-top/-left/-right keep it clear of the iPhone notch / iPad rounded corners in landscape. */}
@@ -850,7 +846,11 @@ export default function PlayPage() {
         </div>
 
         {phase === "playing" && (
-          <div className="flex justify-center mt-6 mb-4">
+          <div className="relative flex items-center justify-center mt-6 mb-4">
+            {/* Below 2xl: horizontal hearts, absolutely left-aligned at half size so the pill stays dead-center */}
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 scale-50 origin-left game-hearts-inline xl:hidden">
+              <HeartsBar heartsLeft={heartsLeft} />
+            </div>
             <div ref={pointsPillRef} className="flex items-baseline gap-1.5 px-4 py-1 rounded-full bg-[#2a1208]/85 border border-[#d4a96a]/50 shadow-lg">
               <span className="text-[#d4a96a] text-[0.65rem] font-semibold uppercase tracking-wider">Answer now for</span>
               <span className="text-[#f5e6c8] text-base font-black tabular-nums">
@@ -866,9 +866,14 @@ export default function PlayPage() {
             scale is capped at 1, so desktop/tablet-wide layouts render unchanged. */}
         <div
           ref={contentRef}
-          className="game-content-row flex items-center justify-center gap-3 self-center"
+          className="game-content-row w-full flex items-center justify-center xl:justify-start"
           style={{ transform: `scale(${scale})`, transformOrigin: "center" }}
         >
+          {/* 2xl+ screens: vertical hearts beside cards */}
+          <div className="flex-shrink-0 game-hearts-inline hidden xl:block">
+            <HeartsBar heartsLeft={heartsLeft} vertical />
+          </div>
+          <div className="flex-1 flex justify-center">
           <CardGrid
             slots={slots}
             onReveal={handleReveal}
@@ -897,6 +902,7 @@ export default function PlayPage() {
             onCancelPending={() => setPendingMicrobeId(null)}
             motionEnabled={motionEnabled}
           />
+          </div>
         </div>
 
         {questionHasWrong && phase === "playing" && (

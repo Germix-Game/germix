@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 // marginXPx and marginYPx are reserved on the sides/top-bottom of the container
 // before fitting, so a shrink-to-fit scale never lands the content flush against
 // the screen edge.
-export function useScaleToFit(maxScale = 1, marginXPx = 0, marginYPx = marginXPx) {
+export function useScaleToFit(maxScale = 1, marginPx = 0) {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -21,8 +21,8 @@ export function useScaleToFit(maxScale = 1, marginXPx = 0, marginYPx = marginXPx
       const containerRect = container.getBoundingClientRect();
       if (contentRect.height === 0 || contentRect.width === 0) return;
 
-      const availableWidth = Math.max(0, containerRect.width - marginXPx * 2);
-      const availableHeight = Math.max(0, containerRect.height - marginYPx * 2);
+      const availableWidth = Math.max(0, containerRect.width - marginPx * 2);
+      const availableHeight = Math.max(0, containerRect.height - marginPx * 2);
       const scaleX = availableWidth / contentRect.width;
       const scaleY = availableHeight / contentRect.height;
       setScale(Math.min(scaleX, scaleY, maxScale));
@@ -34,7 +34,7 @@ export function useScaleToFit(maxScale = 1, marginXPx = 0, marginYPx = marginXPx
     recalc();
 
     return () => ro.disconnect();
-  }, [maxScale, marginXPx, marginYPx]);
+  }, [maxScale, marginPx]);
 
   return { containerRef, contentRef, scale };
 }
