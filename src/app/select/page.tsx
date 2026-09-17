@@ -62,7 +62,7 @@ export default function LevelSelectPage() {
         />
 
         {/* Bacteria — top-left slot */}
-        <div className="select-bacteria-card absolute" style={{ left: "24%", top: "26%", width: "45.44%", transform: "translate(-52.1%, -52.7%)" }}>
+        <div className="select-bacteria-card absolute" style={{ left: "24%", top: "calc(50% - 24%)", width: "45.44%", transform: "translate(-52.1%, -52.7%)" }}>
           <img
             src="/assets/game-selection/bateria_level.webp"
             alt="Bacteria"
@@ -75,7 +75,7 @@ export default function LevelSelectPage() {
         </div>
 
         {/* Virus — top-right slot (locked) */}
-        <div className="select-virus-card absolute" style={{ left: "70%", top: "26%", width: "28.45%", transform: "translate(-45.9%, -56.5%)" }}>
+        <div className="select-virus-card absolute" style={{ left: "70%", top: "calc(50% - 24%)", width: "28.45%", transform: "translate(-45.9%, -56.5%)" }}>
           <img
             src="/assets/game-selection/virus_select.webp"
             alt="Virus — locked, coming soon"
@@ -85,7 +85,7 @@ export default function LevelSelectPage() {
         </div>
 
         {/* Fungi — bottom-left slot (locked) */}
-        <div className="select-fungi-card absolute" style={{ left: "25%", top: "69%", width: "27.01%", transform: "translate(-53.1%, -47.9%)" }}>
+        <div className="select-fungi-card absolute" style={{ left: "25%", top: "calc(50% + 21.5%)", width: "27.01%", transform: "translate(-53.1%, -47.9%)" }}>
           <img
             src="/assets/game-selection/fungi_select.webp"
             alt="Fungi — locked, coming soon"
@@ -95,7 +95,7 @@ export default function LevelSelectPage() {
         </div>
 
         {/* Parasite — bottom-right slot */}
-        <div className="select-parasite-card absolute" style={{ left: "70%", top: "67%", width: "45.22%", transform: "translate(-46.7%, -46.2%)" }}>
+        <div className="select-parasite-card absolute" style={{ left: "71%", top: "calc(50% + 20%)", width: "45.22%", transform: "translate(-46.7%, -46.2%)" }}>
           <img
             src="/assets/game-selection/parasite_level.webp"
             alt="Parasites"

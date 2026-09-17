@@ -501,57 +501,23 @@
   animation-delay: var(--dot-delay, 0ms);
 }
 
-/* ─── /select page — card sizing only ─────────────────────────────────
-   The page now renders inside a centred 16:9 "stage" (see select/page.tsx)
-   that reproduces object-fit: contain geometry, with the four selections in
-   a 2x2 grid — each centred in its own quadrant and nudged so its visible
-   circle badge, not its bounding box, lands on the quadrant centre.
+/* ─── /select page ───────────────────────────────────────────────────
+   No sizing rules here on purpose.
 
-   That makes every viewport share one layout, just scaled, so the old
-   per-device positional tuning (left/top/right/bottom solved separately for
-   iPad mini vs Air vs Pro vs iPhone) is no longer needed and has been
-   removed — it would also fight the grid centring, since the cards are no
-   longer absolutely positioned.
+   The page renders inside a centred 16:9 "stage" (see select/page.tsx)
+   that reproduces object-fit: contain geometry, so the stage IS the
+   background image's rendered box. Each card is anchored and sized in %
+   of that stage, which makes every card a fixed fraction of the artwork
+   at any viewport — it scales with the image automatically.
 
-   What remains is purely ergonomic: bigger tap targets on touch devices.
-   Widths are % of a quadrant (half the stage), i.e. double the old vw
-   values — 44vw -> 88%, 34vw -> 68%, and so on. ───────────────────────── */
+   The old per-device width overrides have been removed: they keyed size
+   to device class rather than to the image, jumping up to +32% at a
+   breakpoint, and the two portrait rules only resized Bacteria/Parasite
+   while leaving Fungi/Virus at base — which broke the equal-dish sizing
+   on exactly those devices.
 
-/* iPad landscape */
-@media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) {
-  .select-bacteria-card,
-  .select-parasite-card { width: 57.2% !important; }
-  .select-fungi-card,
-  .select-virus-card    { width: 36.4% !important; }
-}
-
-/* Short tablet-width landscape — smaller cards need less vertical room */
-@media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) and (max-height: 650px) {
-  .select-bacteria-card,
-  .select-parasite-card { width: 44.2% !important; }
-  .select-fungi-card,
-  .select-virus-card    { width: 28.6% !important; }
-}
-
-/* iPhone landscape */
-@media (orientation: landscape) and (pointer: coarse) and (max-height: 500px) {
-  .select-bacteria-card,
-  .select-parasite-card { width: 44.2% !important; }
-  .select-fungi-card,
-  .select-virus-card    { width: 28.6% !important; }
-}
-
-/* Phone portrait — base size reads small on a narrow screen */
-@media (orientation: portrait) and (pointer: coarse) and (max-width: 640px) {
-  .select-bacteria-card,
-  .select-parasite-card { width: 59.8% !important; }
-}
-
-/* iPad portrait — smaller bump, the viewport is already larger */
-@media (orientation: portrait) and (pointer: coarse) and (min-width: 641px) and (max-width: 1366px) {
-  .select-bacteria-card,
-  .select-parasite-card { width: 54.6% !important; }
-}
+   To resize a card now, edit its width in select/page.tsx. One number,
+   one place, every screen. ──────────────────────────────────────────── */
 
 /* ─── Home page menu cluster — short landscape phones (iPhone) ───────
    At top:75% + translateY(-50%), the 5-button stack overflows the
