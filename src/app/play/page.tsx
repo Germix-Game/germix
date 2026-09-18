@@ -846,11 +846,7 @@ export default function PlayPage() {
         </div>
 
         {phase === "playing" && (
-          <div className="relative flex items-center justify-center mt-6 mb-4">
-            {/* Below 2xl: horizontal hearts, absolutely left-aligned at half size so the pill stays dead-center */}
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 scale-50 origin-left game-hearts-inline xl:hidden">
-              <HeartsBar heartsLeft={heartsLeft} />
-            </div>
+          <div className="flex justify-center mt-6 mb-4">
             <div ref={pointsPillRef} className="flex items-baseline gap-1.5 px-4 py-1 rounded-full bg-[#2a1208]/85 border border-[#d4a96a]/50 shadow-lg">
               <span className="text-[#d4a96a] text-[0.65rem] font-semibold uppercase tracking-wider">Answer now for</span>
               <span className="text-[#f5e6c8] text-base font-black tabular-nums">
@@ -866,11 +862,10 @@ export default function PlayPage() {
             scale is capped at 1, so desktop/tablet-wide layouts render unchanged. */}
         <div
           ref={contentRef}
-          className="game-content-row w-full flex items-center justify-center xl:justify-start"
+          className="game-content-row w-full flex items-center"
           style={{ transform: `scale(${scale})`, transformOrigin: "center" }}
         >
-          {/* 2xl+ screens: vertical hearts beside cards */}
-          <div className="flex-shrink-0 game-hearts-inline hidden xl:block">
+          <div className="flex-shrink min-w-[2rem] game-hearts-inline">
             <HeartsBar heartsLeft={heartsLeft} vertical />
           </div>
           <div className="flex-1 flex justify-center">
