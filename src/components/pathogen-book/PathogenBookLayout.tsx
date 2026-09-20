@@ -364,9 +364,8 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
             key={mode}
             href={href}
             title={label}
-            className={`flex-1 rounded transition-all ${
-              mode === gameMode ? "" : "hover:bg-white/10"
-            }`}
+            style={{ width: "200%", marginLeft: "-50%" }}
+            className="flex-1 rounded"
           />
         ))}
       </div>
