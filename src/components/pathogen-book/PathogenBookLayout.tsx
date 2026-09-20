@@ -312,9 +312,113 @@ const TAB_BOX = {
   width: (((208 - 75) * 2) / 1920) * 100,
   height: ((616 - 72) / 1080) * 100,
 };
-const TAB_HEIGHTS = [152, 128, 133, 131];
+// The active tab pops out, so each page's art has slightly different tab
+// boundaries. Heights below are measured per page (each sums to 544).
+const TAB_HEIGHTS: Record<GameMode, number[]> = {
+  BACTERIA: [152, 128, 133, 131],
+  PARASITES: [128, 152, 133, 131],
+  FUNGI: [128, 135, 140, 141],
+  VIRUS: [128, 135, 130, 151],
+};
 
 // ─── Main layout ──────────────────────────────────────────────────────────────
+
+// Shared book shell: viewport-filling stage with the art stretched to it, the
+// back button, and the tab hit boxes. Page content goes in as children and is
+// positioned as a percentage of the stage.
+export function PathogenBookStage({
+  gameMode,
+  backgroundSrc,
+  children,
+}: {
+  gameMode: GameMode;
+  backgroundSrc: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    // Root fills the viewport; the stage inside it is the book.
+    <div
+      className={`${alice.className} pb-page-root relative h-dvh w-screen overflow-hidden bg-cover bg-center`}
+      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
+    >
+      {/* ── Back button — anchored to the viewport, not the stage ── */}
+      <Link
+        href="/home"
+        className="tap-min safe-top safe-left absolute z-30 flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
+      >
+        ← Back
+      </Link>
+
+      {/* ── Stage — fills the viewport; art stretches to it ── */}
+      <div
+        className="pb-stage absolute inset-0"
+        style={{
+          containerType: "size",
+          backgroundImage: `url('${backgroundSrc}'), url('/assets/backgrounds/main_page_background.webp')`,
+          backgroundSize: "100% 100%, cover",
+          backgroundRepeat: "no-repeat, no-repeat",
+        }}
+      >
+        {/* ── Category tab strip — transparent hit boxes over the art's tabs ── */}
+        <div
+          className="pb-tab-nav absolute z-20 flex flex-col"
+          style={{
+            left: `${TAB_BOX.left}%`,
+            top: `${TAB_BOX.top}%`,
+            width: `${TAB_BOX.width}%`,
+            height: `${TAB_BOX.height}%`,
+          }}
+        >
+          {TABS.map(({ mode, href, label }, i) => (
+            <Link
+              key={mode}
+              href={href}
+              title={label}
+              aria-label={label}
+              aria-current={mode === gameMode ? "page" : undefined}
+              className={`min-h-0 rounded transition-all ${
+                mode === gameMode ? "" : "hover:bg-white/10"
+              }`}
+              style={{ flex: `${TAB_HEIGHTS[gameMode][i]} 1 0` }}
+            />
+          ))}
+        </div>
+
+        {/* ── Preload all 4 background images for seamless tab switching ── */}
+        <div className="hidden" aria-hidden="true">
+          {["bacteria", "fungi", "parasite", "virus"].map((bg) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={bg} src={`/assets/pathogen-book/${bg}.webp`} alt="" />
+          ))}
+        </div>
+
+
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Placeholder page for sections whose microbes aren't in the game yet.
+export function PathogenBookComingSoon({
+  gameMode,
+  backgroundSrc,
+  title,
+}: {
+  gameMode: GameMode;
+  backgroundSrc: string;
+  title: string;
+}) {
+  return (
+    <PathogenBookStage gameMode={gameMode} backgroundSrc={backgroundSrc}>
+      <div className="absolute z-10 flex flex-col" style={{ left: "26%", top: "38%", gap: u(4) }}>
+        <p className="font-semibold italic text-black" style={{ fontSize: u(54) }}>{title}</p>
+        <p className="font-medium text-black" style={{ fontSize: u(36) }}>Coming Soon</p>
+        <p className="text-black/70" style={{ fontSize: u(24) }}>This section is under development.</p>
+      </div>
+    </PathogenBookStage>
+  );
+}
 
 interface PathogenBookLayoutProps {
   gameMode: GameMode;
@@ -361,154 +465,98 @@ export function PathogenBookLayout({ gameMode, backgroundSrc }: PathogenBookLayo
   const selectedMicrobe = microbes?.find((m) => m.id === selectedId) ?? null;
 
   return (
-    // Root fills the viewport; the stage inside it is the book.
-    <div
-      className={`${alice.className} pb-page-root relative h-dvh w-screen overflow-hidden bg-cover bg-center`}
-      style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
-    >
-      {/* ── Back button — anchored to the viewport, not the stage ── */}
-      <Link
-        href="/home"
-        className="tap-min safe-top safe-left absolute z-30 flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
-      >
-        ← Back
-      </Link>
-
-      {/* ── Stage — fills the viewport; art stretches to it ── */}
+    <PathogenBookStage gameMode={gameMode} backgroundSrc={backgroundSrc}>
+      {/* ── Left page — microbe grid ── */}
       <div
-        className="pb-stage absolute inset-0"
-        style={{
-          containerType: "size",
-          backgroundImage: `url('${backgroundSrc}'), url('/assets/backgrounds/main_page_background.webp')`,
-          backgroundSize: "100% 100%, cover",
-          backgroundRepeat: "no-repeat, no-repeat",
-        }}
+        className="pb-left-page absolute overflow-y-auto"
+        style={{ left: "18%", top: "25%", width: "30%", height: "75%" }}
       >
-        {/* ── Category tab strip — transparent hit boxes over the art's tabs ── */}
-        <div
-          className="pb-tab-nav absolute z-20 flex flex-col"
-          style={{
-            left: `${TAB_BOX.left}%`,
-            top: `${TAB_BOX.top}%`,
-            width: `${TAB_BOX.width}%`,
-            height: `${TAB_BOX.height}%`,
-          }}
-        >
-          {TABS.map(({ mode, href, label }, i) => (
-            <Link
-              key={mode}
-              href={href}
-              title={label}
-              aria-label={label}
-              aria-current={mode === gameMode ? "page" : undefined}
-              className={`min-h-0 rounded transition-all ${
-                mode === gameMode ? "" : "hover:bg-white/10"
-              }`}
-              style={{ flex: `${TAB_HEIGHTS[i]} 1 0` }}
-            />
-          ))}
-        </div>
+        {microbes === null ? (
+          <MicrobeGridSkeleton />
+        ) : (
+          <div className="pb-microbe-grid grid grid-cols-4 gap-2" style={{ zoom: 0.38 }}>
+            {microbes.map((microbe) => (
+              <MicrobeCard
+                key={microbe.id}
+                microbe={microbe}
+                selected={microbe.id === selectedId}
+                onClick={() => handleSelect(microbe.id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
-        {/* ── Preload all 4 background images for seamless tab switching ── */}
-        <div className="hidden" aria-hidden="true">
-          {["bacteria", "fungi", "parasite", "virus"].map((bg) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={bg} src={`/assets/pathogen-book/${bg}.webp`} alt="" />
-          ))}
-        </div>
-
-        {/* ── Left page — microbe grid ── */}
-        <div
-          className="pb-left-page absolute overflow-y-auto"
-          style={{ left: "18%", top: "25%", width: "30%", height: "75%" }}
-        >
-          {microbes === null ? (
-            <MicrobeGridSkeleton />
-          ) : (
-            <div className="pb-microbe-grid grid grid-cols-4 gap-2" style={{ zoom: 0.38 }}>
-              {microbes.map((microbe) => (
-                <MicrobeCard
-                  key={microbe.id}
-                  microbe={microbe}
-                  selected={microbe.id === selectedId}
-                  onClick={() => handleSelect(microbe.id)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* ── Right page — microbe detail ── */}
-        <div
-          className="pb-right-page absolute flex flex-col"
-          style={{ left: "58%", top: "15%", width: "40%", height: "82%" }}
-        >
-          {!selectedMicrobe ? (
-            <div className="flex h-full items-center justify-center">
-              <span className="italic text-[#9a7850]" style={{ fontSize: u(18) }}>
-                {microbes && microbes.every((m) => !m.unlocked)
-                  ? "Play the game to discover microbes!"
-                  : "Select a microbe to view details"}
-              </span>
-            </div>
-          ) : (
-            <>
-              {/* Fixed header — microbe card + name + rating */}
-              <div
-                className="pb-detail-header flex items-start shrink-0"
-                style={{ gap: u(24), paddingRight: u(72), paddingBottom: u(18) }}
-              >
+      {/* ── Right page — microbe detail ── */}
+      <div
+        className="pb-right-page absolute flex flex-col"
+        style={{ left: "58%", top: "15%", width: "40%", height: "82%" }}
+      >
+        {!selectedMicrobe ? (
+          <div className="flex h-full items-center justify-center">
+            <span className="italic text-[#9a7850]" style={{ fontSize: u(18) }}>
+              {microbes && microbes.every((m) => !m.unlocked)
+                ? "Play the game to discover microbes!"
+                : "Select a microbe to view details"}
+            </span>
+          </div>
+        ) : (
+          <>
+            {/* Fixed header — microbe card + name + rating */}
+            <div
+              className="pb-detail-header flex items-start shrink-0"
+              style={{ gap: u(24), paddingRight: u(72), paddingBottom: u(18) }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={resolveImageSrc(selectedMicrobe.answerImageUrl)}
+                alt={selectedMicrobe.name}
+                className="pb-detail-thumb shrink-0 object-contain"
+                style={{ width: u(312), aspectRatio: "1 / 1" }}
+                draggable={false}
+              />
+              <div className="pb-detail-text flex flex-col" style={{ gap: u(12), paddingTop: u(6) }}>
+                <h2
+                  className="pb-detail-name font-semibold italic leading-snug text-[#2a1208]"
+                  style={{ fontSize: u(36) }}
+                >
+                  {formatMicrobeName(selectedMicrobe.name)}
+                </h2>
+                <p
+                  className="pb-detail-rating-label uppercase tracking-wider text-[#7a5a30]"
+                  style={{ fontSize: u(18) }}
+                >
+                  Clinical Relevance Rating
+                </p>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={resolveImageSrc(selectedMicrobe.answerImageUrl)}
-                  alt={selectedMicrobe.name}
-                  className="pb-detail-thumb shrink-0 object-contain"
-                  style={{ width: u(312), aspectRatio: "1 / 1" }}
+                  src={starSrc(selectedMicrobe.starRating)}
+                  alt={`${Math.round(selectedMicrobe.starRating)} stars`}
+                  className="pb-detail-stars w-auto self-start object-contain"
+                  style={{ height: u(48) }}
                   draggable={false}
                 />
-                <div className="pb-detail-text flex flex-col" style={{ gap: u(12), paddingTop: u(6) }}>
-                  <h2
-                    className="pb-detail-name font-semibold italic leading-snug text-[#2a1208]"
-                    style={{ fontSize: u(36) }}
-                  >
-                    {formatMicrobeName(selectedMicrobe.name)}
-                  </h2>
-                  <p
-                    className="pb-detail-rating-label uppercase tracking-wider text-[#7a5a30]"
-                    style={{ fontSize: u(18) }}
-                  >
-                    Clinical Relevance Rating
-                  </p>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={starSrc(selectedMicrobe.starRating)}
-                    alt={`${Math.round(selectedMicrobe.starRating)} stars`}
-                    className="pb-detail-stars w-auto self-start object-contain"
-                    style={{ height: u(48) }}
-                    draggable={false}
-                  />
-                </div>
               </div>
+            </div>
 
-              {/* Scrollable clue section — scrollbar hidden, scrolling still works */}
-              <div
-                className="overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                style={{ msOverflowStyle: "none", paddingRight: u(72) }}
-              >
-                {cluesLoading ? (
-                  <ClueSectionSkeleton />
-                ) : slots && slots.length > 0 ? (
-                  <ClueSection slots={slots} />
-                ) : slots !== null ? (
-                  <p className="italic text-[#9a7850]" style={{ fontSize: u(16) }}>
-                    No characteristic cards available.
-                  </p>
-                ) : null}
-              </div>
-            </>
-          )}
-        </div>
+            {/* Scrollable clue section — scrollbar hidden, scrolling still works */}
+            <div
+              className="overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              style={{ msOverflowStyle: "none", paddingRight: u(72) }}
+            >
+              {cluesLoading ? (
+                <ClueSectionSkeleton />
+              ) : slots && slots.length > 0 ? (
+                <ClueSection slots={slots} />
+              ) : slots !== null ? (
+                <p className="italic text-[#9a7850]" style={{ fontSize: u(16) }}>
+                  No characteristic cards available.
+                </p>
+              ) : null}
+            </div>
+          </>
+        )}
       </div>
-    </div>
+    </PathogenBookStage>
   );
 }
