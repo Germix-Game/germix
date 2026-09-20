@@ -76,46 +76,6 @@ function formatMicrobeName(name: string) {
   );
 }
 
-function GramBadge({ gramType }: { gramType: GramType }) {
-  if (gramType === "POSITIVE")
-    return (
-      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-[10px] font-bold text-white shadow">
-        +
-      </span>
-    );
-  if (gramType === "NEGATIVE")
-    return (
-      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow">
-        −
-      </span>
-    );
-  if (gramType === "ACID_FAST")
-    return (
-      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[9px] font-bold text-white shadow">
-        AF
-      </span>
-    );
-  if (gramType === "PROTOZOA")
-    return (
-      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white shadow">
-        PZ
-      </span>
-    );
-  if (gramType === "PLATYHEMINTH")
-    return (
-      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-purple-500 text-[9px] font-bold text-white shadow">
-        PH
-      </span>
-    );
-  if (gramType === "NEMATODE")
-    return (
-      <span className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-teal-500 text-[9px] font-bold text-white shadow">
-        NM
-      </span>
-    );
-  return null;
-}
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function MicrobeCard({
@@ -138,7 +98,6 @@ function MicrobeCard({
     >
       {microbe.unlocked ? (
         <>
-          <GramBadge gramType={microbe.gramType} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={resolveImageSrc(microbe.answerImageUrl)}
@@ -294,12 +253,12 @@ function ClueSection({ slots }: { slots: BookSlot[] }) {
 // ─── Stage geometry ───────────────────────────────────────────────────────────
 
 // The book art is 1920x1080. Everything (art, tab hit boxes, page overlays) lives
-// on one "stage" that always fills the viewport: the art is stretched to the full
-// width and full height, so it never letterboxes and the percentage-positioned
-// overlays stay locked to it at every screen size. Sizes inside the stage use
-// `u(n)` = n px at the 1920x1080 design size, scaled by whichever of the stage's
-// width/height is the tighter fit (so text can't outgrow the pages on very wide
-// screens).
+// on one "stage" whose width always fits the screen and whose height follows the
+// art's 16:9 ratio — it shrinks on narrow screens and grows on wide ones. If that
+// makes it taller than the viewport, the page scrolls vertically; if shorter, it
+// is centered. The percentage-positioned overlays stay locked to the art at every
+// size. Sizes inside the stage use `u(n)` = n px at the 1920x1080 design size,
+// scaled to the stage.
 const STAGE_W = 1920;
 const u = (n: number) => `calc(${n} * min(100cqw, 100cqh * 16 / 9) / ${STAGE_W})`;
 
@@ -338,25 +297,26 @@ export function PathogenBookStage({
   return (
     // Root fills the viewport; the stage inside it is the book.
     <div
-      className={`${alice.className} pb-page-root relative h-dvh w-screen overflow-hidden bg-cover bg-center`}
+      className={`${alice.className} pb-page-root relative flex h-dvh w-full overflow-x-hidden overflow-y-auto bg-cover bg-center`}
       style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
     >
       {/* ── Back button — anchored to the viewport, not the stage ── */}
       <Link
         href="/home"
-        className="tap-min safe-top safe-left absolute z-30 flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
+        className="tap-min safe-top safe-left fixed z-30 flex items-center rounded-lg border border-[#d4a96a] bg-[#2a1208]/80 px-4 text-sm font-semibold text-[#f5e6c8] transition-colors hover:bg-[#3d1a0a]"
       >
         ← Back
       </Link>
 
       {/* ── Stage — fills the viewport; art stretches to it ── */}
       <div
-        className="pb-stage absolute inset-0"
+        className="pb-stage relative m-auto w-full shrink-0"
         style={{
+          aspectRatio: "16 / 9",
           containerType: "size",
-          backgroundImage: `url('${backgroundSrc}'), url('/assets/backgrounds/main_page_background.webp')`,
-          backgroundSize: "100% 100%, cover",
-          backgroundRepeat: "no-repeat, no-repeat",
+          backgroundImage: `url('${backgroundSrc}')`,
+          backgroundSize: "100% 100%",
+          backgroundRepeat: "no-repeat",
         }}
       >
         {/* ── Category tab strip — transparent hit boxes over the art's tabs ── */}
