@@ -54,7 +54,7 @@ export function CardGrid({
 
       <div
         ref={dropTargetRef}
-        className="clue-card-slot h-[28vh]"
+        className="clue-card-slot h-[clamp(100px,28vh,260px)]"
         style={{ aspectRatio: "1429 / 2000" }}
       >
         {pendingMicrobeName ? (
