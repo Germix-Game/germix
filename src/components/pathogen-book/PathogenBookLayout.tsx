@@ -254,11 +254,12 @@ function ClueSection({ slots }: { slots: BookSlot[] }) {
 
 // The book art is 1920x1080. Everything (art, tab hit boxes, page overlays) lives
 // on one "stage" whose width always fits the screen and whose height follows the
-// art's 16:9 ratio — it shrinks on narrow screens and grows on wide ones. If that
-// makes it taller than the viewport, the page scrolls vertically; if shorter, it
-// is centered. The percentage-positioned overlays stay locked to the art at every
-// size. Sizes inside the stage use `u(n)` = n px at the 1920x1080 design size,
-// scaled to the stage.
+// art's 16:9 ratio, capped at the viewport height so the screen itself never
+// scrolls — only the left and right pages do. On screens wider than 16:9 the art
+// stretches horizontally to fill; on taller ones it is centered vertically. The
+// percentage-positioned overlays stay locked to the art at every size. Sizes
+// inside the stage use `u(n)` = n px at the 1920x1080 design size, scaled by the
+// tighter of the stage's width/height so text can't outgrow the pages.
 const STAGE_W = 1920;
 const u = (n: number) => `calc(${n} * min(100cqw, 100cqh * 16 / 9) / ${STAGE_W})`;
 
@@ -297,7 +298,7 @@ export function PathogenBookStage({
   return (
     // Root fills the viewport; the stage inside it is the book.
     <div
-      className={`${alice.className} pb-page-root relative flex h-dvh w-full overflow-x-hidden overflow-y-auto bg-cover bg-center`}
+      className={`${alice.className} pb-page-root relative flex h-dvh w-full overflow-hidden bg-cover bg-center`}
       style={{ backgroundImage: "url('/assets/backgrounds/main_page_background.webp')" }}
     >
       {/* ── Back button — anchored to the viewport, not the stage ── */}
@@ -313,6 +314,7 @@ export function PathogenBookStage({
         className="pb-stage relative m-auto w-full shrink-0"
         style={{
           aspectRatio: "16 / 9",
+          maxHeight: "100%",
           containerType: "size",
           backgroundImage: `url('${backgroundSrc}')`,
           backgroundSize: "100% 100%",
