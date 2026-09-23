@@ -54,37 +54,54 @@ export async function getRoundClues(microbeId: string) {
   return selectSlotClues(all)
 }
 
-// One Pathogen Book slot: which fixed slot it is, and the card itself. `opened`
-// is always true here — once a microbe is unlocked (the player has seen it),
-// the book reveals all of its clue cards, not just the ones flipped in the
-// round that unlocked it.
+// One Pathogen Book slot: which fixed slot it is, and every card the microbe
+// has in that slot's category — unlike the round view (one clue per slot),
+// the book is a collection screen, so a category with several clue cards
+// (e.g. multiple LAB_CHARACTERISTIC cards) shows all of them, not just the
+// one the game would have picked for a round. `opened` is always true here —
+// once a microbe is unlocked (the player has seen it), the book reveals all
+// of its clue cards, not just the ones flipped in the round that unlocked it.
 export type BookSlot = {
   slotIndex: number
   category: CardCategory
   opened: boolean
-  card: { id: string; category: CardCategory; imageUrl: string } | null
+  cards: { id: string; category: CardCategory; label: string; imageUrl: string }[]
 }
 
-// Build the per-slot Pathogen Book view for one microbe. Uses the SAME
-// selectSlotClues mapping the game uses, so a slot index (0–4) resolves to
-// exactly the card the player saw in that slot. Slots the microbe has no clue
-// for are omitted (nothing to discover there). Callers must only invoke this
-// for a microbe the player has unlocked — every returned slot is fully opened.
+// Build the per-slot Pathogen Book view for one microbe. Groups clues by the
+// SAME SLOT_CATEGORIES layout the game uses (so a slot index still lines up
+// with the category the player is used to), but — unlike selectSlotClues —
+// keeps every matching clue in that group instead of only the first. Slots
+// the microbe has no clue for are omitted (nothing to discover there).
+// Callers must only invoke this for a microbe the player has unlocked —
+// every returned slot is fully opened.
 export async function getBookSlots(microbeId: string): Promise<BookSlot[]> {
   const all = await prisma.microbeClue.findMany({
     where: { microbeId },
     orderBy: [{ sortOrder: 'asc' }, { clueCardId: 'asc' }],
-    include: { clueCard: { select: { id: true, category: true, imageUrl: true } } },
+    include: { clueCard: { select: { id: true, category: true, label: true, imageUrl: true } } },
   })
 
-  return selectSlotClues(all).flatMap((entry, slotIndex) => {
-    if (!entry) return [] // microbe lacks this slot's category — no card exists
-    const { clueCard } = entry
+  return SLOT_CATEGORIES.flatMap((group, slotIndex) => {
+    const primary = all.filter((mc) => group.primary.includes(mc.clueCard.category))
+    const matches = primary.length > 0
+      ? primary
+      : group.fallback
+        ? all.filter((mc) => group.fallback!.includes(mc.clueCard.category))
+        : []
+
+    if (matches.length === 0) return [] // microbe lacks this slot's category — no card exists
+
     return [{
       slotIndex,
-      category: clueCard.category,
+      category: matches[0].clueCard.category,
       opened: true,
-      card: { id: clueCard.id, category: clueCard.category, imageUrl: clueCard.imageUrl },
+      cards: matches.map(({ clueCard }) => ({
+        id: clueCard.id,
+        category: clueCard.category,
+        label: clueCard.label,
+        imageUrl: clueCard.imageUrl,
+      })),
     }]
   })
 }
