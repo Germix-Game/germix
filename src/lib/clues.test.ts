@@ -10,10 +10,11 @@ import type { CardCategory } from '@prisma/client'
 import { selectSlotClues, getRoundClues, getBookSlots } from './clues'
 import { prisma } from '@/lib/prisma'
 
-function clue(category: string, label: string, sortOrder: number) {
+function clue(category: string, label: string, sortOrder: number, id = `card-${label}`) {
   return {
     sortOrder,
-    clueCard: { id: `card-${label}`, category: category as CardCategory, label, imageUrl: `/${label}.png` },
+    clueCardId: id,
+    clueCard: { id, category: category as CardCategory, label, imageUrl: `/${label}.png` },
   }
 }
 
@@ -133,25 +134,39 @@ describe('getBookSlots', () => {
 
     const byIndex = Object.fromEntries(slots.map((s) => [s.slotIndex, s]))
     expect(byIndex[0].opened).toBe(true)
-    expect(byIndex[0].card?.imageUrl).toBe('/Gram +.png')
+    expect(byIndex[0].cards.map((c) => c.imageUrl)).toEqual(['/Gram +.png'])
     expect(byIndex[1].opened).toBe(true)
-    expect(byIndex[1].card?.imageUrl).toBe('/Capsule.png')
+    expect(byIndex[1].cards.map((c) => c.imageUrl)).toEqual(['/Capsule.png'])
     expect(byIndex[2].opened).toBe(true)
-    expect(byIndex[2].card?.imageUrl).toBe('/Catalase+.png')
+    expect(byIndex[2].cards.map((c) => c.imageUrl)).toEqual(['/Catalase+.png'])
     expect(byIndex[3].opened).toBe(true)
-    expect(byIndex[3].card?.imageUrl).toBe('/Tumbling.png')
+    expect(byIndex[3].cards.map((c) => c.imageUrl)).toEqual(['/Tumbling.png'])
     expect(byIndex[4].opened).toBe(true)
-    expect(byIndex[4].card?.imageUrl).toBe('/Abscess.png')
+    expect(byIndex[4].cards.map((c) => c.imageUrl)).toEqual(['/Abscess.png'])
   })
 
-  it('maps a slot index to the same card the game showed in that slot', async () => {
+  it('maps a slot index to the same category the game showed in that slot', async () => {
     // Slot 2 is the lab slot → 'Catalase+', proving the book uses the fixed
     // slot layout, not raw clue order.
     vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(fullClues as never)
     const slots = await getBookSlots('microbe-1')
     const lab = slots.find((s) => s.slotIndex === 2)
-    expect(lab?.card?.imageUrl).toBe('/Catalase+.png')
+    expect(lab?.cards[0]?.imageUrl).toBe('/Catalase+.png')
     expect(lab?.category).toBe('LAB_CHARACTERISTIC')
+  })
+
+  it('includes every clue card in a category, not just the first — a slot can hold more than one card', async () => {
+    // Two LAB_CHARACTERISTIC clues for the same microbe: the round game would
+    // only ever show one, but the book is a collection screen and must show both.
+    const clues = [
+      clue('GRAM_STAIN', 'Gram +', 0),
+      clue('LAB_CHARACTERISTIC', 'Catalase+', 1),
+      clue('LAB_CHARACTERISTIC', 'Oxidase+', 2),
+    ]
+    vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(clues as never)
+    const slots = await getBookSlots('microbe-1')
+    const lab = slots.find((s) => s.slotIndex === 2)
+    expect(lab?.cards.map((c) => c.imageUrl)).toEqual(['/Catalase+.png', '/Oxidase+.png'])
   })
 
   it('omits slots the microbe has no clue for', async () => {
