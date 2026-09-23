@@ -20,13 +20,15 @@ type MicrobeEntry = {
   unlocked: boolean;
 };
 
-// One Pathogen Book slot. `card` is present only when the player has opened it —
-// the server withholds unopened card data, so the book shows only what was revealed.
+// One Pathogen Book slot. `cards` holds every clue card the microbe has in this
+// slot's category (a category can have more than one, e.g. multiple lab
+// characteristics) — populated only once the player has opened the slot; the
+// server withholds unopened card data, so the book shows only what was revealed.
 type BookSlot = {
   slotIndex: number;
   category: string;
   opened: boolean;
-  card: { id: string; category: string; label: string; imageUrl: string } | null;
+  cards: { id: string; category: string; label: string; imageUrl: string }[];
 };
 
 type GameMode = "BACTERIA" | "FUNGI" | "PARASITES" | "VIRUS";
@@ -212,39 +214,45 @@ function LockedClue() {
   );
 }
 
-// Shows one card per slot the microbe has, in fixed game-slot order. Opened slots
-// reveal the card; unopened slots stay face-down so the book reflects exactly what
-// this player discovered.
+// Shows every card in each slot the microbe has, in fixed game-slot order (a
+// slot's category can hold more than one clue card, e.g. several lab
+// characteristics — all of them are shown, not just one per slot). Opened
+// slots reveal their cards; unopened slots stay face-down so the book
+// reflects exactly what this player discovered.
 function ClueSection({ slots }: { slots: BookSlot[] }) {
   const sorted = [...slots].sort((a, b) => a.slotIndex - b.slotIndex);
 
   return (
     <div className="pb-clue-grid grid grid-cols-4 gap-2" style={{ zoom: 0.68, width: "85%" }}>
-      {sorted.map((slot) => (
-        <div key={slot.slotIndex} className="flex-shrink-0">
-          {slot.opened && slot.card ? (
-            slot.card.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={resolveImageSrc(slot.card.imageUrl)}
-                alt={slot.card.label}
-                className="w-full rounded shadow"
-                style={{ aspectRatio: "1429 / 2000" }}
-                draggable={false}
-              />
-            ) : (
-              <div
-                className="flex w-full items-center justify-center rounded bg-[#f5e6c8] p-1 text-[8px] italic text-[#7a5a30] shadow"
-                style={{ aspectRatio: "1429/2000" }}
-              >
-                {slot.card.label}
+      {sorted.flatMap((slot) =>
+        slot.opened
+          ? slot.cards.map((card) => (
+              <div key={card.id} className="flex-shrink-0">
+                {card.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={resolveImageSrc(card.imageUrl)}
+                    alt={card.label}
+                    className="w-full rounded shadow"
+                    style={{ aspectRatio: "1429 / 2000" }}
+                    draggable={false}
+                  />
+                ) : (
+                  <div
+                    className="flex w-full items-center justify-center rounded bg-[#f5e6c8] p-1 text-[8px] italic text-[#7a5a30] shadow"
+                    style={{ aspectRatio: "1429/2000" }}
+                  >
+                    {card.label}
+                  </div>
+                )}
               </div>
-            )
-          ) : (
-            <LockedClue />
-          )}
-        </div>
-      ))}
+            ))
+          : [
+              <div key={slot.slotIndex} className="flex-shrink-0">
+                <LockedClue />
+              </div>,
+            ]
+      )}
     </div>
   );
 }
