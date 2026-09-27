@@ -7,7 +7,7 @@ vi.mock('@/lib/prisma', () => ({
 }))
 
 import type { CardCategory } from '@prisma/client'
-import { selectSlotClues, getRoundClues, getBookSlots } from './clues'
+import { selectSlotClues, getRoundClues, getBookSlots, roundSeed } from './clues'
 import { prisma } from '@/lib/prisma'
 
 function clue(category: string, label: string, sortOrder: number, id = `card-${label}`) {
@@ -17,6 +17,8 @@ function clue(category: string, label: string, sortOrder: number, id = `card-${l
     clueCard: { id, category: category as CardCategory, label, imageUrl: `/${label}.png` },
   }
 }
+
+const SEED = roundSeed('session-1', 1)
 
 describe('selectSlotClues', () => {
   it('maps one clue per slot in fixed slot order', () => {
@@ -28,7 +30,7 @@ describe('selectSlotClues', () => {
       clue('CLINICAL_MANIFESTATION', 'Abscess', 4),
     ]
 
-    const slots = selectSlotClues(clues)
+    const slots = selectSlotClues(clues, SEED)
 
     expect(slots.map((s) => s?.clueCard.label)).toEqual([
       'Gram +',
@@ -41,42 +43,71 @@ describe('selectSlotClues', () => {
 
   it('returns null for slots whose category the microbe lacks', () => {
     const clues = [clue('GRAM_STAIN', 'Gram +', 0)]
-    const slots = selectSlotClues(clues)
+    const slots = selectSlotClues(clues, SEED)
     expect(slots).toEqual([clues[0], null, null, null, null])
   })
 
   it('returns five nulls for a microbe with no clues at all', () => {
-    expect(selectSlotClues([])).toEqual([null, null, null, null, null])
+    expect(selectSlotClues([], SEED)).toEqual([null, null, null, null, null])
   })
 
-  it('picks the first candidate in the given (sortOrder) order when a slot has multiple candidates', () => {
-    // Slot 0 covers both GRAM_STAIN and MORPHOLOGY — give it two candidates,
-    // already sorted by sortOrder as the function expects, and confirm the
-    // earliest one wins deterministically.
+  it('picks one of the candidates when a slot has multiple', () => {
+    // Slot 0 covers both GRAM_STAIN and MORPHOLOGY — give it two candidates.
     const clues = [
       clue('GRAM_STAIN', 'Gram -', 0),
       clue('MORPHOLOGY', 'Comma-shaped', 5),
     ]
-    const slots = selectSlotClues(clues)
-    expect(slots[0]?.clueCard.label).toBe('Gram -')
+    const slots = selectSlotClues(clues, SEED)
+    expect(['Gram -', 'Comma-shaped']).toContain(slots[0]?.clueCard.label)
   })
 
-  it('is deterministic: repeated calls on the same input give the same result', () => {
+  it('picks randomly across rounds — every candidate in a category eventually shows up', () => {
+    const clues = [
+      clue('SPECIAL_TRAIT', 'Tumbling', 0),
+      clue('SPECIAL_TRAIT', 'Cold growth', 1),
+      clue('SPECIAL_TRAIT', 'Actin rockets', 2),
+      clue('CLINICAL_MANIFESTATION', 'Meningitis', 3),
+      clue('CLINICAL_MANIFESTATION', 'Abortion', 4),
+    ]
+    const traits = new Set<string>()
+    const clinical = new Set<string>()
+    for (let round = 1; round <= 200; round++) {
+      const slots = selectSlotClues(clues, roundSeed(`session-${round}`, round))
+      traits.add(slots[3]!.clueCard.label)
+      clinical.add(slots[4]!.clueCard.label)
+    }
+    expect(traits).toEqual(new Set(['Tumbling', 'Cold growth', 'Actin rockets']))
+    expect(clinical).toEqual(new Set(['Meningitis', 'Abortion']))
+  })
+
+  it('randomizes the fallback group too', () => {
+    const clues = [
+      clue('TRANSMISSION', 'Fecal-oral', 0),
+      clue('TRANSMISSION', 'Mosquito', 1),
+    ]
+    const picks = new Set<string>()
+    for (let round = 1; round <= 100; round++) {
+      picks.add(selectSlotClues(clues, roundSeed('s', round))[1]!.clueCard.label)
+    }
+    expect(picks).toEqual(new Set(['Fecal-oral', 'Mosquito']))
+  })
+
+  it('is deterministic for a given seed, so /cards and /reveal agree on the card', () => {
     const clues = [
       clue('MORPHOLOGY', 'Comma-shaped', 0),
       clue('GRAM_STAIN', 'Gram -', 1),
       clue('VIRULENCE_FACTOR', 'Flagella', 2),
     ]
-    const first = selectSlotClues(clues).map((s) => s?.clueCard.label)
+    const first = selectSlotClues(clues, SEED).map((s) => s?.clueCard.label)
     for (let i = 0; i < 20; i++) {
-      expect(selectSlotClues(clues).map((s) => s?.clueCard.label)).toEqual(first)
+      expect(selectSlotClues(clues, SEED).map((s) => s?.clueCard.label)).toEqual(first)
     }
   })
 
   it('does not mutate the input array', () => {
     const clues = [clue('GRAM_STAIN', 'Gram +', 0), clue('VIRULENCE_FACTOR', 'Capsule', 1)]
     const copy = [...clues]
-    selectSlotClues(clues)
+    selectSlotClues(clues, SEED)
     expect(clues).toEqual(copy)
   })
 })
@@ -89,7 +120,7 @@ describe('getRoundClues', () => {
     ]
     vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(clues as never)
 
-    const result = await getRoundClues('microbe-1')
+    const result = await getRoundClues('microbe-1', SEED)
 
     expect(prisma.microbeClue.findMany).toHaveBeenCalledWith({
       where: { microbeId: 'microbe-1' },
@@ -112,9 +143,11 @@ describe('getRoundClues', () => {
     ]
     vi.mocked(prisma.microbeClue.findMany).mockResolvedValue(clues as never)
 
-    const result = await getRoundClues('microbe-1')
+    const result = await getRoundClues('microbe-1', SEED)
 
-    expect(result[0]?.clueCard.category).toBe('GRAM_STAIN')
+    // The seeded pick indexes into this DB order, so /reveal (same order, same
+    // seed) lands on the identical card.
+    expect(result[0]).toBe(selectSlotClues(clues as never, SEED)[0])
   })
 })
 

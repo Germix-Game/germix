@@ -17,6 +17,7 @@ import { NextRequest } from 'next/server'
 import { POST } from './route'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
+import { roundSeed, selectSlotClues } from '@/lib/clues'
 
 const SESSION_ID = 'session-1'
 const PLAYER_ID = 'player-1'
@@ -216,20 +217,20 @@ describe('POST /api/sessions/:id/reveal', () => {
       // Slot 0 spans GRAM_STAIN + MORPHOLOGY. Both candidates share sortOrder 0, so
       // only the clueCardId tiebreaker decides the winner. The clues arrive already
       // ordered by [sortOrder, clueCardId] (as the query now guarantees), so the
-      // route must reveal the first one — exactly what /cards renders for that slot.
+      // route must reveal the same seeded pick /cards renders for that slot.
+      const clues = [
+        { sortOrder: 0, clueCardId: 'card-a', clueCard: { category: 'GRAM_STAIN', label: 'Gram +', imageUrl: '/g.png' } },
+        { sortOrder: 0, clueCardId: 'card-b', clueCard: { category: 'MORPHOLOGY', label: 'Cocci', imageUrl: '/m.png' } },
+      ]
       vi.mocked(prisma.sessionMicrobe.findUnique).mockResolvedValue({
         ...mockSessionMicrobe,
-        microbe: {
-          clues: [
-            { sortOrder: 0, clueCardId: 'card-a', clueCard: { category: 'GRAM_STAIN', label: 'Gram +', imageUrl: '/g.png' } },
-            { sortOrder: 0, clueCardId: 'card-b', clueCard: { category: 'MORPHOLOGY', label: 'Cocci', imageUrl: '/m.png' } },
-          ],
-        },
+        microbe: { clues },
       } as never)
 
       const res = await POST(makeRequest({ slotIndex: 0 }), ctx)
       const body = await res.json()
-      expect(body.card.imageUrl).toBe('/g.png')
+      const expected = selectSlotClues(clues as never, roundSeed(SESSION_ID, 1))[0] as (typeof clues)[number]
+      expect(body.card.imageUrl).toBe(expected.clueCard.imageUrl)
     })
   })
 })

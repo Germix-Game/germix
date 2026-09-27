@@ -17,29 +17,55 @@ const SLOT_CATEGORIES: { primary: CardCategory[]; fallback?: CardCategory[] }[] 
 
 type WithCategory = { clueCard: { category: CardCategory } }
 
+// FNV-1a 32-bit string hash plus a murmur3 finalizer — a tiny, dependency-free
+// way to turn a seed string into a stable pseudo-random number. The finalizer
+// matters: raw FNV-1a has weak low bits, so `% 2` alone picks the same card
+// almost every time.
+function hashSeed(seed: string): number {
+  let h = 0x811c9dc5
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  h ^= h >>> 16
+  h = Math.imul(h, 0x85ebca6b)
+  h ^= h >>> 13
+  h = Math.imul(h, 0xc2b2ae35)
+  h ^= h >>> 16
+  return h >>> 0
+}
+
+// Seed for one round's card picks. Every session/round combo gets its own
+// random-looking selection, but the same round always resolves the same way.
+export function roundSeed(sessionId: string, roundNumber: number): string {
+  return `${sessionId}:${roundNumber}`
+}
+
 // Map a microbe's clues (sorted by sortOrder) onto the fixed slot layout: one
-// clue per slot, in FIXED slot order, picking the first candidate (lowest
-// sortOrder) within each category group. Pure and DETERMINISTIC — the same input
-// always yields the same slot→clue mapping. This is what guarantees the cards the
-// player sees (/cards) match the card that gets revealed/graded (/reveal): both
-// routes run this over the same sortOrder-sorted clue list. null if the microbe
-// lacks a category group.
-export function selectSlotClues<T extends WithCategory>(cluesSortedByOrder: T[]): (T | null)[] {
-  return SLOT_CATEGORIES.map((group) => {
+// clue per slot, in FIXED slot order. When a category group has several
+// candidates, one is picked pseudo-randomly from `seed` (hashed per slot), so
+// different rounds/sessions show different cards of the same category. Pure and
+// DETERMINISTIC for a given (clues, seed) — this is what guarantees the cards the
+// player sees (/cards) match the card that gets revealed (/reveal): both routes
+// run this over the same sortOrder-sorted clue list with the same roundSeed.
+// null if the microbe lacks a category group.
+export function selectSlotClues<T extends WithCategory>(cluesSortedByOrder: T[], seed: string): (T | null)[] {
+  return SLOT_CATEGORIES.map((group, slotIndex) => {
     const primary = cluesSortedByOrder.filter((mc) => group.primary.includes(mc.clueCard.category))
-    if (primary[0]) return primary[0]
     // Only fall back when the microbe has NO clue in any primary category.
-    const fallback = group.fallback
-      ? cluesSortedByOrder.filter((mc) => group.fallback!.includes(mc.clueCard.category))
-      : []
-    return fallback[0] ?? null
+    const candidates = primary.length > 0 || !group.fallback
+      ? primary
+      : cluesSortedByOrder.filter((mc) => group.fallback!.includes(mc.clueCard.category))
+    if (candidates.length === 0) return null
+    return candidates[hashSeed(`${seed}:${slotIndex}`) % candidates.length]
   })
 }
 
 // One clue card per slot, in fixed slot order (length 5). null if microbe lacks
 // a group. Shared by the cards route; the reveal route maps its already-joined
-// clues with selectSlotClues directly so the two stay in lockstep.
-export async function getRoundClues(microbeId: string) {
+// clues with selectSlotClues directly — both MUST pass the same seed
+// (roundSeed(sessionId, roundNumber)) so the two stay in lockstep.
+export async function getRoundClues(microbeId: string, seed: string) {
   const all = await prisma.microbeClue.findMany({
     where: { microbeId },
     // sortOrder is NOT unique, so a stable secondary key (clueCardId) is required:
@@ -51,7 +77,7 @@ export async function getRoundClues(microbeId: string) {
     include: { clueCard: { select: { id: true, category: true, imageUrl: true } } },
   })
 
-  return selectSlotClues(all)
+  return selectSlotClues(all, seed)
 }
 
 // One Pathogen Book slot: which fixed slot it is, and every card the microbe
