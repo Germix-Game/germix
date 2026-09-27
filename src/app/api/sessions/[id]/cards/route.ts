@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth, requireOwner } from '@/lib/auth'
-import { getRoundClues } from '@/lib/clues'
+import { getRoundClues, roundSeed } from '@/lib/clues'
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
@@ -30,7 +30,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       return Response.json({ error: 'No active round found' }, { status: 409 })
     }
 
-    const roundClues = await getRoundClues(sessionMicrobe.microbeId)
+    const roundClues = await getRoundClues(sessionMicrobe.microbeId, roundSeed(id, currentPosition))
 
     const cards = roundClues.map((mc) =>
       mc
