@@ -646,7 +646,7 @@ export default function PlayPage() {
     gameMode === "PARASITE"
       ? ([
         ["PROTOZOA", "Protozoa ", "accent-[5c2a0e"],
-        ["PLATYHEMINTH", "Platyheminth ", "accent-[5c2a0e"],
+        ["PLATYHEMINTH", "Platyhelminth ", "accent-[5c2a0e"],
         ["NEMATODE", "Nematode ", "accent-[5c2a0e"],
       ] as const)
       : ([
