@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, requireOwner } from '@/lib/auth'
-import { selectSlotClues } from '@/lib/clues'
+import { roundSeed, selectSlotClues } from '@/lib/clues'
 
 const revealSchema = z.object({
   slotIndex: z.number().int().min(0).max(4),
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
     // exact card shown to the player in that slot (not a different clue from the
     // same microbe). Indexing the raw, sortOrder-ordered list directly is what
     // previously let the card and the reveal diverge.
-    const slotClues = selectSlotClues(sessionMicrobe.microbe.clues)
+    const slotClues = selectSlotClues(sessionMicrobe.microbe.clues, roundSeed(id, currentPosition))
     const entry = slotClues[slotIndex]
 
     if (!entry) {
