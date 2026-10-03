@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface Question {
   id: string;
@@ -57,6 +57,7 @@ export function PostTestPopup({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCompletion, setShowCompletion] = useState(false);
+  const startedAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -70,6 +71,7 @@ export function PostTestPopup({
         if (!active) return;
         if (data.questions) {
           setQuestions(shuffleArray(data.questions));
+          startedAtRef.current = Date.now();
         } else {
           setError("Failed to load posttest questions.");
         }
@@ -93,11 +95,16 @@ export function PostTestPopup({
     setSubmitting(true);
     setError(null);
 
+    const durationSeconds =
+      startedAtRef.current === null
+        ? undefined
+        : Math.round((Date.now() - startedAtRef.current) / 1000);
+
     try {
       const res = await fetch("/api/posttest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ period, answers }),
+        body: JSON.stringify({ period, answers, durationSeconds }),
       });
 
       if (!res.ok) {

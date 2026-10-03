@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Invalid input', issues: parsed.error.issues }, { status: 400 })
     }
 
-    const { period, answers } = parsed.data
+    const { period, answers, durationSeconds } = parsed.data
 
     const questions = await prisma.postTestQuestion.findMany({
       where: { period },
@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
           period,
           answers: canonicalAnswers,
           score,
+          durationSeconds,
         },
       })
     } catch (e) {
