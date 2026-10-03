@@ -152,6 +152,9 @@ model PostTest {
   period      PostTestPeriod
   answers     AnswerOption[]
   score       Int
+  // Seconds the player spent on the post-test (questions shown -> submit).
+  // Null for rows submitted before this column existed.
+  durationSeconds Int?
   submittedAt DateTime       @default(now())
   player      Player         @relation(fields: [playerId], references: [id])
 

@@ -135,6 +135,38 @@ describe('POST /api/posttest', () => {
       })
     })
 
+    it('stores durationSeconds when provided', async () => {
+      await POST(makeRequest({ period: PostTestPeriod.MIDTERM, answers: allCorrectAnswers, durationSeconds: 421 }))
+      expect(prisma.postTest.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ durationSeconds: 421 }),
+      })
+    })
+
+    it('stores durationSeconds of 0', async () => {
+      await POST(makeRequest({ period: PostTestPeriod.MIDTERM, answers: allCorrectAnswers, durationSeconds: 0 }))
+      expect(prisma.postTest.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ durationSeconds: 0 }),
+      })
+    })
+
+    it('still saves when durationSeconds is omitted', async () => {
+      const res = await POST(makeRequest({ period: PostTestPeriod.MIDTERM, answers: allCorrectAnswers }))
+      expect(res.status).toBe(201)
+      const data = vi.mocked(prisma.postTest.create).mock.calls[0][0].data as Record<string, unknown>
+      expect(data.durationSeconds).toBeUndefined()
+    })
+
+    it('rejects durationSeconds above 24h and does not save', async () => {
+      const res = await POST(makeRequest({ period: PostTestPeriod.MIDTERM, answers: allCorrectAnswers, durationSeconds: 86401 }))
+      expect(res.status).toBe(400)
+      expect(prisma.postTest.create).not.toHaveBeenCalled()
+    })
+
+    it('rejects a negative durationSeconds with 400', async () => {
+      const res = await POST(makeRequest({ period: PostTestPeriod.MIDTERM, answers: allCorrectAnswers, durationSeconds: -5 }))
+      expect(res.status).toBe(400)
+    })
+
     it('fetches questions ordered by sortOrder ascending', async () => {
       await POST(makeRequest({ period: PostTestPeriod.MIDTERM, answers: allCorrectAnswers }))
       expect(prisma.postTestQuestion.findMany).toHaveBeenCalledWith(

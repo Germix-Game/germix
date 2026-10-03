@@ -192,6 +192,7 @@ playerId (FK → Player)
 period                    (MIDTERM, FINAL)
 answers (AnswerOption[])   ← canonical-order answers (A, B, C, D), see below
 score                     ← number of correct answers
+durationSeconds (nullable) ← seconds spent on the post-test (questions shown → submit)
 submittedAt
 ```
 
@@ -201,6 +202,7 @@ submittedAt
 - Each player can submit once per period (unique constraint on `playerId` + `period`)
 - `answers` is stored in **canonical question order** — `answers[i]` is the player's answer to the `i`-th question by `PostTestQuestion.sortOrder`, **not** the shuffled order the student saw on screen
 - The questions are shuffled for display, so the server **must re-map each response back to canonical order before saving**. This keeps a plain `AnswerOption[]` valid and lets researchers line up `answers[i]` against question `i` for per-question analysis
+- `durationSeconds` is measured client-side from when the questions finish loading until submit (server clamps it to 0–86400). It is `NULL` for rows submitted before the column existed. Query e.g. `SELECT AVG("durationSeconds") FROM "PostTest" WHERE period = 'MIDTERM'`
 - This is separate from the external pre/post assessment collected via Google Forms by the doctors
 
 ---
