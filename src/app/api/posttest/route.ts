@@ -5,13 +5,13 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { submitPostTestSchema } from '@/lib/schemas/posttest'
 import { getActivePosttestPeriod } from '@/lib/posttest'
+import { loadConfigMap } from '@/lib/config'
 
 export async function GET() {
   try {
     const player = await requireAuth()
 
-    const configs = await prisma.config.findMany()
-    const configMap = new Map(configs.map(c => [c.key, c.value]))
+    const configMap = await loadConfigMap()
 
     const period = getActivePosttestPeriod(configMap)
 

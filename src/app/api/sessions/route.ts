@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth'
 import { createSessionSchema } from '@/lib/schemas/sessions'
 import { TOTAL_MICROBES, FORCED_CLUE_SLOT, formatSession } from '@/lib/sessions'
 import { getActivePosttestPeriod } from '@/lib/posttest'
+import { loadConfigMap } from '@/lib/config'
 
 function shuffle<T>(array: T[]): T[] {
   const arr = [...array]
@@ -22,8 +23,7 @@ export async function POST(request: NextRequest) {
     // Server-side enforcement of the same date-driven gate the home page uses:
     // while an exam window is active, a player who has not submitted cannot
     // start a session.
-    const configs = await prisma.config.findMany()
-    const configMap = new Map(configs.map(c => [c.key, c.value]))
+    const configMap = await loadConfigMap()
     const period = getActivePosttestPeriod(configMap)
 
     if (period) {
