@@ -2,14 +2,14 @@ import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { PostTestPeriod } from '@prisma/client'
 import { getActivePosttestPeriod } from '@/lib/posttest'
+import { loadConfigMap } from '@/lib/config'
 
 export async function GET() {
   try {
     const player = await requireAuth()
     const now = new Date()
 
-    const configs = await prisma.config.findMany()
-    const configMap = new Map(configs.map(c => [c.key, c.value]))
+    const configMap = await loadConfigMap()
 
     // ── Posttest window check ──────────────────────────────────────────────────
     // Date-driven (spec §10/§16): active only while today is inside an exam
