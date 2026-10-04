@@ -19,6 +19,13 @@ function shuffleArray<T>(array: T[]): T[] {
   return arr;
 }
 
+// ── Per-period Google Drive links for the bacteria content summary ──────────
+// Replace the placeholder URLs below with real Google Drive share links.
+const SUMMARY_DOWNLOAD_LINKS = {
+  MIDTERM: "https://drive.google.com/uc?export=download&id=1qtUzyIGZzr2d5wmMty2-P2ipa98fnfus",
+  FINAL:   "https://drive.google.com/PLACEHOLDER_FINAL_LINK",
+} as const;
+
 function resolvePostTestImageSrc(url: string | null | undefined): string {
   if (!url) return "";
   if (url.startsWith("http")) return url;
@@ -263,6 +270,28 @@ export function PostTestPopup({
               <p className="text-[#5c2a0e] text-center max-w-md text-base leading-relaxed">
                 Thank you for completing the post-test. Your answers have been saved and you can now proceed to play the game!
               </p>
+
+              {/* Download Summary Card */}
+              <div className="w-full max-w-md rounded-xl border-2 border-[#c4a870] bg-[#e8cd94]/50 p-6 flex flex-col items-center text-center space-y-4 shadow-md">
+                <span className="text-3xl">📄</span>
+                <div className="space-y-1">
+                  <h3 className="text-lg font-bold text-[#5c2a0e]">Bacteria Content Summary</h3>
+                  <p className="text-sm text-[#5c2a0e]/80 max-w-sm leading-relaxed">
+                    Here&apos;s a summary of the bacteria content to help you review for your exams. Download it now!
+                  </p>
+                </div>
+                <a
+                  href={SUMMARY_DOWNLOAD_LINKS[period.toUpperCase() as keyof typeof SUMMARY_DOWNLOAD_LINKS] ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-b from-[#2a6fb8] to-[#1a4d80] px-6 py-3 font-semibold text-white shadow-lg transition-all hover:from-[#3580cc] hover:to-[#1f5a94] hover:scale-105 active:scale-95 text-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V3" />
+                  </svg>
+                  Download Summary
+                </a>
+              </div>
 
               {/* Playtester Feedback CTA on completion */}
               {process.env.NEXT_PUBLIC_TESTING_PHASE_ENABLED === "true" && process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL && (
