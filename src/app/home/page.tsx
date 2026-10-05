@@ -8,6 +8,7 @@ import { ParchmentPanel } from "@/components/menu/ParchmentPanel";
 import { createClient } from "@/utils/supabase/client";
 import { HOME_CRITICAL_ASSETS } from "@/lib/preload-images";
 import { PostTestPopup } from "@/components/menu/PostTestPopup";
+import { DownloadSummaryPopup } from "@/components/menu/DownloadSummaryPopup";
 import { SettingsModal } from "@/components/menu/SettingsModal";
 import { getMotionPreference } from "@/lib/motion-preference";
 
@@ -80,6 +81,7 @@ export default function HomePage() {
   const [posttestPeriod, setPosttestPeriod] = useState<string | null>(null);
   const [posttestEnabled, setPosttestEnabled] = useState(false);
   const [showPosttestPopup, setShowPosttestPopup] = useState(false);
+  const [showDownloadPopup, setShowDownloadPopup] = useState(false);
 
   const [paperTop, setPaperTop] = useState<number | null>(null);
   const logoRef = useRef<HTMLDivElement>(null);
@@ -315,6 +317,16 @@ export default function HomePage() {
               <span>POST TEST {posttestPeriod ? `(${posttestPeriod})` : ""}</span>
             </button>
           )}
+          {posttestEnabled && !posttestRequired && (
+            <button
+              onClick={() => setShowDownloadPopup(true)}
+              className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-4 text-xs font-semibold tracking-wide text-[#f5e6c8] shadow hover:bg-[#3d1a0a] transition-colors cursor-pointer select-none"
+              title="Download bacteria content summaries"
+            >
+              <span>📄</span>
+              <span>DOWNLOAD SUMMARIES</span>
+            </button>
+          )}
           {process.env.NEXT_PUBLIC_TESTING_PHASE_ENABLED === "true" && process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL && (
             <a
               href={process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL}
@@ -337,6 +349,13 @@ export default function HomePage() {
               setPosttestRequired(false);
             }}
             onClose={() => setShowPosttestPopup(false)}
+          />
+        )}
+
+        {showDownloadPopup && posttestPeriod && (
+          <DownloadSummaryPopup
+            period={posttestPeriod}
+            onClose={() => setShowDownloadPopup(false)}
           />
         )}
 
