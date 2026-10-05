@@ -60,6 +60,8 @@ export function PostTestPopup({
   const [error, setError] = useState<string | null>(null);
   const [showCompletion, setShowCompletion] = useState(false);
   const startedAtRef = useRef<number | null>(null);
+  // Fallback so a duration is always sent, even if the load timestamp was never set.
+  const mountedAtRef = useRef<number>(Date.now());
 
   useEffect(() => {
     let active = true;
@@ -97,10 +99,11 @@ export function PostTestPopup({
     setSubmitting(true);
     setError(null);
 
-    const durationSeconds =
-      startedAtRef.current === null
-        ? undefined
-        : Math.round((Date.now() - startedAtRef.current) / 1000);
+    const startedAt = startedAtRef.current ?? mountedAtRef.current;
+    const durationSeconds = Math.min(
+      86400,
+      Math.max(0, Math.round((Date.now() - startedAt) / 1000)),
+    );
 
     try {
       const res = await fetch("/api/posttest", {
