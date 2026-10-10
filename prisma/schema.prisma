@@ -224,6 +224,7 @@ enum MicrobeTag {
 
 enum PostTestPeriod {
   MIDTERM
+  PREFINAL
   FINAL
 }
 

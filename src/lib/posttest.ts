@@ -34,9 +34,10 @@ export function getActivePosttestPeriod(
   now: Date = new Date(),
 ): PostTestPeriod | null {
   if (configMap.get('posttest_enabled') === 'true') {
-    return configMap.get('posttest_force_period')?.trim().toUpperCase() === 'FINAL'
-      ? PostTestPeriod.FINAL
-      : PostTestPeriod.MIDTERM
+    const forced = configMap.get('posttest_force_period')?.trim().toUpperCase()
+    if (forced === 'FINAL') return PostTestPeriod.FINAL
+    if (forced === 'PREFINAL') return PostTestPeriod.PREFINAL
+    return PostTestPeriod.MIDTERM
   }
 
   const inWindow = (startKey: string, endKey: string) => {
@@ -47,6 +48,7 @@ export function getActivePosttestPeriod(
   }
 
   if (inWindow('posttest_start_midterm', 'posttest_end_midterm')) return PostTestPeriod.MIDTERM
+  if (inWindow('posttest_start_prefinal', 'posttest_end_prefinal')) return PostTestPeriod.PREFINAL
   if (inWindow('posttest_start_final', 'posttest_end_final')) return PostTestPeriod.FINAL
   return null
 }
