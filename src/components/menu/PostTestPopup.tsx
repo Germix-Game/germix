@@ -135,7 +135,9 @@ export function PostTestPopup({
             <h1 className="text-2xl font-bold text-[#5c2a0e]">
               {showCompletion 
                 ? "Post-test Completed" 
-                : `${period.charAt(0) + period.slice(1).toLowerCase()} Post-test`}
+                : period.toUpperCase() === "PREFINAL"
+                  ? "Final Pre-test"
+                  : `${period.charAt(0) + period.slice(1).toLowerCase()} Post-test`}
             </h1>
             {!showCompletion && (
               <p className="text-sm text-[#5c2a0e] mt-0.5">
