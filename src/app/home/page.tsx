@@ -314,7 +314,7 @@ export default function HomePage() {
               title="Complete the post-test"
             >
               <span>📝</span>
-              <span>POST TEST {posttestPeriod ? `(${posttestPeriod})` : ""}</span>
+              <span>{posttestPeriod === "PREFINAL" ? "PRE TEST (FINAL)" : `POST TEST ${posttestPeriod ? `(${posttestPeriod})` : ""}`}</span>
             </button>
           )}
           {posttestEnabled && !posttestRequired && (
