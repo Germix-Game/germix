@@ -266,11 +266,16 @@ export function PostTestPopup({
               <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center border-2 border-green-500 text-green-600 text-4xl">
                 ✓
               </div>
-              <h2 className="text-3xl font-bold text-[#5c2a0e] text-center">Post-test Submitted!</h2>
+              <h2 className="text-3xl font-bold text-[#5c2a0e] text-center">
+                {period.toUpperCase() === "PREFINAL" ? "Pre-test Submitted!" : "Post-test Submitted!"}
+              </h2>
               <p className="text-[#5c2a0e] text-center max-w-md text-base leading-relaxed">
-                Thank you for completing the post-test. Your answers have been saved and you can now proceed to play the game!
+                {period.toUpperCase() === "PREFINAL"
+                  ? "Thank you for completing the pre-test. Your answers have been saved and you can now proceed to play the game!"
+                  : "Thank you for completing the post-test. Your answers have been saved and you can now proceed to play the game!"}
               </p>
 
+              {period.toUpperCase() !== "PREFINAL" && (<>
               {/* Download Summary Card */}
               <div className="w-full max-w-md rounded-xl border-2 border-[#c4a870] bg-[#e8cd94]/50 p-6 flex flex-col items-center text-center space-y-4 shadow-md">
                 <span className="text-3xl">📄</span>
@@ -314,6 +319,7 @@ export function PostTestPopup({
                   Download Summary
                 </a>
               </div>
+              </>)}
 
               {/* Playtester Feedback CTA on completion */}
               {process.env.NEXT_PUBLIC_TESTING_PHASE_ENABLED === "true" && process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL && (
