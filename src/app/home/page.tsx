@@ -317,7 +317,7 @@ export default function HomePage() {
               <span>{posttestPeriod === "PREFINAL" ? "PRE TEST (FINAL)" : `POST TEST ${posttestPeriod ? `(${posttestPeriod})` : ""}`}</span>
             </button>
           )}
-          {posttestEnabled && !posttestRequired && (
+          {posttestEnabled && !posttestRequired && posttestPeriod?.toUpperCase() !== "PREFINAL" && (
             <button
               onClick={() => setShowDownloadPopup(true)}
               className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#d4a96a] bg-[#1a0a04]/80 px-4 text-xs font-semibold tracking-wide text-[#f5e6c8] shadow hover:bg-[#3d1a0a] transition-colors cursor-pointer select-none"
