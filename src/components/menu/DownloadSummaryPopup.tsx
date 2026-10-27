@@ -70,15 +70,15 @@ export function DownloadSummaryPopup({
             </p>
 
             <DownloadCard
-              title="Bacteria Content Summary"
-              description="Here's a summary of the bacteria content to help you review for your exams. Download it now!"
+              title="Virus Content Summary"
+              description="Here's a summary of the virus content to help you review for your exams. Download it now!"
               links={SUMMARY_DOWNLOAD_LINKS}
               period={period}
             />
 
             <DownloadCard
-              title="Fungi Content Summary"
-              description="Here's a summary of the fungi content to help you review for your exams. Download it now!"
+              title="Parasite Content Summary"
+              description="Here's a summary of the parasite content to help you review for your exams. Download it now!"
               links={SUMMARY_DOWNLOAD_LINKS_2}
               period={period}
             />
