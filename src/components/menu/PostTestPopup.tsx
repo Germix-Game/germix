@@ -280,9 +280,9 @@ export function PostTestPopup({
               <div className="w-full max-w-md rounded-xl border-2 border-[#c4a870] bg-[#e8cd94]/50 p-6 flex flex-col items-center text-center space-y-4 shadow-md">
                 <span className="text-3xl">📄</span>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-bold text-[#5c2a0e]">Bacteria Content Summary</h3>
+                  <h3 className="text-lg font-bold text-[#5c2a0e]">Virus Content Summary</h3>
                   <p className="text-sm text-[#5c2a0e]/80 max-w-sm leading-relaxed">
-                    Here&apos;s a summary of the bacteria content to help you review for your exams. Download it now!
+                    Here&apos;s a summary of the virus content to help you review for your exams. Download it now!
                   </p>
                 </div>
                 <a
@@ -302,9 +302,9 @@ export function PostTestPopup({
               <div className="w-full max-w-md rounded-xl border-2 border-[#c4a870] bg-[#e8cd94]/50 p-6 flex flex-col items-center text-center space-y-4 shadow-md">
                 <span className="text-3xl">📄</span>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-bold text-[#5c2a0e]">Fungi Content Summary</h3>
+                  <h3 className="text-lg font-bold text-[#5c2a0e]">Parasite Content Summary</h3>
                   <p className="text-sm text-[#5c2a0e]/80 max-w-sm leading-relaxed">
-                    Here&apos;s a summary of the fungi content to help you review for your exams. Download it now!
+                    Here&apos;s a summary of the parasite content to help you review for your exams. Download it now!
                   </p>
                 </div>
                 <a
